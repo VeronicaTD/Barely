@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Magic Xylophone — игра после серии</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#DCEFF8; --ink:#1D2B55; --card:#FFFFFF; --muted:#56668C; --line:#C4D9E8;
+  --ok:#2E9E5B; --okbg:#DDF5E6; --frost:#9FD3F2;
+  --r1:#E8453C; --r2:#F39A2B; --r3:#EDBA1F; --r4:#4FAE5A; --r5:#3E86D4;
+  --wood:#B97A45; --wood2:#8E5A2E;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#13203F; --ink:#EAF1FF; --card:#1E2D52; --muted:#A8B6D8; --line:#2F4273; --okbg:#1B4632; --frost:#2B5F85; }
+}
+:root[data-theme="dark"]{ --bg:#13203F; --ink:#EAF1FF; --card:#1E2D52; --muted:#A8B6D8; --line:#2F4273; --okbg:#1B4632; --frost:#2B5F85; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.45}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:"Grandstander","Comic Sans MS","Trebuchet MS",sans-serif;font-weight:800;font-size:clamp(34px,7vw,56px);line-height:1;margin:14px 0 6px;letter-spacing:-.5px}
+.sub{color:var(--muted);margin:0 0 22px;font-weight:700}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--r5);outline-offset:3px}
+
+/* xylophone */
+.xylo{position:relative;padding:26px 10px 30px;margin:8px 0 18px}
+.rail{position:absolute;left:0;right:0;height:16px;background:var(--wood);border-radius:8px;box-shadow:inset 0 -4px 0 var(--wood2)}
+.rail.top{top:52px;transform:rotate(-2.2deg)}
+.rail.bot{bottom:92px;transform:rotate(2.2deg)}
+.bars{position:relative;display:flex;justify-content:center;align-items:center;gap:clamp(8px,2.4vw,18px)}
+.barcol{display:flex;flex-direction:column;align-items:center;gap:10px;width:clamp(56px,15vw,104px)}
+.bar{position:relative;width:100%;border:0;border-radius:14px;background:var(--c);box-shadow:inset 0 -8px 0 rgba(0,0,0,.18),inset 0 6px 0 rgba(255,255,255,.28);transition:transform .12s}
+.bar::before,.bar::after{content:"";position:absolute;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#EDEFF5;box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.bar::before{top:18px}.bar::after{bottom:24px}
+.bar:hover{transform:translateY(-3px)}
+.bar:active,.bar.hit{transform:translateY(4px) scale(.98)}
+.bar .num{position:absolute;inset:0;display:grid;place-items:center;font-family:"Grandstander",sans-serif;font-size:clamp(22px,5vw,34px);font-weight:800;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.bname{font-weight:800;font-size:clamp(13px,3.2vw,16px);text-align:center;line-height:1.15;min-height:2.3em}
+.stars{font-size:15px;letter-spacing:1px;min-height:1.2em}
+.done-note{text-align:center;font-weight:700;color:var(--muted);margin:0}
+.melody{display:none;margin:18px auto 0;background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:14px 26px;font-weight:800}
+.melody.show{display:block}
+
+/* round */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.back{background:transparent;border:2px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:800}
+.prog{font-weight:800;color:var(--muted)}
+.rtitle{font-family:"Grandstander",sans-serif;font-weight:800;font-size:28px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.rtitle i{display:inline-block;width:14px;height:34px;border-radius:5px;background:var(--c)}
+.task{color:var(--muted);font-weight:700;margin:0 0 14px}
+.card{position:relative;background:var(--card);border-radius:22px;padding:22px 18px;border:3px solid var(--line);overflow:hidden}
+.card.frozen{animation:shake .45s}
+.card.frozen::after{content:"Freeze! 🧊";position:absolute;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--frost) 75%,transparent);font-family:"Grandstander",sans-serif;font-weight:800;font-size:40px;color:#1D2B55;animation:thaw .9s forwards;pointer-events:none}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes thaw{0%,55%{opacity:1}100%{opacity:0}}
+.prompt{text-align:center;margin-bottom:18px}
+.big{font-family:"Grandstander",sans-serif;font-weight:800;font-size:clamp(30px,7vw,46px);line-height:1.1}
+.emoji{font-size:48px;line-height:1}
+.quote{font-size:clamp(20px,4.6vw,26px);font-weight:800;line-height:1.3}
+.say{margin-top:10px;background:transparent;border:2px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;font-size:16px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{background:var(--bg);border:3px solid var(--line);border-radius:16px;padding:14px 10px;font-weight:800;font-size:18px;min-height:62px}
+.opt:hover:not(:disabled){border-color:var(--c)}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}
+.opt.no{opacity:.55;text-decoration:line-through}
+.opt:disabled{cursor:default}
+.fb{min-height:1.5em;margin:14px 2px 0;font-weight:700}
+.fb b{color:var(--ok)}
+.next{display:none;margin:16px 0 0 auto;background:var(--c);color:#fff;border:0;border-radius:999px;padding:12px 26px;font-weight:800;font-size:18px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.2)}
+.next.show{display:block}
+/* build */
+.hint{text-align:center;color:var(--muted);font-weight:700;margin-bottom:12px}
+.line{min-height:64px;border-bottom:3px dashed var(--line);display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;padding:8px 0 12px;margin-bottom:14px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{background:var(--bg);border:3px solid var(--line);border-radius:12px;padding:8px 14px;font-weight:800;font-size:20px}
+.line .tile{background:var(--c);color:#fff;border-color:transparent}
+.check{display:block;margin:16px auto 0;background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:12px 26px;font-weight:800}
+/* result */
+.res{text-align:center;padding:10px 0}
+.res .big{margin:8px 0}
+.res .stars{font-size:44px;letter-spacing:6px}
+.res .next{display:block;margin:20px auto 0}
+@media (prefers-reduced-motion: reduce){ .card.frozen{animation:none} .bar{transition:none} }
+@media (max-width:420px){ .opts{grid-template-columns:1fr} }
+.opts.pics{grid-template-columns:repeat(3,1fr)}
+.opt.pic{font-size:clamp(44px,12vw,64px);min-height:110px;line-height:1}
+.opt.yn{font-size:24px;min-height:80px}
+.cbars{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.cbar{width:clamp(48px,13vw,76px);height:130px;border:0;border-radius:12px;background:var(--cc);box-shadow:inset 0 -6px 0 rgba(0,0,0,.18),inset 0 5px 0 rgba(255,255,255,.28)}
+.cbar.no{opacity:.35}
+.cbar.ok{outline:4px solid var(--ok);outline-offset:3px}
+.slots{display:flex;justify-content:center;gap:6px;margin:6px 0 18px}
+.slot{width:clamp(40px,11vw,64px);height:72px;border-bottom:4px solid var(--line);display:grid;place-items:center;font-family:"Grandstander",sans-serif;font-weight:800;font-size:40px}
+.letters{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.letter{width:clamp(46px,12vw,64px);height:clamp(46px,12vw,64px);border-radius:16px;border:3px solid var(--line);background:var(--bg);font-family:"Grandstander",sans-serif;font-weight:800;font-size:34px}
+.letter:disabled{opacity:.25}
+.scenes{display:grid;gap:10px}
+.scene{display:flex;align-items:center;gap:14px;text-align:left;background:var(--bg);border:3px solid var(--line);border-radius:16px;padding:12px 14px;font-weight:800;font-size:18px}
+.scene .se{font-size:40px;line-height:1}
+.scene .badge{margin-left:auto;width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:"Grandstander",sans-serif;font-size:22px;color:#fff;background:transparent}
+.scene.done{border-color:var(--ok);background:var(--okbg)}
+.scene.done .badge{background:var(--ok)}
+.scene.no{animation:shake .45s}
+.figwrap{display:flex;justify-content:center;margin-bottom:6px}
+.fig{position:relative;width:220px;height:230px}
+.ice{position:absolute;inset:18px 20px 10px;border-radius:26px;background:linear-gradient(160deg,rgba(190,230,255,.95),rgba(120,190,235,.75));border:3px solid rgba(255,255,255,.8);box-shadow:inset 0 0 22px rgba(255,255,255,.7);transition:opacity .8s,transform .8s}
+.fig.melted .ice{opacity:0;transform:scaleY(.2) translateY(200px)}
+.face{position:absolute;left:0;right:0;top:44px;text-align:center;font-size:120px;line-height:1}
+.fig.melted .face{animation:shake .5s 2}
+.w{position:absolute;line-height:1;pointer-events:none}
+.w-hat{left:0;right:0;top:-18px;text-align:center;font-size:78px}
+.w-glasses{left:0;right:0;top:72px;text-align:center;font-size:62px}
+.w-must{left:72px;width:76px;top:132px}
+.w-teddy{left:-6px;bottom:-4px;font-size:58px}
+.w-sock{right:-6px;bottom:-4px;font-size:52px}
+@media (max-width:420px){ .opts.pics{grid-template-columns:repeat(3,1fr)} }
+</style>
+</head>
+<body>
+<main class="wrap" id="app"></main>
+
+<script>
+const ROUNDS = [
+  {id:'pics',  name:'Слова',        c:'var(--r1)', f:523.25, task:'Послушай слово из мультика и нажми на картинку.'},
+  {id:'dress', name:'Наряди папу',  c:'var(--r2)', f:587.33, task:'Папа замёрз! Послушай слово и выбери, что на него надеть.'},
+  {id:'order', name:'По порядку',   c:'var(--r3)', f:659.25, task:'Что было сначала? Нажимай по порядку: 1, 2, 3.'},
+  {id:'yn',    name:'Да или нет?',  c:'var(--r4)', f:783.99, task:'Вспомни мультик: так было?'},
+  {id:'spell', name:'Собери слово', c:'var(--r5)', f:880.00, task:'Нажимай на буквы по порядку.'}
+];
+
+const WORDS = [
+  {en:'freeze', ru:'замри!', e:'🧊'}, {en:'xylophone', ru:'ксилофон', e:'🎶'},
+  {en:'moustache', ru:'усы', e:'🥸'}, {en:'piano', ru:'пианино', e:'🎹'},
+  {en:'hose', ru:'шланг', e:'💦'}, {en:'teddy', ru:'плюшевый мишка', e:'🧸'},
+  {en:'dad', ru:'папа', e:'👨'}, {en:'mum', ru:'мама', e:'👩'},
+  {en:'run', ru:'беги!', e:'🏃'}, {en:'bed', ru:'кровать', e:'🛏️'}
+];
+
+const DRESS = [
+  {en:'hat', ru:'шапка', e:'🎩'}, {en:'glasses', ru:'очки', e:'👓'},
+  {en:'moustache', ru:'усы', e:'🥸'}, {en:'teddy', ru:'мишка', e:'🧸'},
+  {en:'sock', ru:'носок', e:'🧦'}
+];
+
+const ORDER = [
+  [{e:'🎹', t:'Папа «играет на пианино» — щекочет Bluey'}, {e:'🎶', t:'Bingo находит волшебный ксилофон'}, {e:'🥸', t:'Девочки рисуют папе усы'}],
+  [{e:'🧸', t:'Девочки дают замороженному папе мишек'}, {e:'🛏️', t:'Девочки прячутся под кроватью'}, {e:'💦', t:'Папу обливают из шланга'}],
+  [{e:'🧊', t:'Папа замораживает Bluey'}, {e:'🤝', t:'Bingo размораживает Bluey'}, {e:'⛲', t:'Получился папа-фонтан'}]
+];
+
+const YN = [
+  {q:'Bluey — это собачка?', e:'🐶', a:true, ex:'Да! Bluey — собачка.'},
+  {q:'Bingo нашла волшебный ксилофон?', e:'🎶', a:true, ex:'Да, она нашла его в сумке.'},
+  {q:'Девочки нарисовали папе усы?', e:'🥸', a:true, ex:'Да, фиолетовым фломастером!'},
+  {q:'Мама забрала ксилофон на работу?', e:'🚗', a:false, ex:'Нет, ксилофон остался дома.'},
+  {q:'Девочки прятались под кроватью?', e:'🛏️', a:true, ex:'Да, а папа их искал.'},
+  {q:'Папу облили водой из шланга?', e:'💦', a:true, ex:'Да, получился папа-фонтан!'},
+  {q:'Папа играл на настоящем пианино?', e:'🎹', a:false, ex:'Нет, он «играл» на Bluey — щекотал её.'}
+];
+
+const SPELL = [
+  {en:'run', e:'🏃'}, {en:'dad', e:'👨'}, {en:'mum', e:'👩'}, {en:'hose', e:'💦'}
+];
+const SPELL_FINAL = {en:'freeze', e:'🧊'};
+
+const PRAISE = ['Молодец!', 'Супер!', 'Отлично!', 'Ура!', 'Здорово!', 'Точно!'];
+const praise = () => PRAISE[Math.floor(Math.random() * PRAISE.length)];
+
+/* helpers */
+const app = document.getElementById('app');
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const results = {};
+
+let actx;
+function tone(f, t = 0, d = 0.7, vol = 0.3) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const now = actx.currentTime + t;
+    [[1, vol], [4, vol * 0.18]].forEach(([mul, v]) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = mul === 1 ? 'triangle' : 'sine';
+      o.frequency.value = f * mul;
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(v, now + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + d);
+      o.connect(g).connect(actx.destination);
+      o.start(now); o.stop(now + d + 0.05);
+    });
+  } catch (e) {}
+}
+function speak(text) {
+  try {
+    if (!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const vs = speechSynthesis.getVoices();
+    const v = vs.find(x => /en-AU/i.test(x.lang)) || vs.find(x => /en-GB/i.test(x.lang)) || vs.find(x => /^en/i.test(x.lang));
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : 'en-GB';
+    u.rate = 0.8;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+if ('speechSynthesis' in window) { try { speechSynthesis.getVoices(); } catch (e) {} }
+
+const starsFor = errors => errors <= 1 ? 3 : errors <= 3 ? 2 : 1;
+
+/* home */
+function home() {
+  const heights = [230, 208, 186, 164, 142];
+  const allDone = ROUNDS.every(r => results[r.id]);
+  app.innerHTML = `
+    <h1>The Magic Xylophone</h1>
+    <p class="sub">Игра после мультика. Нажми на брусок — и начнём!</p>
+    <div class="xylo">
+      <div class="rail top"></div><div class="rail bot"></div>
+      <div class="bars">
+        ${ROUNDS.map((r, i) => `
+          <div class="barcol">
+            <button class="bar" style="--c:${r.c};height:${heights[i]}px" data-i="${i}" aria-label="Раунд ${i + 1}: ${r.name}">
+              <span class="num">${i + 1}</span>
+            </button>
+            <div class="bname">${r.name}</div>
+            <div class="stars" aria-label="звёзды">${results[r.id] ? '⭐'.repeat(results[r.id].stars) : ''}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <p class="done-note">${allDone ? 'Unfreeze! Все пять брусков сыграны 🎉' : 'Пройди все пять брусков, и ксилофон сыграет мелодию из мультика.'}</p>
+    <button class="melody ${allDone ? 'show' : ''}" id="melody">🎵 Сыграть мелодию</button>`;
+  app.querySelectorAll('.bar').forEach(b => b.addEventListener('click', () => {
+    const r = ROUNDS[+b.dataset.i];
+    tone(r.f); b.classList.add('hit');
+    setTimeout(() => startRound(r), 220);
+  }));
+  const m = document.getElementById('melody');
+  if (m) m.addEventListener('click', playRondo);
+  window.scrollTo(0, 0);
+}
+
+function playRondo() {
+  const B4=493.88,A4=440,Gs4=415.3,C5=523.25,D5=587.33,E5=659.25,F5=698.46,Ds5=622.25,B5=987.77,A5=880,Gs5=830.61,C6=1046.5;
+  const s = .16, L = .45;
+  const seq = [[B4,s],[A4,s],[Gs4,s],[A4,s],[C5,L],[D5,s],[C5,s],[B4,s],[C5,s],[E5,L],[F5,s],[E5,s],[Ds5,s],[E5,s],[B5,s],[A5,s],[Gs5,s],[A5,s],[B5,s],[A5,s],[Gs5,s],[A5,s],[C6,.8]];
+  let t = 0; seq.forEach(([f, d]) => { tone(f, t, d + .25, .25); t += d; });
+}
+
+function frame(r, i, n) {
+  return `
+    <div class="top"><button class="back" id="back">К ксилофону</button><span class="prog">${i + 1} / ${n}</span></div>
+    <h2 class="rtitle" style="--c:${r.c}"><i></i>${r.name}</h2>
+    <p class="task">${r.task}</p>`;
+}
+function wireCommon() {
+  document.getElementById('back').addEventListener('click', home);
+  app.querySelectorAll('[data-say]').forEach(b => b.addEventListener('click', () => speak(b.dataset.say)));
+}
+function freeze(card) {
+  card.classList.remove('frozen'); void card.offsetWidth; card.classList.add('frozen');
+  tone(196, 0, .35, .2);
+}
+function success(r, fb, next, text) {
+  tone(r.f); tone(r.f * 1.25, .1); tone(r.f * 1.5, .2);
+  fb.innerHTML = `<b>${praise()}</b> ${text}`;
+  next.classList.add('show'); next.focus();
+}
+function shell(r, i, n, inner) {
+  app.innerHTML = frame(r, i, n) + `
+    <div class="card" style="--c:${r.c}">
+      ${inner}
+      <div class="fb" aria-live="polite"></div>
+      <button class="next" style="--c:${r.c}">${i + 1 < n ? 'Дальше' : 'Готово'}</button>
+    </div>`;
+  wireCommon();
+  return {card: app.querySelector('.card'), fb: app.querySelector('.fb'), next: app.querySelector('.next')};
+}
+
+/* generic "tap the right one, retry until right" */
+function runPick(r, items, build) {
+  let i = 0, errors = 0;
+  const render = () => {
+    const it = items[i];
+    const {card, fb, next} = shell(r, i, items.length, build(it));
+    if (it.auto) setTimeout(() => speak(it.auto), 300);
+    const btns = [...app.querySelectorAll('[data-v]')];
+    btns.forEach(b => b.addEventListener('click', () => {
+      if (String(it.answer) === b.dataset.v) {
+        btns.forEach(x => x.disabled = true);
+        b.classList.add('ok');
+        if (it.sayOk) speak(it.sayOk);
+        success(r, fb, next, esc(it.explain));
+      } else {
+        errors++; b.classList.add('no'); b.disabled = true; freeze(card);
+        fb.textContent = 'Попробуй ещё разок!';
+      }
+    }));
+    next.addEventListener('click', () => { i++; i < items.length ? render() : finish(r, errors, items.length); });
+  };
+  render();
+}
+
+function threeWith(w) {
+  return shuffle([w, ...shuffle(WORDS.filter(x => x !== w)).slice(0, 2)]);
+}
+
+function startRound(r) {
+  if (r.id === 'pics') {
+    const listen = false;
+    const items = shuffle(WORDS).slice(0, 7).map(w => ({
+      w, opts: threeWith(w), answer: w.en, auto: w.en, explain: `${w.en} — ${w.ru}`
+    }));
+    runPick(r, items, it => `
+      <div class="prompt">
+        ${listen ? '<div class="emoji">👂</div>' : `<div class="big">${esc(it.w.en)}</div>`}
+        <button class="say" data-say="${esc(it.w.en)}" ${listen ? 'style="font-size:22px;padding:12px 24px"' : ''}>🔊 Послушать</button>
+      </div>
+      <div class="opts pics">${it.opts.map(o => `<button class="opt pic" data-v="${esc(o.en)}" aria-label="${esc(o.ru)}">${o.e}</button>`).join('')}</div>`);
+  } else if (r.id === 'dress') {
+    runDress(r);
+  } else if (r.id === 'order') {
+    runOrder(r, ORDER);
+  } else if (r.id === 'yn') {
+    const items = shuffle(YN).slice(0, 6).map(y => ({y, answer: y.a, sayOk: y.a ? 'Yes!' : 'No!', explain: y.ex}));
+    runPick(r, items, it => `
+      <div class="prompt">
+        <div class="emoji">${it.y.e}</div>
+        <div class="quote">${esc(it.y.q)}</div>
+      </div>
+      <div class="opts">
+        <button class="opt yn" data-v="true">👍 Yes</button>
+        <button class="opt yn" data-v="false">👎 No</button>
+      </div>`);
+  } else {
+    runSpell(r, shuffle(SPELL).concat([SPELL_FINAL]));
+  }
+}
+
+function figureHTML(worn, melted) {
+  const has = en => worn.includes(en);
+  return `<div class="fig ${melted ? 'melted' : ''}">
+    <div class="ice"></div>
+    <div class="face">${melted ? '😲' : '😶'}</div>
+    ${has('hat') ? '<div class="w w-hat">🎩</div>' : ''}
+    ${has('glasses') ? '<div class="w w-glasses">👓</div>' : ''}
+    ${has('moustache') ? '<svg class="w w-must" viewBox="0 0 100 34" aria-hidden="true"><path d="M50 10c-6-8-18-10-28-4C14 11 8 8 2 2c0 14 12 26 28 24 10-1 16-7 20-12 4 5 10 11 20 12 16 2 28-10 28-24-6 6-12 9-20 4-10-6-22-4-28 4z" fill="#5a2d82"/></svg>' : ''}
+    ${has('teddy') ? '<div class="w w-teddy">🧸</div>' : ''}
+    ${has('sock') ? '<div class="w w-sock">🧦</div>' : ''}
+  </div>`;
+}
+
+function runDress(r) {
+  const items = shuffle(DRESS);
+  let i = 0, errors = 0; const worn = [];
+  const render = () => {
+    const it = items[i];
+    const opts = shuffle([it, ...shuffle(DRESS.filter(x => x !== it)).slice(0, 2)]);
+    const last = i + 1 === items.length;
+    const {card, fb, next} = shell(r, i, items.length, `
+      <div class="figwrap">${figureHTML(worn, false)}</div>
+      <div class="prompt"><button class="say" data-say="${it.en}" style="font-size:22px;padding:12px 24px">🔊 Послушать</button></div>
+      <div class="opts pics">${opts.map(o => `<button class="opt pic" data-v="${o.en}" aria-label="${o.ru}">${o.e}</button>`).join('')}</div>`);
+    if (last) next.textContent = '🎶 Unfreeze!';
+    setTimeout(() => speak(it.en), 300);
+    const btns = [...app.querySelectorAll('[data-v]')];
+    btns.forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.v === it.en) {
+        btns.forEach(x => x.disabled = true); b.classList.add('ok');
+        worn.push(it.en);
+        app.querySelector('.figwrap').innerHTML = figureHTML(worn, false);
+        speak(it.en);
+        success(r, fb, next, `${it.en} — ${it.ru}`);
+      } else {
+        errors++; b.classList.add('no'); b.disabled = true; freeze(card);
+        fb.textContent = 'Попробуй ещё разок!';
+      }
+    }));
+    next.addEventListener('click', () => {
+      i++;
+      if (i < items.length) return render();
+      next.disabled = true;
+      app.querySelector('.figwrap').innerHTML = figureHTML(worn, true);
+      speak('Unfreeze!'); [0, .1, .2, .3].forEach((t, k) => tone(r.f * [1, 1.25, 1.5, 2][k], t));
+      fb.innerHTML = '<b>Unfreeze!</b> Папа разморозился — и какой красивый!';
+      setTimeout(() => finish(r, errors, items.length), 2200);
+    });
+  };
+  render();
+}
+
+function runOrder(r, items) {
+  let i = 0, errors = 0;
+  const render = () => {
+    const correct = items[i];
+    const shown = shuffle(correct.map((sc, k) => ({...sc, k})));
+    const {card, fb, next} = shell(r, i, items.length, `
+      <div class="scenes">${shown.map((sc, idx) => `<button class="scene" data-s="${idx}"><span class="se">${sc.e}</span><span>${esc(sc.t)}</span><span class="badge"></span></button>`).join('')}</div>`);
+    let step = 0;
+    app.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
+      const sc = shown[+b.dataset.s];
+      if (b.classList.contains('done')) return;
+      if (sc.k === step) {
+        b.classList.add('done'); b.querySelector('.badge').textContent = step + 1;
+        tone(r.f * [1, 1.25, 1.5][step], 0, .4, .25); step++;
+        fb.textContent = '';
+        if (step === correct.length) success(r, fb, next, 'Всё по порядку!');
+      } else {
+        errors++; b.classList.remove('no'); void b.offsetWidth; b.classList.add('no'); freeze(card);
+        fb.textContent = 'Хм, а что было раньше? Попробуй ещё!';
+      }
+    }));
+    next.addEventListener('click', () => { i++; i < items.length ? render() : finish(r, errors, items.length); });
+  };
+  render();
+}
+
+function runSpell(r, items) {
+  let i = 0, errors = 0;
+  const render = () => {
+    const it = items[i];
+    const letters = it.en.toUpperCase().split('');
+    let pool = shuffle(letters.map((l, k) => ({l, k})));
+    if (pool.map(p => p.l).join('') === letters.join('')) pool.reverse();
+    const {card, fb, next} = shell(r, i, items.length, `
+      <div class="prompt">
+        <div class="emoji" style="font-size:72px">${it.e}</div>
+        <button class="say" data-say="${esc(it.en)}">🔊 Послушать</button>
+      </div>
+      <div class="slots"></div>
+      <div class="letters"></div>`);
+    const slots = app.querySelector('.slots'), box = app.querySelector('.letters');
+    let chosen = [], done = false;
+    const draw = () => {
+      slots.innerHTML = letters.map((_, k) => `<div class="slot">${chosen[k] ? chosen[k].l : ''}</div>`).join('');
+      box.innerHTML = pool.map((p, idx) => `<button class="letter" data-p="${idx}" ${p.used || done ? 'disabled' : ''}>${p.l}</button>`).join('');
+      box.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => {
+        const p = pool[+b.dataset.p]; p.used = true; chosen.push(p);
+        tone(r.f * (0.9 + chosen.length * 0.1), 0, .25, .15);
+        if (chosen.length === letters.length) check(); else draw();
+      }));
+    };
+    const check = () => {
+      if (chosen.map(p => p.l).join('') === letters.join('')) {
+        done = true; draw(); speak(it.en);
+        success(r, fb, next, `${it.en.toUpperCase()} ${it.e}`);
+      } else {
+        errors++; draw(); freeze(card);
+        fb.textContent = 'Почти! Попробуй ещё разок.';
+        setTimeout(() => { chosen = []; pool.forEach(p => p.used = false); draw(); }, 900);
+      }
+    };
+    draw();
+    setTimeout(() => speak(it.en), 300);
+    next.addEventListener('click', () => { i++; i < items.length ? render() : finish(r, errors, items.length); });
+  };
+  render();
+}
+
+function finish(r, errors, total) {
+  const stars = starsFor(errors);
+  const prev = results[r.id];
+  if (!prev || stars > prev.stars) results[r.id] = {stars};
+  app.innerHTML = `
+    <div class="card res" style="--c:${r.c}">
+      <h2 class="rtitle" style="--c:${r.c};justify-content:center"><i></i>${r.name}</h2>
+      <div class="stars">${'⭐'.repeat(stars)}</div>
+      <div class="big">${praise()}</div>
+      <p class="task">Брусок сыгран! Выбирай следующий.</p>
+      <button class="next" style="--c:${r.c}" id="toHome">К ксилофону</button>
+    </div>`;
+  [0, .12, .24].forEach((t, k) => tone(r.f * [1, 1.25, 1.5][k], t));
+  document.getElementById('toHome').addEventListener('click', home);
+}
+
+home();
+</script>
+</body>
+</html>
