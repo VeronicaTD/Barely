@@ -55,6 +55,8 @@ h1 small{display:block;font-size:.45em;color:var(--muted);font-weight:600;margin
 @keyframes drop{from{transform:translateY(-30px) rotateX(60deg);opacity:0}}
 .item:active{transform:scale(.92)}
 .item.counted{background:#fff3d4;border-color:var(--sun)}
+.item svg{display:block}
+.counter svg{width:24px;height:24px;vertical-align:middle}
 .item b{
   position:absolute;top:-8px;right:-8px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;
   min-width:24px;height:24px;border-radius:12px;display:grid;place-items:center;padding:0 5px;
@@ -119,15 +121,33 @@ h1 small{display:block;font-size:.45em;color:var(--muted);font-weight:600;margin
    q: вопрос, thing: слово во мн. числе для итоговой фразы,
    ru: подсказка по-русски, scene: фон (case / room / пусто)            */
 const ROUNDS = [
-  { e:'🪑', n:5,  en:'five',     q:'How many chairs?',        thing:'chairs',      ru:'Сколько стульев в новом классе?', scene:'room' },
-  { e:'✏️', n:13, en:'thirteen', q:'How many pencils?',       thing:'pencils',     ru:'Сколько новых карандашей у Рози?', scene:'case' },
-  { e:'🖥️', n:3,  en:'three',    q:'How many computers?',     thing:'computers',   ru:'Сколько компьютеров? Сравни с thirteen!', scene:'room' },
-  { e:'🖊️', n:20, en:'twenty',   q:'How many pens?',          thing:'pens',        ru:'Сколько ручек в пенале?', scene:'case' },
-  { e:'🐸', n:12, en:'twelve',   q:'How many animal pegs?',   thing:'animal pegs', ru:'Сколько крючков с лягушкой?', scene:'room', mix:['🐸','🐵','🐱','🐶'] },
-  { e:'🧸', n:15, en:'fifteen',  q:'How many teddies?',       thing:'teddies',     ru:'Сколько мишек в классе?', scene:'room' },
-  { e:'📏', n:13, en:'thirteen', q:'How many rulers?',        thing:'rulers',      ru:'Сколько линеек?', scene:'case' },
-  { e:'🖍️', n:20, en:'twenty',   q:'How many crayons?',       thing:'crayons',     ru:'Последнее! Сколько мелков?', scene:'case' }
+  { e:'table',       n:5,  en:'five',     q:'How many tables?',       thing:'tables',       ru:'Сколько новых столов в классе?', scene:'room' },
+  { e:'✏️',          n:13, en:'thirteen', q:'How many pencils?',      thing:'pencils',      ru:'Сколько новых карандашей у Рози?', scene:'case' },
+  { e:'🖥️',          n:3,  en:'three',    q:'How many computers?',    thing:'computers',    ru:'Сколько компьютеров? Сравни с thirteen!', scene:'room' },
+  { e:'peg',         n:12, en:'twelve',   q:'How many pegs?',         thing:'pegs',         ru:'Сколько крючков для одежды?', scene:'room' },
+  { e:'pencilcase',  n:20, en:'twenty',   q:'How many pencil cases?', thing:'pencil cases', ru:'Сколько пеналов?', scene:'case' },
+  { e:'🪑',          n:15, en:'fifteen',  q:'How many chairs?',       thing:'chairs',       ru:'Сколько стульев?', scene:'room' },
+  { e:'table',       n:13, en:'thirteen', q:'How many tables?',       thing:'tables',       ru:'А теперь сколько столов?', scene:'room' },
+  { e:'🖊️',          n:20, en:'twenty',   q:'How many pens?',         thing:'pens',         ru:'Последнее! Сколько ручек?', scene:'case' }
 ];
+
+/* Картинки для слов, у которых нет эмодзи */
+const ICONS = {
+  table: `<svg viewBox="0 0 48 48" width="80%" height="80%" aria-hidden="true">
+    <rect x="4" y="13" width="40" height="7" rx="2" fill="#b5703a"/><rect x="4" y="13" width="40" height="3" rx="1.5" fill="#d08a4e"/>
+    <rect x="8" y="20" width="4" height="20" rx="1" fill="#8f5428"/><rect x="36" y="20" width="4" height="20" rx="1" fill="#8f5428"/></svg>`,
+  peg: `<svg viewBox="0 0 48 48" width="80%" height="80%" aria-hidden="true">
+    <rect x="3" y="8" width="42" height="14" rx="2" fill="#b5703a"/><line x1="3" y1="15" x2="45" y2="15" stroke="#8f5428" stroke-width="1"/>
+    <rect x="19" y="10" width="10" height="10" rx="2" fill="#9aa7b4"/>
+    <path d="M24 20v10c0 6 8 6 8 1" fill="none" stroke="#7d8a97" stroke-width="4" stroke-linecap="round"/></svg>`,
+  pencilcase: `<svg viewBox="0 0 48 48" width="85%" height="85%" aria-hidden="true">
+    <path d="M14 8l3 10M22 6l1 12M30 7l-2 11" stroke="#e8483d" stroke-width="3" stroke-linecap="round"/>
+    <rect x="5" y="16" width="38" height="24" rx="8" fill="#ffd23f"/>
+    <rect x="11" y="16" width="6" height="24" fill="#5cc35c"/><rect x="23" y="16" width="6" height="24" fill="#5cc35c"/><rect x="35" y="16" width="6" height="24" fill="#5cc35c"/>
+    <rect x="5" y="16" width="38" height="24" rx="8" fill="none" stroke="#2b2622" stroke-width="2"/></svg>`
+};
+const icon = e => ICONS[e] || e;
+
 const NUMS = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve',
   'thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
 
@@ -177,9 +197,8 @@ function start(){ r = 0; results = []; showRound(); }
 function showRound(){
   const R = ROUNDS[r]; tries = 0; revealed = 0; counted = 0;
   renderStars();
-  const items = Array.from({length:R.n},(_,i)=> R.mix ? R.mix[i % R.mix.length] : R.e);
-  // для animal pegs считаем только лягушек: добавляем других зверей
-  let pool = items;
+    // для animal pegs считаем только лягушек: добавляем других зверей
+  let pool = Array(R.n).fill(R.e);
   if (R.mix){
     pool = Array(R.n).fill(R.e);
     const others = R.mix.filter(x=>x!==R.e);
@@ -190,9 +209,9 @@ function showRound(){
     <p class="q"><span>${R.q}</span><button class="say" id="sayBtn" aria-label="Послушать">🔊</button></p>
     <p class="ru">${R.ru}</p>
     <div class="scene ${R.scene||''}" id="scene">
-      ${pool.map((e,i)=>`<button class="item" data-c="${e===R.e?1:0}" style="animation-delay:${i*35}ms" aria-label="предмет">${e}</button>`).join('')}
+      ${pool.map((e,i)=>`<button class="item" data-c="${e===R.e?1:0}" style="animation-delay:${i*35}ms" aria-label="${R.thing}">${icon(e)}</button>`).join('')}
     </div>
-    <div class="counter" id="counter">Нажимай на каждый ${R.mix?'крючок с '+R.e:'предмет'} и считай вслух!</div>
+    <div class="counter" id="counter">Нажимай на каждый предмет и считай вслух!</div>
     <div class="answer">
       <input id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши число словом" aria-label="Ответ">
       <button class="btn" id="checkBtn">Проверить</button>
@@ -214,7 +233,7 @@ function showRound(){
 function tapItem(b, R){
   if (b.classList.contains('counted')) return;
   if (b.dataset.c==='0'){ b.animate?.([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'none'}],{duration:250}); beep(220,.1,'square',.05);
-    $('counter').innerHTML = `Это не ${R.e}! Считаем только ${R.e}`; return; }
+    $('counter').innerHTML = `Это не то! Считаем только ${icon(R.e)}`; return; }
   counted++;
   b.classList.add('counted');
   b.insertAdjacentHTML('beforeend', `<b>${counted}</b>`);
