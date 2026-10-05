@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Days of the Week. Board game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===================== НАСТРОЙКИ (можно менять) ===================== */
+/* Имена игроков и фишки меняются в CONFIG в начале <script> */
+
+:root{
+  --bg:#fbf4e6; --ink:#2b2622; --muted:#7a6f63; --card:#fffdf8; --line:#eadfcb;
+  --sun:#ffb81c; --sun-d:#e09600;
+  --start:#ef4b3f; --back:#5a8ff0; --fwd:#ffc83d; --miss:#2fb36b;
+  --ok:#2fb36b; --bad:#ef4b3f;
+  --r:18px; --r-s:12px;
+  --shadow:0 4px 0 rgba(43,38,34,.12), 0 10px 24px rgba(43,38,34,.08);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'Nunito',system-ui,sans-serif;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);
+  min-height:100dvh;
+}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sun-d);outline-offset:2px}
+
+.wrap{max-width:1100px;margin:0 auto;padding:18px 14px 30px;display:grid;gap:18px;
+  grid-template-columns:minmax(0,1fr) 300px;align-items:start}
+@media (max-width:820px){.wrap{grid-template-columns:1fr}}
+
+header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:'Fredoka',sans-serif;font-weight:700;margin:0;font-size:clamp(26px,4.5vw,40px);line-height:1}
+h1 .s{display:inline-block;animation:spin 12s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1 small{display:block;font-size:.45em;color:var(--muted);font-weight:600;margin-top:4px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* ---------- Board ---------- */
+.board-wrap{perspective:1400px}
+.board{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  background:var(--card);padding:12px;border-radius:var(--r);box-shadow:var(--shadow);
+  transform:rotateX(8deg);transform-origin:50% 100%;
+}
+.cell{
+  position:relative;aspect-ratio:1.25/1;border-radius:var(--r-s);
+  background:#fff9ee;border:2px solid var(--line);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:6px;font-weight:800;font-size:clamp(11px,1.6vw,15px);line-height:1.15;
+  transition:transform .25s, box-shadow .25s;
+}
+.cell .num{position:absolute;top:4px;left:7px;font-size:10px;color:var(--muted);font-weight:700}
+.cell.start,.cell.finish{background:var(--start);border-color:#c9372d;color:#fff;font-family:'Fredoka';font-size:clamp(14px,2.2vw,20px)}
+.cell.back{background:var(--back);border-color:#3f73d4;color:#fff}
+.cell.fwd{background:var(--fwd);border-color:#e4a815}
+.cell.miss{background:var(--miss);border-color:#228c52;color:#fff}
+.cell.special{font-family:'Fredoka';font-weight:600;font-size:clamp(12px,1.8vw,16px)}
+.cell.lit{transform:translateY(-4px);box-shadow:0 0 0 4px var(--sun)}
+.cell .arrow{position:absolute;font-size:14px;color:var(--muted);opacity:.7}
+.arrow.r{right:-11px;top:50%;transform:translateY(-50%)}
+.arrow.l{left:-11px;top:50%;transform:translateY(-50%)}
+.arrow.d{bottom:-12px;left:50%;transform:translateX(-50%)}
+.tokens{position:absolute;bottom:3px;right:4px;display:flex;gap:2px}
+.token{font-size:clamp(20px,3.2vw,30px);line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));animation:hop .35s ease-out}
+@keyframes hop{0%{transform:translateY(-14px) scale(1.15)}60%{transform:translateY(2px)}100%{transform:none}}
+
+/* ---------- Side panel ---------- */
+.panel{display:grid;gap:14px}
+.box{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
+.players{display:grid;gap:8px}
+.pl{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-s);border:2px solid transparent;font-weight:800}
+.pl.on{border-color:var(--sun);background:#fff3d4}
+.pl .e{font-size:26px}
+.pl .st{margin-left:auto;font-size:12px;color:var(--muted);font-weight:700}
+.dice-area{display:flex;align-items:center;gap:14px}
+.die{
+  width:78px;height:78px;border-radius:18px;background:#fff;border:3px solid var(--ink);
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:9px;gap:2px;
+  box-shadow:0 5px 0 var(--ink);
+}
+.die.roll{animation:roll .6s ease-out}
+@keyframes roll{0%{transform:rotate(0) scale(1)}40%{transform:rotate(200deg) scale(1.15)}100%{transform:rotate(360deg) scale(1)}}
+.pip{width:13px;height:13px;border-radius:50%;background:var(--ink);place-self:center;visibility:hidden}
+.pip.v{visibility:visible}
+.btn{
+  background:var(--sun);border:none;border-radius:var(--r-s);padding:14px 18px;
+  font-family:'Fredoka';font-weight:600;font-size:20px;box-shadow:0 5px 0 var(--sun-d);
+  transition:transform .1s, box-shadow .1s;
+}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--sun-d)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.dark{background:var(--ink);color:var(--bg);box-shadow:0 5px 0 #000}
+.msg{min-height:44px;font-weight:700;color:var(--muted);font-size:15px}
+
+/* ---------- Days strip ---------- */
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.strip.hidden-help .d{color:transparent;background:#efe6d6}
+.strip.hidden-help .d::after{content:'?';color:var(--muted);position:absolute}
+.d{
+  position:relative;border-radius:10px;background:#fff3d4;border:2px solid #f3dca5;
+  text-align:center;padding:8px 0;font-weight:800;font-size:13px;display:grid;place-items:center;
+  transition:transform .2s, background .2s;
+}
+.d.we{background:#ffe1dc;border-color:#f6b9ae}
+.d.from{background:var(--back);color:#fff;border-color:var(--back)}
+.d.step{background:var(--sun);border-color:var(--sun-d);transform:translateY(-4px)}
+.d.to{background:var(--ok);color:#fff;border-color:var(--ok);transform:translateY(-4px) scale(1.08)}
+.strip-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:800;font-size:14px}
+.link{background:none;border:none;color:var(--muted);text-decoration:underline;font-weight:700;font-size:13px;padding:0}
+
+/* ---------- Modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(43,38,34,.45);display:none;align-items:center;justify-content:center;padding:14px;z-index:20}
+.overlay.show{display:flex}
+.modal{
+  background:var(--card);border-radius:24px;max-width:620px;width:100%;padding:22px;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);animation:pop .35s cubic-bezier(.2,1.4,.4,1);
+  max-height:calc(100dvh - 28px);overflow:auto;
+}
+@keyframes pop{from{transform:scale(.85) rotateX(20deg);opacity:0}to{transform:none;opacity:1}}
+.q-who{font-weight:800;color:var(--muted);font-size:14px}
+.q{font-family:'Fredoka';font-weight:600;font-size:clamp(24px,5vw,36px);margin:6px 0 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.say{background:#fff3d4;border:2px solid #f3dca5;border-radius:999px;padding:6px 12px;font-size:18px}
+.answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:14px 0}
+.ans{
+  background:#fff;border:2px solid var(--line);border-radius:var(--r-s);padding:12px 6px;
+  font-weight:800;font-size:17px;box-shadow:0 3px 0 var(--line);
+}
+.ans.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.ans.no{background:var(--bad);border-color:var(--bad);color:#fff;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.verdict{font-weight:800;font-size:18px;min-height:26px}
+.verdict.ok{color:var(--ok)} .verdict.no{color:var(--bad)}
+.qhelp{display:none}
+.qhelp.show{display:block}
+.write{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.write input{flex:1 1 220px;font:inherit;font-size:22px;font-weight:800;padding:12px 14px;border-radius:var(--r-s);border:2px solid var(--line);background:#fff}
+.write input.ok{border-color:var(--ok);background:#e6f7ed}
+.write input.no{border-color:var(--bad);background:#fdecea;animation:shake .4s}
+.btn.ghost{background:#fff;border:2px solid var(--line);box-shadow:0 5px 0 var(--line)}
+.btn.good{background:var(--ok);color:#fff;box-shadow:0 5px 0 #228c52}
+.btn.bad{background:var(--bad);color:#fff;box-shadow:0 5px 0 #c9372d}
+.oral-note{color:var(--muted);font-weight:700;margin:4px 0 0}
+.row{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+
+/* Finish / spelling */
+.big{font-family:'Fredoka';font-size:clamp(30px,6vw,46px);margin:0 0 6px;text-align:center}
+.center{text-align:center}
+.spell{display:grid;gap:10px;margin:16px 0}
+.spell input{
+  width:100%;font:inherit;font-size:20px;font-weight:800;padding:12px 14px;border-radius:var(--r-s);
+  border:2px solid var(--line);background:#fff;
+}
+.spell input.ok{border-color:var(--ok);background:#e6f7ed}
+.spell input.no{border-color:var(--bad);background:#fdecea}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .board{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="s">☀️</span> Days of the Week <small>Board game</small></h1>
+    <div class="tools">
+      <button class="chip" id="modeBtn" aria-pressed="true">🌱 Лёгкий режим</button>
+      <button class="chip" id="answerBtn" aria-pressed="false">🗣️ Отвечаем устно</button>
+      <button class="chip" id="soundBtn" aria-pressed="false">🔊 Звук</button>
+      <button class="chip" id="restartBtn">↺ Заново</button>
+    </div>
+  </header>
+
+  <div class="board-wrap"><div class="board" id="board"></div></div>
+
+  <aside class="panel">
+    <div class="box">
+      <div class="players" id="players"></div>
+    </div>
+    <div class="box">
+      <div class="dice-area">
+        <div class="die" id="die"></div>
+        <button class="btn" id="rollBtn">Бросить кубик</button>
+      </div>
+      <p class="msg" id="msg">Илья ходит первым!</p>
+    </div>
+    <div class="box">
+      <div class="strip-title"><span>Подсказка</span><button class="link" id="helpBtn">показать</button></div>
+      <div class="strip" id="strip"></div>
+    </div>
+  </aside>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const CONFIG = {
+  players: [
+    { name: 'Илья', token: '🚀' },
+    { name: 'Вероника', token: '🦓' }
+  ],
+  spellCount: 3 // сколько дней написать в финале
+};
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const RU = ['пн','вт','ср','чт','пт','сб','вс'];
+
+/* Клетки по порядку хода (как на картинке).
+   q: [сколько дней, 'after'|'before', день] */
+const CELLS = [
+  {t:'start'},
+  {q:[1,'after','Monday']},
+  {q:[3,'before','Tuesday']},
+  {t:'back'},
+  {q:[6,'after','Sunday']},
+  {q:[1,'after','Wednesday']},
+  {t:'fwd'},
+  {q:[2,'before','Friday']},
+  {q:[6,'before','Monday']},
+  {q:[5,'before','Tuesday']},
+  {q:[1,'before','Friday']},
+  {t:'miss'},
+  {q:[6,'after','Tuesday']},
+  {q:[1,'after','Thursday']},
+  {q:[3,'before','Thursday']},
+  {t:'back'},
+  {q:[3,'after','Tuesday']},
+  {q:[4,'after','Monday']},
+  {t:'fwd'},
+  {q:[1,'after','Saturday']},
+  {t:'miss'},
+  {q:[5,'before','Thursday']},
+  {q:[7,'before','Sunday']},
+  {t:'finish'}
+];
+/* В лёгком режиме большие числа заменяются на маленькие */
+const EASY = {3:2, 4:2, 5:1, 6:1, 7:1};
+
+/* ===================== STATE ===================== */
+let easy = true, help = false, sound = false, written = false;
+let pos, skip, turn, busy, startPos;
+
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, matchMedia('(prefers-reduced-motion:reduce)').matches ? 0 : ms));
+
+/* ===================== AUDIO ===================== */
+let ac;
+function beep(f=600, d=.12, type='sine', v=.15){
+  if(!sound) return;
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(v, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + d);
+    o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + d);
+  }catch(e){}
+}
+function speak(text){
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB'; u.rate = .85;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ===================== HELPERS ===================== */
+function qOf(cell){
+  let [n, rel, day] = cell.q;
+  if (easy && EASY[n]) n = EASY[n];
+  const from = DAYS.indexOf(day);
+  const to = ((from + (rel === 'after' ? n : -n)) % 7 + 7) % 7;
+  const text = n === 1 ? `The day ${rel} ${day}` : `${n} days ${rel} ${day}`;
+  return {n, rel, from, to, text};
+}
+function gridPos(i){
+  const r = Math.floor(i / 4), c = r % 2 === 0 ? i % 4 : 3 - (i % 4);
+  return {r, c};
+}
+const LABEL = {
+  start:'START', finish:'FINISH',
+  back:'GO BACK<br>2 spaces', fwd:'GO FORWARD<br>2 spaces', miss:'MISS<br>A TURN'
+};
+
+/* ===================== RENDER ===================== */
+function renderBoard(){
+  const b = $('board'); b.innerHTML = '';
+  CELLS.forEach((cell, i) => {
+    const {r, c} = gridPos(i);
+    const el = document.createElement('div');
+    el.className = 'cell' + (cell.t ? ` ${cell.t}` + (['back','fwd','miss'].includes(cell.t) ? ' special' : '') : '');
+    el.style.gridRow = r + 1; el.style.gridColumn = c + 1;
+    el.id = 'c' + i;
+    el.innerHTML = (cell.t ? LABEL[cell.t] : qOf(cell).text) +
+      (cell.t ? '' : `<span class="num">${i}</span>`) + '<div class="tokens"></div>';
+    // стрелки направления
+    if (i < CELLS.length - 1){
+      const nr = gridPos(i + 1).r;
+      const a = document.createElement('span');
+      a.className = 'arrow ' + (nr > r ? 'd' : (r % 2 === 0 ? 'r' : 'l'));
+      a.textContent = nr > r ? '▼' : (r % 2 === 0 ? '▶' : '◀');
+      el.appendChild(a);
+    }
+    b.appendChild(el);
+  });
+  renderTokens();
+}
+function renderTokens(){
+  document.querySelectorAll('.tokens').forEach(t => t.innerHTML = '');
+  pos.forEach((p, k) => {
+    const s = document.createElement('span');
+    s.className = 'token'; s.textContent = CONFIG.players[k].token;
+    document.querySelector(`#c${p} .tokens`).appendChild(s);
+  });
+}
+function renderPlayers(){
+  $('players').innerHTML = CONFIG.players.map((p, k) => `
+    <div class="pl ${k === turn ? 'on' : ''}">
+      <span class="e">${p.token}</span>${p.name}
+      <span class="st">${skip[k] ? 'пропускает ход' : (pos[k] === 0 ? 'старт' : 'клетка ' + pos[k])}</span>
+    </div>`).join('');
+}
+function renderDie(n){
+  const map = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+  $('die').innerHTML = Array.from({length:9}, (_, i) =>
+    `<span class="pip ${map[n].includes(i) ? 'v' : ''}"></span>`).join('');
+}
+function stripHTML(id){
+  return `<div class="strip ${help ? '' : 'hidden-help'}" id="${id}">` +
+    DAYS.map((d, i) => `<div class="d ${i > 4 ? 'we' : ''}" title="${d}">${d.slice(0,3)}</div>`).join('') + '</div>';
+}
+function renderStrip(){
+  $('strip').outerHTML = stripHTML('strip');
+  $('helpBtn').textContent = help ? 'спрятать' : 'показать';
+}
+function msg(t){ $('msg').textContent = t; }
+
+/* ===================== GAME FLOW ===================== */
+function reset(){
+  pos = [0, 0]; skip = [0, 0]; turn = 0; busy = false;
+  renderBoard(); renderPlayers(); renderDie(1); renderStrip();
+  msg(`${CONFIG.players[0].name} ходит первым!`);
+  $('rollBtn').disabled = false;
+  closeModal();
+}
+
+async function step(k, dir){
+  pos[k] = Math.max(0, Math.min(CELLS.length - 1, pos[k] + dir));
+  renderTokens(); beep(500 + pos[k] * 15, .07, 'triangle', .08);
+  await sleep(260);
+}
+
+async function roll(){
+  if (busy) return; busy = true; $('rollBtn').disabled = true;
+  const die = $('die'); die.classList.remove('roll'); void die.offsetWidth; die.classList.add('roll');
+  for (let i = 0; i < 6; i++){ renderDie(1 + Math.floor(Math.random() * 6)); beep(300 + i*40, .04, 'square', .04); await sleep(80); }
+  const n = 1 + Math.floor(Math.random() * 6); renderDie(n);
+  const k = turn; startPos = pos[k];
+  msg(`${CONFIG.players[k].name}: выпало ${n}`);
+  await sleep(300);
+  for (let i = 0; i < n && pos[k] < CELLS.length - 1; i++) await step(k, 1);
+  await land(k, true);
+}
+
+async function land(k, allowJump){
+  const cell = CELLS[pos[k]];
+  const el = $('c' + pos[k]); el.classList.add('lit');
+  setTimeout(() => el.classList.remove('lit'), 900);
+
+  if (cell.t === 'finish') return win(k);
+  if ((cell.t === 'back' || cell.t === 'fwd') && allowJump){
+    const dir = cell.t === 'back' ? -1 : 1;
+    msg(dir < 0 ? 'Oops! Go back 2 spaces' : 'Hooray! Go forward 2 spaces');
+    beep(dir < 0 ? 300 : 800, .2);
+    await sleep(700);
+    await step(k, dir); await step(k, dir);
+    return land(k, false);
+  }
+  if (cell.t === 'miss'){
+    skip[k] = 1; msg(`${CONFIG.players[k].name} пропускает следующий ход`);
+    beep(250, .25); renderPlayers();
+    await sleep(900); return nextTurn();
+  }
+  if (cell.q) return ask(k, cell);
+  nextTurn();
+}
+
+function nextTurn(){
+  turn = 1 - turn;
+  if (skip[turn]){
+    skip[turn] = 0;
+    msg(`${CONFIG.players[turn].name} пропускает ход. Ходит ${CONFIG.players[1-turn].name}`);
+    turn = 1 - turn;
+  } else msg(`Ходит ${CONFIG.players[turn].name}`);
+  renderPlayers(); busy = false; $('rollBtn').disabled = false;
+}
+
+/* ===================== QUESTION ===================== */
+function ask(k, cell){
+  const q = qOf(cell);
+  const p = CONFIG.players[k];
+  $('modal').innerHTML = `
+    <div class="q-who">${p.token} ${p.name}, клетка ${pos[k]}</div>
+    <div class="q"><span>${q.text}</span><button class="say" id="sayBtn" aria-label="Послушать">🔊</button></div>
+    ${written
+      ? `<div class="write"><input id="wInp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши день" aria-label="Ответ"><button class="btn" id="wCheck">Проверить</button></div>`
+      : `<p class="oral-note">Подумай и скажи ответ вслух 🗣️</p>`}
+    <div class="qhelp" id="qhelp">${stripHTML('qstrip')}</div>
+    <div class="verdict" id="verdict"></div>
+    <div class="row" id="qrow">
+      <button class="btn ghost" id="hintBtn">💡 Подсказка</button>
+      ${written ? '' : '<button class="btn" id="showBtn">Показать ответ</button>'}
+    </div>`;
+  openModal();
+  $('sayBtn').onclick = () => speak(q.text);
+  speak(q.text);
+  $('hintBtn').onclick = () => {
+    $('qhelp').classList.add('show');
+    $('qstrip').classList.remove('hidden-help');
+    document.querySelectorAll('#qstrip .d')[q.from].classList.add('from');
+    $('hintBtn').disabled = true; beep(520,.08);
+  };
+  if (written){
+    const inp = $('wInp'); inp.focus();
+    let tries = 0;
+    const check = () => {
+      const v = inp.value.trim().toLowerCase();
+      if (!v) return;
+      if (v === DAYS[q.to].toLowerCase()){ inp.className = 'ok'; inp.value = DAYS[q.to]; return resolve(k, q, true); }
+      tries++;
+      inp.className = ''; void inp.offsetWidth; inp.className = 'no';
+      const near = DAYS.find(d => d.toLowerCase() !== v && d.toLowerCase().slice(0,2) === v.slice(0,2));
+      if (tries === 1){
+        $('verdict').className = 'verdict no';
+        $('verdict').textContent = DAYS.some(d => d.toLowerCase() === v) ? 'Не тот день. Подумай ещё!' : 'Проверь буквы и попробуй ещё раз!';
+        beep(200,.25,'sawtooth',.06); inp.select();
+      } else { inp.disabled = true; $('wCheck').disabled = true; resolve(k, q, false); }
+    };
+    $('wCheck').onclick = check;
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+  } else {
+    $('showBtn').onclick = async () => {
+      $('qrow').innerHTML = '';
+      $('qhelp').classList.add('show');
+      $('verdict').className = 'verdict';
+      $('verdict').textContent = `Ответ: ${DAYS[q.to]}`;
+      speak(DAYS[q.to]);
+      await showPath(q);
+      $('qrow').innerHTML = `<button class="btn bad" id="noBtn">❌ Ошибся</button><button class="btn good" id="yesBtn">✅ Сказал верно</button>`;
+      $('yesBtn').onclick = () => resolve(k, q, true, true);
+      $('noBtn').onclick = () => resolve(k, q, false, true);
+    };
+  }
+}
+
+async function resolve(k, q, ok, shown){
+  const v = $('verdict');
+  $('qrow').innerHTML = '';
+  if (ok){
+    v.className = 'verdict ok'; v.textContent = `Yes! ${DAYS[q.to]} ⭐`;
+    beep(660,.1); setTimeout(() => beep(880,.15), 110);
+    speak(`Yes! ${DAYS[q.to]}`); confetti(24);
+  } else {
+    v.className = 'verdict no';
+    v.textContent = `Правильно: ${DAYS[q.to]}. Возвращаемся назад.`;
+    beep(200, .3, 'sawtooth', .08);
+  }
+  if (!shown){ $('qhelp').classList.add('show'); await showPath(q); }
+  $('qrow').innerHTML = `<button class="btn" id="goBtn">Дальше</button>`;
+  $('goBtn').focus();
+  $('goBtn').onclick = async () => {
+    closeModal();
+    if (!ok){ pos[k] = startPos; renderTokens(); renderPlayers(); await sleep(200); }
+    nextTurn();
+  };
+}
+
+async function showPath(q){
+  const ds = document.querySelectorAll('#qstrip .d');
+  ds.forEach(d => d.className = d.className.replace(/ ?(from|step|to)/g, ''));
+  $('qstrip').classList.remove('hidden-help');
+  ds[q.from].classList.add('from');
+  await sleep(450);
+  for (let s = 1; s <= q.n; s++){
+    const i = ((q.from + (q.rel === 'after' ? s : -s)) % 7 + 7) % 7;
+    ds[i].classList.add(s === q.n ? 'to' : 'step');
+    beep(500 + s * 70, .08, 'triangle', .1);
+    await sleep(380);
+  }
+}
+
+/* ===================== FINISH + SPELLING ===================== */
+function win(k){
+  const p = CONFIG.players[k];
+  confetti(80); beep(523,.15); setTimeout(()=>beep(659,.15),150); setTimeout(()=>beep(784,.3),300);
+  $('modal').innerHTML = `
+    <p class="big">${p.token} ${p.name} wins!</p>
+    <p class="center">Бонус-задание: напиши ${CONFIG.spellCount} разных дня недели по-английски.</p>
+    <div class="spell" id="spell">
+      ${Array.from({length: CONFIG.spellCount}, (_, i) =>
+        `<input autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="День ${i+1}" aria-label="День ${i+1}">`).join('')}
+    </div>
+    <div class="verdict center" id="sv"></div>
+    <div class="row">
+      <button class="btn dark" id="checkBtn">Проверить</button>
+      <button class="btn" id="againBtn">Играть ещё</button>
+    </div>`;
+  openModal();
+  document.querySelector('#spell input').focus();
+  $('checkBtn').onclick = () => {
+    const seen = new Set(); let good = 0;
+    document.querySelectorAll('#spell input').forEach(inp => {
+      const w = inp.value.trim().toLowerCase();
+      const hit = DAYS.find(d => d.toLowerCase() === w);
+      const ok = hit && !seen.has(hit);
+      if (ok){ seen.add(hit); good++; inp.value = hit; }
+      inp.className = w ? (ok ? 'ok' : 'no') : '';
+    });
+    const sv = $('sv');
+    if (good === CONFIG.spellCount){ sv.className = 'verdict ok center'; sv.textContent = 'Perfect spelling! ⭐⭐⭐'; confetti(60); beep(880,.2); }
+    else { sv.className = 'verdict no center'; sv.textContent = `Правильно ${good} из ${CONFIG.spellCount}. Посмотри на красные и попробуй ещё.`; }
+  };
+  $('againBtn').onclick = reset;
+}
+
+/* ===================== UI BITS ===================== */
+function openModal(){ $('overlay').classList.add('show'); }
+function closeModal(){ $('overlay').classList.remove('show'); }
+function confetti(n){
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const box = $('confetti'), cols = ['#ffb81c','#ef4b3f','#5a8ff0','#2fb36b','#ffc83d'];
+  for (let i = 0; i < n; i++){
+    const c = document.createElement('i');
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDelay = Math.random()*.4 + 's';
+    c.style.animationDuration = 1.4 + Math.random() + 's';
+    box.appendChild(c); setTimeout(() => c.remove(), 2600);
+  }
+}
+
+$('rollBtn').onclick = roll;
+$('restartBtn').onclick = reset;
+$('modeBtn').onclick = () => {
+  easy = !easy;
+  $('modeBtn').setAttribute('aria-pressed', easy);
+  $('modeBtn').textContent = easy ? '🌱 Лёгкий режим' : '🔥 Сложный режим';
+  renderBoard();
+};
+$('soundBtn').onclick = () => {
+  sound = !sound;
+  $('soundBtn').setAttribute('aria-pressed', sound);
+  $('soundBtn').textContent = sound ? '🔊 Звук вкл' : '🔊 Звук';
+  beep(700,.1);
+};
+$('answerBtn').onclick = () => {
+  written = !written;
+  $('answerBtn').setAttribute('aria-pressed', written);
+  $('answerBtn').textContent = written ? '✍️ Отвечаем письменно' : '🗣️ Отвечаем устно';
+};
+$('helpBtn').onclick = () => { help = !help; renderStrip(); };
+document.addEventListener('keydown', e => {
+  if ((e.key === ' ' || e.key === 'Enter') && !$('overlay').classList.contains('show') && !busy){ e.preventDefault(); roll(); }
+});
+
+reset();
+</script>
+</body>
+</html>

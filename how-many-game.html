@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How many? Counting game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbf4e6; --ink:#2b2622; --muted:#7a6f63; --card:#fffdf8; --line:#eadfcb;
+  --sun:#ffb81c; --sun-d:#e09600; --ok:#2fb36b; --bad:#ef4b3f; --blue:#5a8ff0;
+  --r:18px; --r-s:12px;
+  --shadow:0 4px 0 rgba(43,38,34,.12), 0 10px 24px rgba(43,38,34,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;min-height:100dvh;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sun-d);outline-offset:2px}
+
+.wrap{max-width:860px;margin:0 auto;padding:18px 14px 30px;display:grid;gap:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:'Fredoka';font-weight:700;margin:0;font-size:clamp(26px,4.5vw,40px);line-height:1}
+h1 small{display:block;font-size:.45em;color:var(--muted);font-weight:600;margin-top:4px}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.stars{display:flex;gap:4px;flex-wrap:wrap}
+.stars span{font-size:22px;filter:grayscale(1);opacity:.35;transition:transform .3s}
+.stars span.on{filter:none;opacity:1;transform:scale(1.15)}
+.stars span.cur{opacity:.8;filter:none;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.2)}}
+
+.card{background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:20px;display:grid;gap:14px}
+.q{font-family:'Fredoka';font-weight:600;font-size:clamp(24px,5vw,36px);display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0}
+.ru{color:var(--muted);font-weight:700;margin:-8px 0 0;font-size:15px}
+.say{background:#fff3d4;border:2px solid #f3dca5;border-radius:999px;padding:6px 12px;font-size:18px}
+
+.scene{
+  background:#eaf3ff;border:2px dashed #c4d8f7;border-radius:var(--r);padding:14px;
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:120px;align-content:center;
+  perspective:800px;
+}
+.scene.case{background:#ffe8f1;border-color:#f6bfd4}
+.scene.room{background:#eaf7ec;border-color:#bfe3c6}
+.item{
+  position:relative;width:clamp(48px,10vw,64px);height:clamp(48px,10vw,64px);border-radius:14px;
+  background:#fff;border:2px solid var(--line);font-size:clamp(26px,5.5vw,36px);
+  display:grid;place-items:center;box-shadow:0 3px 0 var(--line);
+  animation:drop .4s backwards cubic-bezier(.2,1.4,.4,1);
+  transition:transform .15s, background .2s;
+}
+@keyframes drop{from{transform:translateY(-30px) rotateX(60deg);opacity:0}}
+.item:active{transform:scale(.92)}
+.item.counted{background:#fff3d4;border-color:var(--sun)}
+.item b{
+  position:absolute;top:-8px;right:-8px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;
+  min-width:24px;height:24px;border-radius:12px;display:grid;place-items:center;padding:0 5px;
+  animation:pop .3s cubic-bezier(.2,1.6,.4,1);
+}
+@keyframes pop{from{transform:scale(0)}}
+.counter{font-weight:800;color:var(--muted);text-align:center;font-size:15px;min-height:22px}
+.counter strong{color:var(--blue);font-size:20px}
+
+.answer{display:flex;gap:10px;flex-wrap:wrap}
+.answer input{
+  flex:1 1 220px;font:inherit;font-size:24px;font-weight:800;padding:12px 16px;border-radius:var(--r-s);
+  border:2px solid var(--line);background:#fff;letter-spacing:.03em;
+}
+.answer input.ok{border-color:var(--ok);background:#e6f7ed}
+.answer input.no{border-color:var(--bad);background:#fdecea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.btn{background:var(--sun);border:none;border-radius:var(--r-s);padding:12px 20px;
+  font-family:'Fredoka';font-weight:600;font-size:20px;box-shadow:0 5px 0 var(--sun-d);transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--sun-d)}
+.btn.ghost{background:#fff;box-shadow:0 5px 0 var(--line);border:2px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+
+.hint{min-height:26px;font-weight:800;font-size:17px}
+.hint.ok{color:var(--ok)} .hint.no{color:var(--bad)} .hint.tip{color:var(--blue)}
+.letters{display:flex;gap:4px;flex-wrap:wrap}
+.letters span{width:30px;height:38px;border-radius:8px;border:2px solid var(--line);background:#fff;
+  display:grid;place-items:center;font-weight:800;font-size:20px}
+.letters span.show{background:#fff3d4;border-color:var(--sun)}
+.sentence{font-family:'Fredoka';font-size:clamp(20px,4vw,28px);color:var(--ok)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
+.final{text-align:center}
+.final .big{font-family:'Fredoka';font-size:clamp(32px,6vw,48px);margin:0}
+.words{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0}
+.words span{background:#fff3d4;border:2px solid #f3dca5;border-radius:999px;padding:6px 12px;font-weight:800}
+.words span.star{background:#e6f7ed;border-color:var(--ok)}
+
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>How many? <small>Our new things</small></h1>
+    <div style="display:flex;gap:8px">
+      <button class="chip" id="soundBtn" aria-pressed="false">🔊 Звук</button>
+      <button class="chip" id="restartBtn">↺ Заново</button>
+    </div>
+  </header>
+  <div class="stars" id="stars" aria-label="Прогресс"></div>
+  <main class="card" id="card"></main>
+</div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ===================== ЗАДАНИЯ (можно менять) =====================
+   e: картинка, n: сколько, en: как пишется число,
+   q: вопрос, thing: слово во мн. числе для итоговой фразы,
+   ru: подсказка по-русски, scene: фон (case / room / пусто)            */
+const ROUNDS = [
+  { e:'🪑', n:5,  en:'five',     q:'How many chairs?',        thing:'chairs',      ru:'Сколько стульев в новом классе?', scene:'room' },
+  { e:'✏️', n:13, en:'thirteen', q:'How many pencils?',       thing:'pencils',     ru:'Сколько новых карандашей у Рози?', scene:'case' },
+  { e:'🖥️', n:3,  en:'three',    q:'How many computers?',     thing:'computers',   ru:'Сколько компьютеров? Сравни с thirteen!', scene:'room' },
+  { e:'🖊️', n:20, en:'twenty',   q:'How many pens?',          thing:'pens',        ru:'Сколько ручек в пенале?', scene:'case' },
+  { e:'🐸', n:12, en:'twelve',   q:'How many animal pegs?',   thing:'animal pegs', ru:'Сколько крючков с лягушкой?', scene:'room', mix:['🐸','🐵','🐱','🐶'] },
+  { e:'🧸', n:15, en:'fifteen',  q:'How many teddies?',       thing:'teddies',     ru:'Сколько мишек в классе?', scene:'room' },
+  { e:'📏', n:13, en:'thirteen', q:'How many rulers?',        thing:'rulers',      ru:'Сколько линеек?', scene:'case' },
+  { e:'🖍️', n:20, en:'twenty',   q:'How many crayons?',       thing:'crayons',     ru:'Последнее! Сколько мелков?', scene:'case' }
+];
+const NUMS = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve',
+  'thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
+
+/* Подсказки на типичные ошибки */
+const TIPS = {
+  threeteen:'13 не three-teen! Начало другое: THIR + teen = thirteen',
+  thirdteen:'Почти! Без d: thir + teen = thirteen',
+  twenti:'В конце не i, а y: twent<b>y</b>',
+  twelf:'В конце ve: twel<b>ve</b>',
+  fiveteen:'15 не five-teen! FIF + teen = fifteen',
+  fivteen:'15 = FIF + teen = fifteen',
+  thirty:'Это 30! А нам нужно 13: thir<b>teen</b>',
+  thirten:'Не хватает буквы e: thirt<b>ee</b>n'
+};
+
+/* ===================== STATE ===================== */
+let r, results, tries, revealed, counted, sound = false;
+const $ = id => document.getElementById(id);
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+let ac;
+function beep(f=600,d=.12,type='sine',v=.12){
+  if(!sound) return;
+  try{ ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain(); o.type=type; o.frequency.value=f;
+    g.gain.setValueAtTime(v,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);
+    o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime+d);
+  }catch(e){}
+}
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-GB'; u.rate=.85; speechSynthesis.speak(u);}catch(e){} }
+
+function confetti(n){
+  if (reduce) return;
+  const box=$('confetti'), cols=['#ffb81c','#ef4b3f','#5a8ff0','#2fb36b','#ffc83d'];
+  for(let i=0;i<n;i++){ const c=document.createElement('i'); c.style.left=Math.random()*100+'vw';
+    c.style.background=cols[i%cols.length]; c.style.animationDelay=Math.random()*.4+'s';
+    c.style.animationDuration=1.4+Math.random()+'s'; box.appendChild(c); setTimeout(()=>c.remove(),2600); }
+}
+
+function renderStars(){
+  $('stars').innerHTML = ROUNDS.map((_,i)=>`<span class="${results[i]?'on':''} ${i===r?'cur':''}">⭐</span>`).join('');
+}
+
+/* ===================== ROUND ===================== */
+function start(){ r = 0; results = []; showRound(); }
+
+function showRound(){
+  const R = ROUNDS[r]; tries = 0; revealed = 0; counted = 0;
+  renderStars();
+  const items = Array.from({length:R.n},(_,i)=> R.mix ? R.mix[i % R.mix.length] : R.e);
+  // для animal pegs считаем только лягушек: добавляем других зверей
+  let pool = items;
+  if (R.mix){
+    pool = Array(R.n).fill(R.e);
+    const others = R.mix.filter(x=>x!==R.e);
+    for(let i=0;i<7;i++) pool.push(others[i%others.length]);
+    pool.sort(()=>Math.random()-.5);
+  }
+  $('card').innerHTML = `
+    <p class="q"><span>${R.q}</span><button class="say" id="sayBtn" aria-label="Послушать">🔊</button></p>
+    <p class="ru">${R.ru}</p>
+    <div class="scene ${R.scene||''}" id="scene">
+      ${pool.map((e,i)=>`<button class="item" data-c="${e===R.e?1:0}" style="animation-delay:${i*35}ms" aria-label="предмет">${e}</button>`).join('')}
+    </div>
+    <div class="counter" id="counter">Нажимай на каждый ${R.mix?'крючок с '+R.e:'предмет'} и считай вслух!</div>
+    <div class="answer">
+      <input id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши число словом" aria-label="Ответ">
+      <button class="btn" id="checkBtn">Проверить</button>
+    </div>
+    <div class="letters" id="letters"></div>
+    <div class="hint" id="hint"></div>
+    <div class="row">
+      <button class="btn ghost" id="letterBtn">Подсказать букву</button>
+      <button class="btn ghost" id="recountBtn">Пересчитать</button>
+    </div>`;
+  $('sayBtn').onclick = ()=>speak(R.q); speak(R.q);
+  document.querySelectorAll('.item').forEach(b=> b.onclick = ()=> tapItem(b, R));
+  $('checkBtn').onclick = check;
+  $('inp').addEventListener('keydown', e=>{ if(e.key==='Enter') check(); });
+  $('letterBtn').onclick = giveLetter;
+  $('recountBtn').onclick = ()=>{ counted=0; document.querySelectorAll('.item').forEach(b=>{b.classList.remove('counted'); b.querySelector('b')?.remove();}); $('counter').textContent='Считаем заново!'; };
+}
+
+function tapItem(b, R){
+  if (b.classList.contains('counted')) return;
+  if (b.dataset.c==='0'){ b.animate?.([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'none'}],{duration:250}); beep(220,.1,'square',.05);
+    $('counter').innerHTML = `Это не ${R.e}! Считаем только ${R.e}`; return; }
+  counted++;
+  b.classList.add('counted');
+  b.insertAdjacentHTML('beforeend', `<b>${counted}</b>`);
+  speak(NUMS[counted]); beep(400+counted*25,.08,'triangle',.08);
+  $('counter').innerHTML = counted === R.n
+    ? `<strong>${counted}</strong>. Всё посчитал! Теперь напиши это число словом 👇`
+    : `<strong>${counted}</strong>`;
+  if (counted === R.n) $('inp').focus();
+}
+
+function giveLetter(){
+  const R = ROUNDS[r];
+  if (revealed < R.en.length) revealed++;
+  $('letters').innerHTML = R.en.split('').map((ch,i)=>`<span class="${i<revealed?'show':''}">${i<revealed?ch:''}</span>`).join('');
+  beep(520,.08);
+}
+
+function check(){
+  const R = ROUNDS[r], inp = $('inp'), hint = $('hint');
+  const v = inp.value.trim().toLowerCase().replace(/\s+/g,'');
+  if (!v){ inp.focus(); return; }
+  if (v === R.en){
+    inp.className = 'ok';
+    results[r] = tries === 0 && revealed === 0 ? 'star' : 'ok';
+    const sentence = `There are ${R.en} ${R.thing}!`;
+    hint.className = 'hint ok';
+    hint.innerHTML = `<span class="sentence">${sentence}</span>`;
+    speak(sentence); confetti(30);
+    beep(660,.1); setTimeout(()=>beep(880,.15),110);
+    renderStars();
+    document.querySelector('.row').innerHTML = `<button class="btn" id="nextBtn">${r === ROUNDS.length-1 ? 'Финиш!' : 'Дальше'}</button>`;
+    $('nextBtn').focus();
+    $('nextBtn').onclick = ()=>{ r++; r < ROUNDS.length ? showRound() : finish(); };
+    $('checkBtn').disabled = true;
+    return;
+  }
+  tries++;
+  inp.className = ''; void inp.offsetWidth; inp.className = 'no';
+  beep(200,.25,'sawtooth',.06);
+  hint.className = 'hint tip';
+  if (TIPS[v]) hint.innerHTML = TIPS[v];
+  else if (NUMS.includes(v)) hint.innerHTML = `${v} = ${NUMS.indexOf(v)}. Пересчитай ещё раз!`;
+  else if (tries === 1) hint.innerHTML = 'Почти! Проверь буквы. Можно взять подсказку.';
+  else { hint.innerHTML = `Смотри, как пишется, и напиши сам: <b>${R.en}</b>`; speak(R.en); }
+  inp.select();
+}
+
+function finish(){
+  renderStars();
+  const stars = results.filter(x=>x==='star').length;
+  confetti(90); beep(523,.15); setTimeout(()=>beep(659,.15),150); setTimeout(()=>beep(784,.3),300);
+  $('card').innerHTML = `
+    <div class="final">
+      <p class="big">Well done! 🎉</p>
+      <p>С первой попытки: <b>${stars} из ${ROUNDS.length}</b> ⭐</p>
+      <div class="words">${ROUNDS.map((R,i)=>`<span class="${results[i]==='star'?'star':''}">${R.n} = ${R.en}</span>`).join('')}</div>
+      <button class="btn" id="againBtn">Играть ещё</button>
+    </div>`;
+  $('againBtn').onclick = start;
+  speak('Well done!');
+}
+
+$('restartBtn').onclick = start;
+$('soundBtn').onclick = ()=>{ sound=!sound; $('soundBtn').setAttribute('aria-pressed',sound); $('soundBtn').textContent = sound?'🔊 Звук вкл':'🔊 Звук'; beep(700,.1); };
+start();
+</script>
+</body>
+</html>
