@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chloe's family — warm-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBF4EC; --card:#FFFFFF; --ink:#3A1420; --wine:#6E1F33; --blush:#F2CDD2;
+  --rose:#E07A93; --boy:#3D7BC4; --boyBg:#DCE9F7; --girlBg:#FBE0E7;
+  --ok:#2E8B57; --bad:#C0392B; --line:#B98C95; --muted:#8A6670;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#1E1418; --card:#2A1D22; --ink:#F6E7EA; --wine:#F0A3B4; --blush:#4A2A33;
+    --rose:#E88AA2; --boy:#7FB2EA; --boyBg:#203248; --girlBg:#45242F;
+    --ok:#5CC98A; --bad:#F07A6C; --line:#7A5560; --muted:#C3A2AA;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1E1418; --card:#2A1D22; --ink:#F6E7EA; --wine:#F0A3B4; --blush:#4A2A33;
+  --rose:#E88AA2; --boy:#7FB2EA; --boyBg:#203248; --girlBg:#45242F;
+  --ok:#5CC98A; --bad:#F07A6C; --line:#7A5560; --muted:#C3A2AA;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Nunito",system-ui,sans-serif;font-size:17px;line-height:1.45}
+main{max-width:920px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:"Fraunces",Georgia,serif;font-weight:800;color:var(--wine);font-size:clamp(2rem,6vw,3.2rem);line-height:1;margin:6px 0 4px;letter-spacing:-.01em}
+h2{font-family:"Fraunces",Georgia,serif;font-weight:600;color:var(--wine);font-size:1.35rem;margin:0}
+.lead{color:var(--muted);margin:0 0 18px}
+.steps{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+.step{padding:6px 14px;border-radius:999px;background:var(--blush);color:var(--wine);font-weight:800;font-size:.9rem;opacity:.55}
+.step.on{opacity:1}
+.panel{background:var(--card);border-radius:22px;padding:18px;border:2px solid var(--blush)}
+.head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.count{font-weight:800;color:var(--wine)}
+.hidden{display:none!important}
+
+/* tree */
+.tree{position:relative;width:100%;aspect-ratio:10/7;min-height:300px}
+.tree svg{position:absolute;inset:0;width:100%;height:100%}
+.tree svg line{stroke:var(--line);stroke-width:2.5;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.slot{position:absolute;transform:translate(-50%,-50%);width:15%;min-width:58px;border-radius:14px;
+  border:2.5px dashed var(--line);background:var(--card);text-align:center;padding:6px 2px 7px;cursor:pointer;
+  font-weight:800;font-size:clamp(.7rem,1.9vw,1rem);transition:transform .15s}
+.slot .who{display:block;width:26px;height:26px;margin:0 auto 3px;border-radius:50%}
+.slot.m .who{background:var(--boy)} .slot.f .who{background:var(--rose)}
+.slot.m{background:var(--boyBg)} .slot.f{background:var(--girlBg)}
+.slot .nm{color:var(--muted)}
+.slot.filled{border-style:solid;border-color:var(--ok);cursor:default}
+.slot.filled .nm{color:var(--ink)}
+.slot.fixed{border-style:solid;border-color:var(--wine)}
+.slot.fixed .nm{color:var(--wine)}
+.slot.target{transform:translate(-50%,-50%) scale(1.08);border-color:var(--wine)}
+.slot:focus-visible,.chip:focus-visible,button:focus-visible{outline:3px solid var(--wine);outline-offset:2px}
+.shake{animation:sh .35s}
+@keyframes sh{0%,100%{translate:0}25%{translate:-6px}75%{translate:6px}}
+
+.bank{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;justify-content:center}
+.chip{border:none;border-radius:999px;padding:9px 16px;font:800 1rem "Nunito",sans-serif;cursor:pointer;color:var(--ink)}
+.chip.m{background:var(--boyBg);box-shadow:inset 0 0 0 2px var(--boy)}
+.chip.f{background:var(--girlBg);box-shadow:inset 0 0 0 2px var(--rose)}
+.chip.sel{background:var(--wine);color:var(--card);box-shadow:none}
+.clue{min-height:48px;margin-top:14px;padding:10px 14px;border-radius:14px;background:var(--blush);color:var(--wine);font-weight:700;text-align:center}
+
+button.big{border:none;border-radius:16px;padding:13px 22px;font:800 1.05rem "Nunito",sans-serif;cursor:pointer;background:var(--wine);color:var(--card)}
+button.soft{border:none;border-radius:14px;padding:9px 16px;font:800 .95rem "Nunito",sans-serif;cursor:pointer;background:var(--blush);color:var(--wine)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+
+/* quiz */
+.bar{height:12px;border-radius:999px;background:var(--blush);overflow:hidden;margin:4px 0 18px}
+.bar i{display:block;height:100%;width:100%;background:var(--wine);transition:width .1s linear}
+.bar.low i{background:var(--bad)}
+.q{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:clamp(1.6rem,5vw,2.4rem);text-align:center;margin:10px 0 22px;line-height:1.2}
+.q b{color:var(--wine)}
+.q .gap{display:inline-block;min-width:4.5em;border-bottom:3px solid var(--wine)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:520px;margin:0 auto}
+.opt{border:2px solid var(--blush);background:var(--card);color:var(--ink);border-radius:16px;padding:14px 10px;font:800 1.1rem "Nunito",sans-serif;cursor:pointer}
+.opt.good{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.wrong{background:var(--bad);border-color:var(--bad);color:#fff}
+.score{font-family:"Fraunces",Georgia,serif;font-weight:800;font-size:1.4rem;color:var(--wine)}
+.end{text-align:center;padding:10px 0}
+.end .num{font-family:"Fraunces",Georgia,serif;font-weight:800;font-size:5rem;line-height:1;color:var(--wine)}
+.next{margin-top:18px;padding:12px 16px;border-radius:14px;border:2px dashed var(--wine);color:var(--wine);font-weight:800;display:inline-block}
+
+.peek{position:fixed;inset:0;background:rgba(30,10,16,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}
+.peek .panel{width:min(820px,100%)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Chloe's family</h1>
+  <p class="lead">Do you remember who is who? Rebuild the tree, then race the clock.</p>
+  <div class="steps"><span class="step on" id="s1">1. The tree</span><span class="step" id="s2">2. Who is who?</span></div>
+
+  <!-- STAGE 1 -->
+  <section class="panel" id="stage1">
+    <div class="head"><h2>Put the names in the tree</h2><span class="count" id="placed">0 / 10</span></div>
+    <div class="tree" id="tree"></div>
+    <div class="bank" id="bank"></div>
+    <div class="clue" id="clue">Tap a name, then tap its place in the tree.</div>
+    <div class="row">
+      <button class="soft" id="hintBtn">Give me a clue</button>
+      <button class="big hidden" id="toQuiz">Start the quiz</button>
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section class="panel hidden" id="stage2">
+    <div id="quizBox">
+      <div class="head"><span class="score">Score: <span id="sc">0</span></span><button class="soft" id="peekBtn">Peek at the tree (−5 sec)</button></div>
+      <div class="bar" id="bar"><i id="barFill"></i></div>
+      <div class="q" id="q"></div>
+      <div class="opts" id="opts"></div>
+    </div>
+    <div class="end hidden" id="endBox">
+      <h2>Time's up!</h2>
+      <div class="num" id="final">0</div>
+      <p id="bestLine" class="lead" style="margin-top:8px"></p>
+      <div class="row">
+        <button class="big" id="again">Play again</button>
+        <button class="soft" id="backTree">Back to the tree</button>
+      </div>
+      <div class="next">Next: interview William 🎤</div>
+    </div>
+  </section>
+</main>
+
+<div class="peek hidden" id="peek">
+  <div class="panel">
+    <div class="head"><h2>Chloe's family</h2><button class="soft" id="closePeek">Back to the quiz</button></div>
+    <div class="tree" id="peekTree"></div>
+  </div>
+</div>
+
+<script>
+// Tree layout: x, y in % of the tree box
+const SLOTS = [
+  {id:'William', g:'m', x:40, y:12, accepts:['William']},
+  {id:'Heather', g:'f', x:60, y:12, accepts:['Heather']},
+  {id:'Peter',   g:'m', x:12, y:45, accepts:['Peter']},
+  {id:'April',   g:'f', x:30, y:45, accepts:['April']},
+  {id:'Susan',   g:'f', x:50, y:45, accepts:['Susan']},
+  {id:'Dennis',  g:'m', x:68, y:45, accepts:['Dennis']},
+  {id:'Nicola',  g:'f', x:88, y:45, accepts:['Nicola']},
+  {id:'Henry',   g:'m', x:21, y:82, accepts:['Henry']},
+  {id:'twin1',   g:'m', x:44, y:82, accepts:['Dan','Jack']},
+  {id:'twin2',   g:'m', x:59, y:82, accepts:['Dan','Jack']},
+  {id:'Chloe',   g:'f', x:74, y:82, accepts:['Chloe'], fixed:true}
+];
+const LINES = [ // in a 100 x 70 box
+  [40,8.4,60,8.4],[50,8.4,50,20],[12,20,88,20],[12,20,12,31.5],[50,20,50,31.5],[88,20,88,31.5],
+  [12,31.5,30,31.5],[21,31.5,21,57.4],
+  [50,31.5,68,31.5],[59,31.5,59,46],[44,46,74,46],[44,46,44,57.4],[59,46,59,57.4],[74,46,74,57.4]
+];
+const CLUES = {
+  William:"He's Chloe's grandfather. His wife is Heather.",
+  Heather:"She's Chloe's grandmother.",
+  Peter:"He's Mum's younger brother.",
+  April:"She's Peter's wife. She's expecting a baby!",
+  Susan:"She's Chloe's mum.",
+  Dennis:"He's Chloe's dad. He's an only child.",
+  Nicola:"She's Mum's sister. She's single.",
+  Henry:"He's two years old. His dad is Peter.",
+  Dan:"Dan and Jack are Chloe's older brothers. They're twins.",
+  Jack:"Dan and Jack are Chloe's older brothers. They're twins."
+};
+const GENDER = {William:'m',Heather:'f',Peter:'m',April:'f',Susan:'f',Dennis:'m',Nicola:'f',Henry:'m',Dan:'m',Jack:'m'};
+const FULL = {twin1:'Dan', twin2:'Jack'};
+
+const $ = id => document.getElementById(id);
+let filled = {}, selected = null;
+
+function drawTree(box, readonly){
+  box.innerHTML = '<svg viewBox="0 0 100 70" preserveAspectRatio="none" aria-hidden="true">' +
+    LINES.map(l=>`<line x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}"/>`).join('') + '</svg>';
+  SLOTS.forEach(s=>{
+    const d = document.createElement(readonly ? 'div' : 'button');
+    d.className = 'slot ' + s.g;
+    d.style.left = s.x+'%'; d.style.top = s.y+'%';
+    let name = '?';
+    if (readonly) name = FULL[s.id] || s.id;
+    else if (s.fixed) name = s.id;
+    else if (filled[s.id]) name = filled[s.id];
+    if (s.fixed) d.classList.add('fixed');
+    else if (readonly || filled[s.id]) d.classList.add('filled');
+    d.innerHTML = `<span class="who"></span><span class="nm">${name}</span>`;
+    if (!readonly){
+      d.type='button'; d.dataset.id = s.id;
+      d.setAttribute('aria-label', filled[s.id]||s.fixed ? name : 'Empty place');
+      d.onclick = () => tapSlot(s, d);
+    }
+    box.appendChild(d);
+  });
+}
+
+function drawBank(){
+  const bank = $('bank'); bank.innerHTML='';
+  const left = Object.keys(GENDER).filter(n=>!Object.values(filled).includes(n));
+  shuffle(left).forEach(n=>{
+    const c = document.createElement('button');
+    c.type='button'; c.className='chip '+GENDER[n]+(selected===n?' sel':''); c.textContent=n;
+    c.onclick = () => { selected = selected===n ? null : n; drawBank(); $('clue').textContent = selected ? `Where is ${selected}?` : 'Tap a name, then tap its place in the tree.'; };
+    bank.appendChild(c);
+  });
+  $('placed').textContent = Object.keys(filled).length + ' / 10';
+  if (left.length===0){
+    $('clue').textContent = "Brilliant! That's Chloe's family. 🎉";
+    $('hintBtn').classList.add('hidden'); $('toQuiz').classList.remove('hidden');
+  }
+}
+
+function tapSlot(s, el){
+  if (s.fixed || filled[s.id]) return;
+  if (!selected){ $('clue').textContent = 'First tap a name below.'; return; }
+  if (s.accepts.includes(selected)){
+    filled[s.id] = selected; selected = null;
+    drawTree($('tree')); drawBank();
+    if (Object.keys(filled).length<10) $('clue').textContent = 'Yes! Next one.';
+  } else {
+    el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+    $('clue').textContent = `Not here. Clue: ${CLUES[selected]}`;
+  }
+}
+
+$('hintBtn').onclick = () => {
+  const left = Object.keys(GENDER).filter(n=>!Object.values(filled).includes(n));
+  const n = selected || left[Math.floor(Math.random()*left.length)];
+  $('clue').textContent = `${n}: ${CLUES[n]}`;
+};
+
+// ---------- QUIZ ----------
+const QS = [
+  ['Dan','Chloe','brother'],['Jack','Henry','cousin'],['William','Peter','father'],
+  ['Heather','Chloe','grandmother'],['Susan','Dennis','wife'],['Dan','William','grandson'],
+  ['Nicola','Jack','aunt'],['April','Chloe','aunt'],['Peter','Chloe','uncle'],
+  ['Susan','Heather','daughter'],['Henry','Susan','nephew'],['Chloe','Nicola','niece'],
+  ['Henry','Peter','son'],['Dennis','Susan','husband'],['Chloe','William','granddaughter'],
+  ['Peter','Susan','brother'],['Nicola','Susan','sister'],['Henry','Chloe','cousin'],
+  ['Chloe','Dan','sister'],['Heather','William','wife'],['William','Dan','grandfather'],
+  ['Susan','Chloe','mother'],['Dennis','Jack','father'],['Chloe','April','niece'],['Jack','Peter','nephew']
+];
+const MALE = ['father','son','brother','uncle','nephew','grandfather','grandson','husband','cousin'];
+const FEMALE = ['mother','daughter','sister','aunt','niece','grandmother','granddaughter','wife','cousin'];
+const TIME = 60;
+let deck=[], score=0, timeLeft=TIME, timer=null, locked=false, best=0;
+try{ best = +localStorage.getItem('chloeBest')||0 }catch(e){}
+
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
+
+function startQuiz(){
+  $('stage1').classList.add('hidden'); $('stage2').classList.remove('hidden');
+  $('s1').classList.remove('on'); $('s2').classList.add('on');
+  $('quizBox').classList.remove('hidden'); $('endBox').classList.add('hidden');
+  score=0; timeLeft=TIME; deck=shuffle(QS); $('sc').textContent=0;
+  nextQ();
+  clearInterval(timer);
+  timer = setInterval(()=>{
+    if ($('peek').classList.contains('hidden')===false) return;
+    timeLeft -= .1; updateBar();
+    if (timeLeft<=0) endQuiz();
+  },100);
+}
+function updateBar(){
+  const p = Math.max(0,timeLeft/TIME*100);
+  $('barFill').style.width = p+'%';
+  $('bar').classList.toggle('low', timeLeft<10);
+}
+function nextQ(){
+  locked=false;
+  if (!deck.length) deck = shuffle(QS);
+  const [a,b,ans] = deck.pop();
+  $('q').innerHTML = `<b>${a}</b> is ${b}'s <span class="gap">&nbsp;</span>`;
+  const pool = (ans==='cousin' ? [...new Set([...MALE,...FEMALE])] : (MALE.includes(ans)?MALE:FEMALE)).filter(w=>w!==ans);
+  const opts = shuffle([ans, ...shuffle(pool).slice(0,3)]);
+  const box = $('opts'); box.innerHTML='';
+  opts.forEach(o=>{
+    const btn=document.createElement('button'); btn.type='button'; btn.className='opt'; btn.textContent=o;
+    btn.onclick=()=>{
+      if(locked) return; locked=true;
+      $('q').querySelector('.gap').textContent = ans;
+      if(o===ans){ btn.classList.add('good'); score++; $('sc').textContent=score; setTimeout(nextQ,550); }
+      else { btn.classList.add('wrong'); [...box.children].find(x=>x.textContent===ans).classList.add('good'); setTimeout(nextQ,1300); }
+    };
+    box.appendChild(btn);
+  });
+}
+function endQuiz(){
+  clearInterval(timer);
+  $('quizBox').classList.add('hidden'); $('endBox').classList.remove('hidden');
+  $('final').textContent = score;
+  if (score>best){ best=score; try{localStorage.setItem('chloeBest',best)}catch(e){} $('bestLine').textContent='New record!'; }
+  else $('bestLine').textContent = `Record: ${best}`;
+}
+
+$('toQuiz').onclick = startQuiz;
+$('again').onclick = startQuiz;
+$('backTree').onclick = () => {
+  clearInterval(timer); filled={}; selected=null;
+  $('stage2').classList.add('hidden'); $('stage1').classList.remove('hidden');
+  $('s2').classList.remove('on'); $('s1').classList.add('on');
+  $('hintBtn').classList.remove('hidden'); $('toQuiz').classList.add('hidden');
+  $('clue').textContent='Tap a name, then tap its place in the tree.';
+  drawTree($('tree')); drawBank();
+};
+$('peekBtn').onclick = () => { timeLeft = Math.max(0,timeLeft-5); updateBar(); drawTree($('peekTree'),true); $('peek').classList.remove('hidden'); };
+$('closePeek').onclick = () => $('peek').classList.add('hidden');
+
+drawTree($('tree')); drawBank();
+</script>
+</body>
+</html>
