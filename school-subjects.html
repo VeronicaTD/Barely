@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>School Subjects</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#dcefee; --surface:#fffaf3; --ink:#3b2a20; --muted:#6d5a4d;
+  --accent:#b4502f; --accent-dark:#8f4a33; --accent-ink:#fff;
+  --line:#e7d9c8; --soft:#f3e8da; --ok:#2f8a5b; --no:#c0392b;
+  --r-m:16px; --r-l:24px; --ease:cubic-bezier(.2,.8,.2,1);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#16211f;--surface:#22201d;--ink:#f3e9dc;--muted:#c4b4a4;--line:#3d3630;--soft:#2c2925}}
+:root[data-theme="dark"]{--bg:#16211f;--surface:#22201d;--ink:#f3e9dc;--muted:#c4b4a4;--line:#3d3630;--soft:#2c2925}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:980px;margin:0 auto;padding:18px 16px 28px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-family:"Fredoka","Nunito",sans-serif;font-weight:600;font-size:clamp(26px,5vw,38px);margin:0;color:var(--accent-dark)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) h1{color:#e9a98d}}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-weight:800;font-size:15px}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab .st{color:#e7a400;margin-left:4px}
+.icon-btn{border:2px solid var(--line);background:var(--surface);border-radius:999px;width:42px;height:42px;font-size:19px}
+.panel{background:var(--surface);border-radius:var(--r-l);padding:22px;border:2px solid var(--line)}
+.kicker{font-weight:800;color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px}
+.prompt{font-family:"Fredoka","Nunito",sans-serif;font-weight:500;font-size:clamp(22px,3.4vw,30px);line-height:1.25;margin:4px 0 14px}
+.prompt.hidden-text{color:transparent;text-shadow:0 0 14px rgba(59,42,32,.55);user-select:none}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 16px}
+.bar i{display:block;height:100%;background:var(--accent);transform-origin:left;transition:transform .4s var(--ease)}
+.row-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:none;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:var(--r-m);padding:12px 20px;font-size:17px;box-shadow:0 3px 0 var(--accent-dark)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--accent-dark)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.hint{color:var(--muted);font-weight:700;font-size:15px;margin-top:10px}
+.fb{margin-top:14px;font-weight:800;min-height:26px}.fb.ok{color:var(--ok)}.fb.no{color:var(--no)}
+.stars{font-size:46px;color:#e7a400;letter-spacing:4px;margin:6px 0}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:16px}
+.card{border:2px solid var(--line);background:var(--soft);border-radius:var(--r-m);padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:128px;justify-content:center;transition:transform .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.card .em{font-size:44px;line-height:1}
+.card .w{font-weight:800;font-size:18px}
+.card .ru{font-size:14px;color:var(--muted);font-weight:700}
+.card.ok{border-color:var(--ok);background:rgba(47,138,91,.15)}
+.card.no{border-color:var(--no);background:rgba(192,57,43,.12)}
+.card.done{opacity:.55}
+.clocks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.clocks .card{min-height:0;padding:12px}
+.clocks svg{width:100%;max-width:150px;height:auto}
+.example{margin-top:14px;padding:12px 14px;border-radius:var(--r-m);background:var(--bg);font-weight:700;font-size:19px}
+.big-em{font-size:72px;margin:4px 0 10px}
+@media (prefers-reduced-motion: no-preference){
+  .shake{animation:shake .38s var(--ease)}
+  @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+  .fade{animation:fade .35s var(--ease)}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+}
+@media (max-width:420px){.grid{grid-template-columns:repeat(3,1fr);gap:8px}.card{min-height:100px}.card .em{font-size:34px}.card .w{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>School Subjects</h1>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <button class="icon-btn" id="mute" aria-label="Sound on or off">🔊</button>
+  </header>
+  <section class="panel" id="panel" aria-live="polite"></section>
+</div>
+
+<script>
+/* ===================== CONTENT (edit here) ===================== */
+const SUBJECTS = [
+  {w:"Maths",     em:"🔢", ru:"математика"},
+  {w:"English",   em:"🔤", ru:"английский"},
+  {w:"Science",   em:"🔬", ru:"естествознание"},
+  {w:"Physics",   em:"🧲", ru:"физика"},
+  {w:"Chemistry", em:"🧪", ru:"химия"},
+  {w:"Biology",   em:"🌱", ru:"биология"},
+  {w:"History",   em:"🏛️", ru:"история"},
+  {w:"Geography", em:"🌍", ru:"география"},
+  {w:"Art",       em:"🎨", ru:"рисование"},
+  {w:"Music",     em:"🎵", ru:"музыка"},
+  {w:"PE",        em:"⚽", ru:"физкультура", say:"P. E."},
+  {w:"ICT",       em:"💻", ru:"информатика", say:"I. C. T."}
+];
+const TIME_CONTEXT = ["School starts at","School finishes at","I leave home at","My guitar lesson starts at","I get up at","We have lunch at","I do my homework at","The bus comes at"];
+const SPEAK = [
+  ["What's your favourite subject?","My favourite subject is ..."],
+  ["What subject don't you like?","I don't like ..."],
+  ["Do you like History?","Yes, I do. / No, I don't."],
+  ["Is Maths easy or difficult for you?","Maths is easy / difficult for me."],
+  ["What subjects do you have on Monday?","On Monday I have ..."],
+  ["Who is your favourite teacher?","My favourite teacher is ... . She teaches ..."],
+  ["What does Henry like? What doesn't he like?","Henry likes Maths, History and PE. He doesn't like English or Physics."]
+];
+/* =============================================================== */
+
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const rnd=a=>a[Math.random()*a.length|0];
+const HOURS=["twelve","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
+
+/* ---------- sound + voice ---------- */
+let muted=false, actx=null, voice=null;
+function tone(f,d,t=0){ if(muted) return; try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  const o=actx.createOscillator(),g=actx.createGain(),s=actx.currentTime+t; o.frequency.value=f;o.type="triangle";
+  g.gain.setValueAtTime(.18,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g).connect(actx.destination);o.start(s);o.stop(s+d);}catch(e){} }
+const sndOk=()=>{tone(660,.15);tone(880,.2,.12)}, sndNo=()=>tone(180,.25), sndWin=()=>[523,659,784,1046].forEach((f,i)=>tone(f,.25,i*.13));
+function pickVoice(){ if(!("speechSynthesis" in window)) return; const v=speechSynthesis.getVoices();
+  voice=v.find(x=>x.lang==="en-GB")||v.find(x=>x.lang&&x.lang.startsWith("en"))||null; }
+if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function say(t){ if(!("speechSynthesis" in window)) return; speechSynthesis.cancel();
+  t=t.replace(/\bPE\b/g,"P. E.").replace(/\bICT\b/g,"I. C. T.").replace(/\blives\b/gi,"livs");
+  const u=new SpeechSynthesisUtterance(t); u.lang="en-GB"; u.rate=.85; if(voice) u.voice=voice; speechSynthesis.speak(u); }
+document.getElementById("mute").onclick=e=>{muted=!muted;e.currentTarget.textContent=muted?"🔇":"🔊"};
+
+/* ---------- audio-first question ---------- */
+function ask(text){ return `<p class="prompt hidden-text" id="pr">${text}</p>
+  <div class="row-btns"><button class="btn ghost" id="again">🔊 Listen again</button><button class="btn ghost" id="peek">Show text</button></div>`; }
+function wireAsk(text,auto=true){
+  document.getElementById("again").onclick=()=>say(text);
+  const pk=document.getElementById("peek"); pk.onclick=()=>{document.getElementById("pr").classList.remove("hidden-text");pk.remove()};
+  if(auto) setTimeout(()=>say(text),350);
+}
+
+/* ---------- clocks ---------- */
+function timeWords(h,m){ const H=HOURS[h], N=HOURS[h%12+1];
+  return m===0?`${H} o'clock`:m===15?`quarter past ${H}`:m===30?`half past ${H}`:`quarter to ${N}`; }
+function clockSVG(h,m){
+  const ha=((h%12)+m/60)*30, ma=m*6; let ticks="";
+  for(let i=0;i<12;i++){const a=i*30*Math.PI/180;ticks+=`<line x1="${50+40*Math.sin(a)}" y1="${50-40*Math.cos(a)}" x2="${50+45*Math.sin(a)}" y2="${50-45*Math.cos(a)}" stroke="currentColor" stroke-width="${i%3?1.5:3}"/>`;}
+  const nums=[12,3,6,9].map((n,i)=>{const a=i*90*Math.PI/180;return `<text x="${50+33*Math.sin(a)}" y="${50-33*Math.cos(a)+4}" font-size="11" font-weight="800" text-anchor="middle" fill="currentColor">${n}</text>`}).join("");
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" fill="var(--surface)" stroke="currentColor" stroke-width="3"/>${ticks}${nums}
+    <line x1="50" y1="50" x2="50" y2="26" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" transform="rotate(${ha} 50 50)"/>
+    <line x1="50" y1="50" x2="50" y2="12" stroke="currentColor" stroke-width="3" stroke-linecap="round" transform="rotate(${ma} 50 50)"/>
+    <circle cx="50" cy="50" r="3.5" fill="currentColor"/></svg>`;
+}
+function makeTimeQ(){
+  const h=rnd([7,8,9,10,11,12,1,2,3,4,5]), m=rnd([0,15,30,45]);
+  const pool=[[h,15],[h,45],[h-1,45],[h+1,15],[h,30],[h,0],[h+1,0]].map(([a,b])=>[a===0?12:a===13?1:a,b]).filter(([a,b])=>!(a===h&&b===m));
+  const seen=new Set([timeWords(h,m)]), opts=[[h,m]];
+  for(const p of shuffle(pool)){const w=timeWords(...p); if(!seen.has(w)){seen.add(w);opts.push(p)} if(opts.length===3)break;}
+  return {h,m,text:`${rnd(TIME_CONTEXT)} ${timeWords(h,m)}.`,opts:shuffle(opts)};
+}
+
+/* ---------- state ---------- */
+const LEVELS=[{id:1,label:"1 Learn"},{id:2,label:"2 Listen"},{id:4,label:"3 Speak"}];
+const stars={2:0,3:0}; let level=1,S={};
+const panel=document.getElementById("panel");
+function renderTabs(){
+  document.getElementById("tabs").innerHTML=LEVELS.map(l=>`<button class="tab" role="tab" aria-selected="${l.id===level}" data-l="${l.id}">${l.label}${stars[l.id]?`<span class="st">${"★".repeat(stars[l.id])}</span>`:""}</button>`).join("");
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>startLevel(+b.dataset.l));
+}
+function startLevel(n){
+  level=n; if("speechSynthesis" in window) speechSynthesis.cancel();
+  if(n===1) S={ru:false};
+  if(n===2) S={q:shuffle(SUBJECTS),i:0,err:0,done:new Set(),started:false,lock:false};
+  if(n===3) S={q:Array.from({length:8},makeTimeQ),i:0,err:0,lock:false};
+  if(n===4) S={deck:shuffle(SPEAK),i:0,show:false,spoken:-1};
+  renderTabs(); render();
+}
+function render(){({1:r1,2:r2,3:r3,4:r4})[level]()}
+
+/* ---------- 1 Learn ---------- */
+function r1(){
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level 1 · Learn</p>
+    <p class="prompt">Tap a card, listen and repeat.</p>
+    <div class="row-btns"><button class="btn ghost" id="ru">${S.ru?"Hide":"Show"} Russian</button><button class="btn ghost" id="all">🔊 Listen to all</button></div>
+    <div class="grid">${SUBJECTS.map((s,i)=>`<button class="card" data-i="${i}"><span class="em">${s.em}</span><span class="w">${s.w}</span>${S.ru?`<span class="ru">${s.ru}</span>`:""}</button>`).join("")}</div>
+    <div class="row-btns" style="margin-top:18px"><button class="btn" id="go">I'm ready! Level 2</button></div></div>`;
+  panel.querySelectorAll(".card").forEach(b=>b.onclick=()=>say(SUBJECTS[+b.dataset.i].w));
+  document.getElementById("ru").onclick=()=>{S.ru=!S.ru;render()};
+  document.getElementById("all").onclick=()=>say(SUBJECTS.map(s=>s.w).join(". ")+".");
+  document.getElementById("go").onclick=()=>startLevel(2);
+}
+
+/* ---------- 2 Listen & tap ---------- */
+function r2(){
+  if(!S.started){
+    panel.innerHTML=`<div class="fade"><p class="kicker">Level 2 · Listen</p>
+      <p class="prompt">Listen to the subject and tap the right picture.</p>
+      <p class="hint">🎧 The words are hidden. Use your ears!</p>
+      <div class="row-btns" style="margin-top:18px"><button class="btn" id="go">Start</button></div></div>`;
+    document.getElementById("go").onclick=()=>{S.started=true;render()}; return;
+  }
+  const t=S.q[S.i], text=t.w;
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level 2 · Listen · ${S.i+1} / ${S.q.length}</p>
+    <div class="bar"><i style="transform:scaleX(${S.i/S.q.length})"></i></div>
+    ${ask(text)}
+    <div class="grid">${SUBJECTS.map((s,i)=>`<button class="card ${S.done.has(s.w)?"done":""}" data-i="${i}"><span class="em">${s.em}</span>${S.done.has(s.w)?`<span class="w">${s.w}</span>`:""}</button>`).join("")}</div>
+    <p class="fb" id="fb"></p></div>`;
+  wireAsk(text);
+  panel.querySelectorAll(".card").forEach(b=>b.onclick=()=>check2(b,SUBJECTS[+b.dataset.i]));
+}
+function check2(b,s){
+  if(S.lock) return; const t=S.q[S.i], fb=document.getElementById("fb");
+  if(s.w===t.w){ S.lock=true; sndOk(); b.classList.add("ok"); b.innerHTML+=`<span class="w">${s.w}</span>`;
+    fb.className="fb ok"; fb.textContent="Yes! "+s.w; S.done.add(s.w); S.i++;
+    setTimeout(()=>{S.lock=false; if(S.i===S.q.length) finish(2,S.err<=1?3:S.err<=4?2:1,`${S.err} mistake${S.err===1?"":"s"}`); else render();},900);
+  } else { sndNo(); S.err++; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("no","shake");
+    setTimeout(()=>b.classList.remove("no"),600); fb.className="fb no"; fb.textContent=`No, that's ${s.w}. Listen again!`; say(s.w); }
+}
+
+/* ---------- 3 What time? ---------- */
+function r3(){
+  const q=S.q[S.i];
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level 3 · What time? · ${S.i+1} / ${S.q.length}</p>
+    <div class="bar"><i style="transform:scaleX(${S.i/S.q.length})"></i></div>
+    ${ask(q.text)}
+    <div class="clocks">${q.opts.map(([h,m],i)=>`<button class="card" data-i="${i}" aria-label="clock ${i+1}">${clockSVG(h,m)}</button>`).join("")}</div>
+    <p class="hint">Short red hand = hours. Long hand = minutes.</p>
+    <p class="fb" id="fb"></p><div id="nx"></div></div>`;
+  wireAsk(q.text);
+  panel.querySelectorAll(".clocks .card").forEach(b=>b.onclick=()=>check3(b,q.opts[+b.dataset.i]));
+}
+function check3(b,[h,m]){
+  if(S.lock) return; S.lock=true; const q=S.q[S.i], right=h===q.h&&m===q.m, fb=document.getElementById("fb");
+  panel.querySelectorAll(".clocks .card").forEach((c,i)=>{const [a,z]=q.opts[i]; if(a===q.h&&z===q.m) c.classList.add("ok")});
+  if(!right){S.err++;sndNo();b.classList.add("no","shake")} else sndOk();
+  fb.className="fb "+(right?"ok":"no"); fb.textContent=(right?"Right! ":"Not quite. ")+`It's ${timeWords(q.h,q.m)}.`;
+  setTimeout(()=>say(`It's ${timeWords(q.h,q.m)}.`),350);
+  const d=document.getElementById("nx"); d.innerHTML=`<div class="row-btns" style="margin-top:14px"><button class="btn" id="nb">Next</button></div>`;
+  const nb=document.getElementById("nb"); nb.focus();
+  nb.onclick=()=>{S.i++;S.lock=false; if(S.i===S.q.length) finish(3,S.err===0?3:S.err<=2?2:1,`${S.q.length-S.err} / ${S.q.length} correct`); else render();};
+}
+
+/* ---------- 4 Speak ---------- */
+function r4(){
+  const c=S.deck[S.i];
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level 3 · Speak · card ${S.i+1} / ${S.deck.length}</p>
+    <div class="bar"><i style="transform:scaleX(${S.i/S.deck.length})"></i></div>
+    ${ask(c[0])}
+    <div class="row-btns" style="margin-top:10px"><button class="btn ghost" id="ex">${S.show?"Hide":"Show"} example</button>
+    <button class="btn" id="nx4">${S.i===S.deck.length-1?"Start again":"Next card"}</button></div>
+    ${S.show?`<div class="example fade">${c[1]}</div>`:""}
+    <p class="hint">Answer out loud in a full sentence.</p></div>`;
+  wireAsk(c[0],S.spoken!==S.i); S.spoken=S.i;
+  document.getElementById("ex").onclick=()=>{S.show=!S.show;render()};
+  document.getElementById("nx4").onclick=()=>{if(S.i===S.deck.length-1){S.deck=shuffle(SPEAK);S.i=0;S.spoken=-1}else S.i++;S.show=false;render()};
+}
+
+function finish(l,s,detail){
+  stars[l]=Math.max(stars[l],s); renderTabs(); sndWin();
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level ${l} complete</p>
+    <div class="stars">${"★".repeat(s)}${"☆".repeat(3-s)}</div>
+    <p class="prompt">${s===3?"Excellent!":s===2?"Well done!":"Good try!"}</p><p class="hint">${detail}</p>
+    <div class="row-btns" style="margin-top:18px"><button class="btn ghost" id="rp">Play again</button><button class="btn" id="nl">Next level</button></div></div>`;
+  document.getElementById("rp").onclick=()=>startLevel(l);
+  document.getElementById("nl").onclick=()=>startLevel(l===2?4:l+1);
+}
+startLevel(1);
+</script>
+</body>
+</html>
