@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Have got, has got: строим дом</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#9DD3F2; --sky2:#CBE9FA; --grass:#5DA83A; --grass-d:#3D7F25; --dirt:#8E5A2E; --dirt-d:#6A4120;
+  --panel:#F3EBDD; --ink:#1F2A1A; --muted:#55604E; --edge:#2B2B2B;
+  --have:#2F6FC2; --has:#C9372A; --ok:#2F8A3B; --no:#C9372A; --gold:#F2C230;
+  --px:"Pixelify Sans","Rubik",system-ui,sans-serif;
+  --body:"Rubik",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--sky:#1B2A4A;--sky2:#24365C;--panel:#2A2F28;--ink:#EEF2E6;--muted:#B5BFAC;--edge:#0E0E0E;--have:#6AA8F5;--has:#F2786B;--ok:#58C46A;--no:#F2786B}
+}
+:root[data-theme="dark"]{--sky:#1B2A4A;--sky2:#24365C;--panel:#2A2F28;--ink:#EEF2E6;--muted:#B5BFAC;--edge:#0E0E0E;--have:#6AA8F5;--has:#F2786B;--ok:#58C46A;--no:#F2786B}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--body);color:var(--ink);background:linear-gradient(var(--sky2),var(--sky) 60%);background-attachment:fixed;font-size:17px;line-height:1.45}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:16px 14px 0}
+/* block look: flat bevel, square corners */
+.blk{background:var(--panel);border:3px solid var(--edge);box-shadow:inset -4px -4px 0 rgba(0,0,0,.18),inset 4px 4px 0 rgba(255,255,255,.35)}
+h1{font-family:var(--px);font-weight:700;font-size:clamp(30px,8vw,46px);line-height:1;margin:4px 0 6px;color:#fff;text-shadow:3px 3px 0 var(--edge),-1px -1px 0 var(--edge),1px -1px 0 var(--edge),-1px 1px 0 var(--edge)}
+h1 .a{color:#CFE6FF}h1 .b{color:#FFD3CC}
+.lead{margin:0 0 14px;font-weight:500}
+.btn{border:3px solid var(--edge);background:var(--grass);color:#fff;padding:10px 16px;font-weight:700;box-shadow:inset -4px -4px 0 rgba(0,0,0,.25),inset 4px 4px 0 rgba(255,255,255,.3);text-shadow:1px 1px 0 rgba(0,0,0,.35)}
+.btn:active{transform:translateY(2px)}
+.btn.alt{background:var(--panel);color:var(--ink);text-shadow:none}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+
+/* setup */
+.setup{padding:16px;display:grid;gap:14px}
+.opt{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.opt>span{font-weight:700;min-width:110px}
+.seg{border:3px solid var(--edge);background:var(--panel);padding:8px 12px;font-weight:500}
+.seg[aria-pressed="true"]{background:var(--gold);color:#1F2A1A}
+.names{display:flex;gap:8px;flex-wrap:wrap}
+.names input{border:3px solid var(--edge);background:#fff;color:#1F2A1A;padding:8px 10px;width:150px;font:inherit}
+.rules{margin:0;padding-left:20px;color:var(--muted);font-size:15px}
+
+/* scoreboard */
+.score{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px}
+.pl{padding:10px 12px;display:flex;gap:12px;align-items:center}
+.pl.turn{background:var(--gold);color:#1F2A1A}
+.pl .nm{font-weight:700;line-height:1.2}
+.pl .ct{font-size:14px}
+.house{display:grid;grid-template-columns:repeat(6,9px);grid-template-rows:repeat(3,14px);flex:none}
+.house i{grid-row:var(--r);grid-column:var(--c) / span 2;border:2px solid rgba(0,0,0,.35);background:rgba(0,0,0,.08)}
+.house i.on{border-color:var(--edge)}
+.house i.on.w{background:#B9824A}.house i.on.win{background:#7FC4EA}.house i.on.d{background:#6A4120}.house i.on.roof{background:#B63A2C}
+
+/* table */
+.table{padding:16px 14px}
+.turnline{font-family:var(--px);font-size:20px;font-weight:700;margin:0 0 12px}
+.cards{display:grid;grid-template-columns:1fr 1.25fr;gap:12px;perspective:900px}
+.card{position:relative;aspect-ratio:3/4;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.card.down{transform:rotateY(180deg)}
+.face,.back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:3px solid var(--edge);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px}
+.face{background:#FFFDF6;color:#1F2A1A;box-shadow:inset -5px -5px 0 rgba(0,0,0,.12)}
+.back{transform:rotateY(180deg);background:
+  linear-gradient(var(--grass) 0 28%,var(--grass-d) 28% 34%,var(--dirt) 34%);}
+.back::after{content:"?";font-family:var(--px);font-size:48px;color:#fff;text-shadow:3px 3px 0 var(--edge)}
+.pron{font-family:var(--px);font-weight:700;font-size:clamp(44px,13vw,72px);line-height:1}
+.ctag{font-size:13px;color:#55604E;font-weight:500}
+.pic svg{width:clamp(80px,26vw,128px);height:auto;display:block;shape-rendering:crispEdges}
+.word{font-weight:700;font-size:clamp(17px,4.6vw,21px);background:#EDE3CF;border:2px solid #2B2B2B;padding:2px 10px}
+.no-badge{position:absolute;top:8px;right:8px;background:var(--no);color:#fff;font-weight:700;font-size:13px;padding:2px 7px;border:2px solid #2B2B2B}
+.extra .pic svg{width:clamp(70px,22vw,104px)}
+.extra .word{background:var(--gold)}
+
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.ch{border:3px solid var(--edge);padding:12px 8px;font-family:var(--px);font-weight:700;font-size:clamp(19px,5vw,24px);color:#fff;box-shadow:inset -4px -4px 0 rgba(0,0,0,.25),inset 4px 4px 0 rgba(255,255,255,.3)}
+.ch.have{background:#2F6FC2}.ch.has{background:#C9372A}
+.ch:disabled{opacity:.4;cursor:default}
+.sent{margin-top:14px;padding:12px 14px;font-size:20px;font-weight:500;min-height:58px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sent .v{font-weight:700;padding:0 4px;border-bottom:3px solid currentColor}
+.sent .v.have{color:var(--have)}.sent .v.has{color:var(--has)}
+.sent.ok{border-color:var(--ok)}.sent.no{border-color:var(--no)}
+.tag{font-family:var(--px);font-weight:700;font-size:16px;color:#fff;padding:2px 8px;border:2px solid var(--edge)}
+.tag.ok{background:var(--ok)}.tag.no{background:var(--no)}
+.hint{color:var(--muted);font-size:15px;margin:8px 0 0}
+.go{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+/* ground strip + footer */
+.ground{height:44px;margin-top:22px;background:linear-gradient(var(--grass) 0 30%,var(--grass-d) 30% 40%,var(--dirt) 40%);border-top:3px solid var(--edge)}
+.ground{margin-bottom:0;height:calc(44px + env(safe-area-inset-bottom,0px))}
+.mute{position:fixed;right:12px;bottom:calc(54px + env(safe-area-inset-bottom,0px));z-index:3;border:3px solid var(--edge);background:var(--panel);width:44px;height:44px;font-size:18px}
+
+/* win */
+.win{text-align:center;padding:22px 16px}
+.win h2{font-family:var(--px);font-size:34px;margin:0 0 8px}
+.bighouse{display:grid;grid-template-columns:repeat(6,26px);grid-template-rows:repeat(3,40px);justify-content:center;margin:12px auto 16px}
+.bighouse i{grid-row:var(--r);grid-column:var(--c) / span 2;border:3px solid var(--edge)}
+.bighouse i.w{background:#B9824A}.bighouse i.win{background:#7FC4EA}.bighouse i.d{background:#6A4120}.bighouse i.roof{background:#B63A2C}
+
+@media (prefers-reduced-motion:no-preference){
+  .shake{animation:sh .35s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .drop{animation:dr .45s cubic-bezier(.3,1.5,.6,1) both}@keyframes dr{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
+  .bighouse i{animation:dr .45s cubic-bezier(.3,1.5,.6,1) both}
+  .bighouse i:nth-child(2){animation-delay:0.10s}.bighouse i:nth-child(3){animation-delay:0.20s}.bighouse i:nth-child(4){animation-delay:0.30s}.bighouse i:nth-child(5){animation-delay:0.40s}.bighouse i:nth-child(6){animation-delay:0.50s}.bighouse i:nth-child(7){animation-delay:0.60s}.bighouse i:nth-child(8){animation-delay:0.70s}
+}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+
+.task{display:inline-block;font-family:var(--px);font-weight:700;font-size:15px;background:var(--edge);color:#fff;padding:3px 10px;margin-bottom:10px}
+.sign{position:absolute;top:8px;right:8px;font-weight:700;font-size:15px;padding:2px 8px;border:2px solid #2B2B2B;color:#fff;font-family:var(--px)}
+.sign.pos{background:#2F8A3B}.sign.neg{background:#C9372A}.sign.q{background:#2F6FC2}
+.pron.long{font-size:clamp(26px,7vw,40px);text-align:center}
+.qcard{padding:18px 14px;text-align:center;background:#FFFDF6;color:#1F2A1A;border:3px solid var(--edge);display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}
+.qcard .pic svg{width:72px}
+.qtext{font-family:var(--px);font-weight:700;font-size:clamp(22px,6vw,30px);line-height:1.2}
+.truth{font-family:var(--px);font-size:30px;width:52px;height:52px;display:grid;place-items:center;border:3px solid var(--edge);color:#fff;flex:none}
+.truth.y{background:#2F8A3B}.truth.n{background:#C9372A}
+.choices.one{grid-template-columns:1fr}
+.ch.txt{background:var(--panel);color:var(--ink);font-family:var(--body);font-weight:500;font-size:18px;text-align:left;padding:12px 14px;text-shadow:none}
+.ch.pick-ok{background:var(--ok)!important;color:#fff!important}
+.ch.pick-no{background:var(--no)!important;color:#fff!important}
+.rule{background:var(--panel);border:3px dashed var(--edge);padding:10px 12px;margin-top:10px;font-size:15.5px}
+.streak{font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div class="ground" aria-hidden="true"></div>
+<button class="mute" id="mute" type="button" aria-label="Выключить звук">🔊</button>
+<script>
+(function(){
+"use strict";
+/* ===== CONTENT ===== */
+var GOAL=8;
+// h: 1 = has, 0 = have; q: как пишется в вопросе; a: местоимение для краткого ответа
+var SUBJ=[
+ {s:"I",q:"I",h:0,a:"I",noQ:1},{s:"You",q:"you",h:0,a:"I"},{s:"We",q:"we",h:0,a:"we"},{s:"They",q:"they",h:0,a:"they"},
+ {s:"My parents",q:"your parents",h:0,a:"they"},{s:"Tom and Kate",q:"Tom and Kate",h:0,a:"they"},{s:"The children",q:"the children",h:0,a:"they"},
+ {s:"My friends",q:"your friends",h:0,a:"they"},{s:"Our neighbours",q:"your neighbours",h:0,a:"they"},
+ {s:"He",q:"he",h:1,a:"he"},{s:"She",q:"she",h:1,a:"she"},{s:"It",q:"it",h:1,a:"it",only:"pet"},
+ {s:"My brother",q:"your brother",h:1,a:"he"},{s:"My sister",q:"your sister",h:1,a:"she"},{s:"Kate",q:"Kate",h:1,a:"she"},
+ {s:"Mr Brown",q:"Mr Brown",h:1,a:"he"},{s:"Our teacher",q:"your teacher",h:1,a:"she"},{s:"My family",q:"your family",h:1,a:"it",tip:"family"},
+ {s:"Everybody",q:"everybody",h:1,a:"",tip:"every",noQ:1},{s:"The cat",q:"the cat",h:1,a:"it",only:"pet"}
+];
+var ITEMS=[
+ {w:"an apple",s:["...G....","...bG...",".rrbrr..","rrrrrrr.","rrwrrrr.","rrrrrrr.",".rrrrr..","..r.r..."]},
+ {w:"a cat",s:["o......o","oo....oo","oooooooo","okoookoo","oooppooo","ooowwooo",".oooooo.","oo....oo"]},
+ {w:"a dog",s:["E......E","EE....EE","eeeeeeee","ekeeeeke","eeeeeeee","eeekkeee","eeewweee",".eeeeee."]},
+ {w:"a book",s:[".uuuuuu.","uuuuuuuw","uyyyyuuw","uuuuuuuw","uyyyyuuw","uuuuuuuw","uuuuuuuw",".uuuuuu."]},
+ {w:"a birthday cake",s:["...y....","...r....",".wwwwww.","wpwwpwww","bbbbbbbb","pppppppp","bbbbbbbb","........"]},
+ {w:"a big house",s:["...rr...","..rrrr..",".rrrrrr.","rrrrrrrr",".bbbbbb.",".buubbb.",".bbbBBb.",".bbbBBb."]},
+ {w:"a garden",s:["..GGGG..",".GgggGG.","GggggggG","GgggGggG",".GGggGG.","...bb...","...bb...","..bbbb.."]},
+ {w:"a fish",s:["........",".....u..","u..uuuu.","uuuuukuu","uuuuuuuu","u..uuuu.",".....u..","........"]},
+ {w:"a new ball",s:["..rrrr..",".rrwrrr.","rrwrrrrr","rrrrrrrr","wwwwwwww","rrrrrrrr",".rrrrrr.","..rrrr.."]},
+ {w:"the key",s:["........","........",".yyy....","y...yyyy","y...y.y.","y...y.yy",".yyy....","........"]},
+ {w:"a toolbox",s:["bbbbbbbb","bBBBBBBb","bbbbbbbb","bbbyybbb","bBByyBBb","bbbbbbbb","bBBBBBBb","bbbbbbbb"]},
+ {w:"two cats",s:["o..o....","oooo.o..","okko.oo.","oooo.ooo","....okko","....oooo","........","........"]},
+ {w:"blue eyes",s:["........",".ww..ww.","wuuwwuuw","wukwwukw","wuuwwuuw",".ww..ww.","........","........"]},
+ {w:"long hair",s:["..BBBB..",".BBBBBB.","BBppppBB","BBpkpkBB","BBppppBB","BB.pp.BB","BB....BB","B......B"]},
+ {w:"a cold",s:["..eeee..",".eeeeee.","eekeekee","eeeeeeee","eee..eee","ee.uu.ee",".eeuuee.","...uu..."]},
+ {w:"a lot of homework",s:["uuuuuuu.","uwwwwwu.","uuuuuuu.","ryyyyyr.","rrrrrrr.","gwwwwwg.","ggggggg.","........"]},
+ {w:"a flower",s:["..p.p...",".ppypp..","..ppp...","...G....",".G.G....","..GG.G..","...GG...","...G...."]}
+];
+var PET=["a cat","a dog","a fish","two cats","blue eyes","long hair","a cold","an apple","the key","a new ball"];
+var EXTRAS=[
+ {id:"more",w:"Ещё карта",d:"Тяни ещё раз!",s:["........",".gggggg.",".gGGGGg.",".gGwwGg.",".gGwwGg.",".gGGGGg.",".gggggg.","........"]},
+ {id:"skip",w:"Пропусти ход",d:"Ход переходит дальше.",s:["..EEEE..",".E.ee.E.","E..ee..E","E..eeeeE","E......E","E......E",".E....E.","..EEEE.."]},
+ {id:"gift",w:"Подари блок",d:"Отдай один блок другу.",s:["...r....","..rrr...","yyyryyyy","yyyryyyy","yyyryyyy","yyyryyyy","yyyryyyy","yyyryyyy"]}
+];
+/* ===== конец CONTENT ===== */
+
+var PAL={k:"#262626",w:"#F4F4F4",r:"#D8392B",R:"#9E2318",g:"#6BBE45",G:"#3E8B2A",b:"#A8703C",B:"#6E4523",y:"#F2C230",o:"#E98A2E",p:"#F2C7A5",u:"#3E86D6",e:"#B5B5B5",E:"#6F6F6F"};
+var SLOTS=[{r:3,c:1,k:"w"},{r:3,c:3,k:"d"},{r:3,c:5,k:"w"},{r:2,c:1,k:"w"},{r:2,c:3,k:"win"},{r:2,c:5,k:"w"},{r:1,c:2,k:"roof"},{r:1,c:4,k:"roof"}];
+function sprite(rows){var h='<svg viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">';rows.forEach(function(r,y){for(var x=0;x<8;x++){var c=PAL[r[x]];if(c)h+='<rect x="'+x+'" y="'+y+'" width="1.02" height="1.02" fill="'+c+'"/>';}});return h+'</svg>';}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function cap(x){return x.charAt(0).toUpperCase()+x.slice(1);}
+var AP="\u2019";
+
+/* sound */
+var muted=false,actx=null;
+function beep(seq){if(muted)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}var t=actx.currentTime;seq.forEach(function(f,i){var o=actx.createOscillator(),g=actx.createGain();o.type="square";o.frequency.value=f;g.gain.setValueAtTime(.06,t+i*.09);g.gain.exponentialRampToValueAtTime(.001,t+i*.09+.12);o.connect(g);g.connect(actx.destination);o.start(t+i*.09);o.stop(t+i*.09+.13);});}
+var SND={ok:[523,659,784],no:[220,165],flip:[392],win:[523,659,784,1046,784,1046]};
+document.getElementById("mute").onclick=function(){muted=!muted;this.textContent=muted?"🔇":"🔊";this.setAttribute("aria-label",muted?"Включить звук":"Выключить звук");};
+
+/* balanced draw: has / have по очереди в случайном порядке */
+var bag=[];
+function nextH(){if(!bag.length)bag=shuffle([0,0,0,1,1,1]);return bag.pop();}
+var lastS=null,lastI=null;
+function drawSubj(filter){var h=nextH(),pool=SUBJ.filter(function(x){return x.h===h&&x!==lastS&&(!filter||filter(x));});if(!pool.length)pool=SUBJ.filter(function(x){return x!==lastS&&(!filter||filter(x));});lastS=rnd(pool);return lastS;}
+function drawItem(sub){var pool=ITEMS.filter(function(x){return x!==lastI&&(!sub.only||PET.indexOf(x.w)>=0);});lastI=rnd(pool);return lastI;}
+
+function V(sub,form){ // form: pos | neg | q
+  if(form==="pos")return sub.h?"has got":"have got";
+  if(form==="neg")return sub.h?"hasn"+AP+"t got":"haven"+AP+"t got";
+  return sub.h?"Has":"Have";
+}
+function sentence(sub,item,form,hl){
+  var w=function(x){return hl?'<span class="v '+(sub.h?"has":"have")+'">'+x+'</span>':x;};
+  if(form==="q")return w(sub.h?"Has":"Have")+" "+sub.q+" "+w("got")+" "+item.w+"?";
+  return sub.s+" "+w(V(sub,form))+" "+item.w+".";
+}
+function ruleFor(sub,form,kind){
+  var r="";
+  if(sub.tip==="family")r="<b>My family</b> это одна семья, поэтому <b>has</b>. ";
+  else if(sub.tip==="every")r="<b>Everybody</b> по смыслу «все», но грамматически это он/она: <b>has</b>. ";
+  else if(/children|parents|friends|neighbours| and /.test(sub.s))r="<b>"+sub.s+"</b> это несколько человек (they), поэтому <b>have</b>. ";
+  else if(sub.h)r="<b>"+sub.s+"</b> это he / she / it, поэтому <b>has</b>. ";
+  else r="<b>"+sub.s+"</b>: I / you / we / they, поэтому <b>have</b>. ";
+  if(kind==="build"&&form==="q")r+="В вопросе have/has ставим перед подлежащим, а got после него.";
+  if(kind==="build"&&form==="neg")r+="Отрицание: haven"+AP+"t / hasn"+AP+"t + got.";
+  if(kind==="short")r+="В кратком ответе <b>got не нужен</b>: Yes, she has. No, they haven"+AP+"t.";
+  if(kind==="fix")r+="С have got <b>не нужны</b> do / does.";
+  return r;
+}
+
+/* tasks */
+function makeBuild(){
+  var sub=drawSubj(),item=drawItem(sub);
+  var forms=sub.noQ?["pos","neg"]:["pos","neg","q"];var form=rnd(forms);
+  var right=form==="q"?(sub.h?"Has … got?":"Have … got?"):V(sub,form);
+  var opts=["have got","has got","haven"+AP+"t got","hasn"+AP+"t got","Have … got?","Has … got?"];
+  return {kind:"build",sub:sub,item:item,form:form,opts:opts,right:right,answerHTML:sentence(sub,item,form,true)};
+}
+function makeShort(){
+  var sub=drawSubj(function(x){return !x.noQ;}),item=drawItem(sub),yes=Math.random()<.5;
+  var a=sub.a,A=cap(a),hv=(a==="he"||a==="she"||a==="it")?"has":"have",wrongHv=hv==="has"?"have":"has";
+  var right=yes?"Yes, "+a+" "+hv+".":"No, "+a+" "+hv+"n"+AP+"t.";
+  var opts=yes?[right,"Yes, "+a+" "+hv+" got.","Yes, "+a+" "+wrongHv+".","No, "+a+" "+hv+"n"+AP+"t."]
+             :[right,"No, "+a+" "+hv+"n"+AP+"t got.","No, "+a+" "+wrongHv+"n"+AP+"t.","Yes, "+a+" "+hv+"."];
+  return {kind:"short",sub:sub,item:item,yes:yes,q:sentence(sub,item,"q",false),opts:shuffle(opts),right:right};
+}
+function makeFix(){
+  var sub=drawSubj(),item=drawItem(sub),form=sub.noQ?rnd(["pos","neg"]):rnd(["pos","neg","q"]);
+  var right=sentence(sub,item,form,false);
+  var twin={s:sub.s,q:sub.q,h:sub.h?0:1};
+  var bad1=sentence(twin,item,form,false);
+  var hv=sub.h?"has":"have",does=sub.h?"does":"do";
+  var bad2=form==="pos"?sub.s+" "+(sub.h?"is":"are")+" got "+item.w+".":
+           form==="neg"?sub.s+" "+does+"n"+AP+"t "+hv+" got "+item.w+".":
+           cap(does)+" "+sub.q+" "+hv+" got "+item.w+"?";
+  if(sub.s==="I"&&form==="pos")bad2="I am got "+item.w+".";
+  if(sub.s==="I"&&form==="neg")bad2="I don"+AP+"t have got "+item.w+".";
+  return {kind:"fix",sub:sub,item:item,form:form,opts:shuffle([right,bad1,bad2]),right:right};
+}
+function makeTask(){var r=Math.random();return r<.45?makeBuild():r<.72?makeShort():makeFix();}
+
+/* state */
+var app=document.getElementById("app");
+var S={n:1,names:["Игрок 1","Игрок 2"],hard:true,players:[],turn:0,phase:"draw",task:null,extra:null};
+
+function setup(){
+  app.innerHTML='<h1><span class="a">Have got</span><br><span class="b">Has got</span></h1><p class="lead">Строим дом из блоков. 8 блоков, и дом готов.</p>'+
+  '<div class="blk setup">'+
+   '<div class="opt"><span>Игроков</span><button class="seg" data-n="1" type="button">1</button><button class="seg" data-n="2" type="button">2</button></div>'+
+   '<div class="opt names" id="names"></div>'+
+   '<div class="opt"><span>Ошибка</span><button class="seg" data-h="1" type="button">отнимает блок</button><button class="seg" data-h="0" type="button">без штрафа</button></div>'+
+   '<ol class="rules"><li><b>Собери:</b> кто + что + знак (+, NOT, ?). Выбери нужную форму.</li><li><b>Краткий ответ:</b> ответь на вопрос по картинке.</li><li><b>Найди верное:</b> из трёх предложений правильное только одно.</li></ol>'+
+   '<div><button class="btn" id="start" type="button">Играть</button></div></div>';
+  function paint(){
+    app.querySelectorAll("[data-n]").forEach(function(b){b.setAttribute("aria-pressed",String(+b.dataset.n===S.n));});
+    app.querySelectorAll("[data-h]").forEach(function(b){b.setAttribute("aria-pressed",String(!!+b.dataset.h===S.hard));});
+    var nm=document.getElementById("names");nm.innerHTML="";
+    for(var i=0;i<S.n;i++){var inp=document.createElement("input");inp.value=S.names[i];inp.maxLength=14;inp.setAttribute("aria-label","Имя игрока "+(i+1));(function(i){inp.oninput=function(){S.names[i]=this.value;};})(i);nm.appendChild(inp);}
+  }
+  app.querySelectorAll("[data-n]").forEach(function(b){b.onclick=function(){S.n=+b.dataset.n;paint();};});
+  app.querySelectorAll("[data-h]").forEach(function(b){b.onclick=function(){S.hard=!!+b.dataset.h;paint();};});
+  paint();
+  document.getElementById("start").onclick=function(){S.players=[];for(var i=0;i<S.n;i++)S.players.push({name:(S.names[i]||"Игрок "+(i+1)).trim(),blocks:0,streak:0});S.turn=0;S.phase="draw";S.task=S.extra=null;game();};
+}
+
+function houseMini(n,flash){return '<span class="house" aria-hidden="true">'+SLOTS.map(function(s,i){return '<i class="'+(i<n?"on "+s.k:"")+(flash&&i===n-1?" drop":"")+'" style="--r:'+s.r+';--c:'+s.c+'"></i>';}).join("")+'</span>';}
+function scoreHTML(fl){return '<div class="score">'+S.players.map(function(p,i){return '<div class="blk pl'+(i===S.turn&&S.players.length>1?" turn":"")+'">'+houseMini(p.blocks,i===fl)+'<div><div class="nm">'+esc(p.name)+'</div><div class="ct">Блоков: '+p.blocks+' из '+GOAL+(p.streak>=3?' <span class="streak">🔥'+p.streak+'</span>':'')+'</div></div></div>';}).join("")+'</div>';}
+function card(inner,cls){return '<div class="card"><div class="face '+(cls||"")+'">'+inner+'</div><div class="back"></div></div>';}
+
+function game(fl){
+  var P=S.players[S.turn],multi=S.players.length>1,T=S.task;
+  var h=scoreHTML(fl)+'<div class="blk table"><p class="turnline">'+(multi?"Ходит: "+esc(P.name):"Твой ход")+'</p>';
+  if(S.phase==="draw"){
+    h+='<div class="cards">'+card("")+card("")+'</div><div class="go"><button class="btn" id="draw" type="button">Тянуть карту</button></div>';
+  }else if(S.phase==="extra"){
+    h+='<span class="task">Особая карта</span><div class="cards">'+card('<span class="pic">'+sprite(S.extra.s)+'</span>','extra')+card('<span class="word">'+S.extra.w+'</span><span class="ctag">'+S.extra.d+'</span>','extra')+'</div><div class="go"><button class="btn" id="ok" type="button">Понятно</button></div>';
+  }else{
+    var done=S.phase==="result";
+    if(T.kind==="build"){
+      var sg=T.form==="pos"?'<span class="sign pos">+</span>':T.form==="neg"?'<span class="sign neg">NOT</span>':'<span class="sign q">?</span>';
+      h+='<span class="task">Собери предложение</span><div class="cards">'+card('<span class="ctag">Кто?</span><span class="pron'+(T.sub.s.length>4?" long":"")+'">'+esc(T.sub.s)+'</span>')+card(sg+'<span class="ctag">Что?</span><span class="pic">'+sprite(T.item.s)+'</span><span class="word">'+esc(T.item.w)+'</span>')+'</div>';
+      h+='<div class="choices">'+T.opts.map(function(o){return '<button type="button" class="ch '+(/^ha[sv]/i.test(o)&&o.toLowerCase().indexOf("has")===0?"has":"have")+'" data-v="'+esc(o)+'"'+(done?" disabled":"")+'>'+esc(o)+'</button>';}).join("")+'</div>';
+    }else if(T.kind==="short"){
+      h+='<span class="task">Краткий ответ</span><div class="qcard"><span class="pic">'+sprite(T.item.s)+'</span><span class="qtext">'+esc(T.q)+'</span><span class="truth '+(T.yes?"y":"n")+'" aria-label="'+(T.yes?"да":"нет")+'">'+(T.yes?"\u2713":"\u2717")+'</span></div>';
+      h+='<div class="choices">'+T.opts.map(function(o){return '<button type="button" class="ch txt" data-v="'+esc(o)+'"'+(done?" disabled":"")+'>'+esc(o)+'</button>';}).join("")+'</div>';
+    }else{
+      h+='<span class="task">Найди верное предложение</span><div class="qcard"><span class="pic">'+sprite(T.item.s)+'</span></div>';
+      h+='<div class="choices one">'+T.opts.map(function(o){return '<button type="button" class="ch txt" data-v="'+esc(o)+'"'+(done?" disabled":"")+'>'+esc(o)+'</button>';}).join("")+'</div>';
+    }
+    if(done)h+=S.resultHTML;
+  }
+  h+='</div>';
+  app.innerHTML=h;
+  if(S.phase==="result"&&S.picked){app.querySelectorAll(".ch").forEach(function(b){if(b.dataset.v===S.task.right)b.classList.add("pick-ok");else if(b.dataset.v===S.picked)b.classList.add("pick-no");});}
+  if(S.flip){S.flip=false;var cs=app.querySelectorAll(".card");cs.forEach(function(c){c.classList.add("down");});requestAnimationFrame(function(){requestAnimationFrame(function(){cs.forEach(function(c){c.classList.remove("down");});});});}
+  if(S.phase==="draw")app.querySelectorAll(".card").forEach(function(c){c.classList.add("down");});
+  var d=document.getElementById("draw");if(d)d.onclick=doDraw;
+  app.querySelectorAll(".ch:not([disabled])").forEach(function(b){b.onclick=function(){answer(b.dataset.v);};});
+  var nx=document.getElementById("next");if(nx)nx.onclick=nextTurn;
+  var ok=document.getElementById("ok");if(ok)ok.onclick=applyExtra;
+}
+
+function doDraw(){
+  beep(SND.flip);var multi=S.players.length>1;
+  if(Math.random()<(multi?0.15:0.07)){S.extra=rnd(multi?EXTRAS:[EXTRAS[0]]);S.phase="extra";}
+  else{S.extra=null;S.task=makeTask();S.phase="answer";}
+  S.flip=true;game();
+}
+
+function answer(v){
+  var T=S.task,P=S.players[S.turn],good=v===T.right,fl=-1,lost=false;
+  S.picked=v;
+  if(good){P.blocks=Math.min(GOAL,P.blocks+1);P.streak++;fl=S.turn;beep(SND.ok);}
+  else{P.streak=0;beep(SND.no);if(S.hard&&P.blocks>0){P.blocks--;lost=true;}}
+  var full=T.kind==="build"?T.answerHTML:esc(T.right);
+  S.resultHTML='<div class="blk sent '+(good?"ok drop":"no shake")+'"><span class="tag '+(good?"ok":"no")+'">'+(good?"Верно! +1 блок":lost?"Ошибка. Блок упал":"Не то")+'</span><span>'+full+'</span></div>'+
+    (good?'<p class="hint">Прочитай вслух.</p>':'<div class="rule">'+ruleFor(T.sub,T.form,T.kind)+'</div>')+
+    '<div class="go"><button class="btn" id="next" type="button">'+(P.blocks>=GOAL?"Достроить дом":"Дальше")+'</button></div>';
+  S.phase="result";game(fl);
+}
+function applyExtra(){
+  var multi=S.players.length>1,P=S.players[S.turn];
+  if(S.extra.id==="more"){S.phase="draw";S.extra=null;game();return;}
+  if(S.extra.id==="gift"&&multi){var o=S.players[(S.turn+1)%S.players.length];if(P.blocks>0){P.blocks--;o.blocks++;if(o.blocks>=GOAL){win(o);return;}}}
+  nextTurn();
+}
+function nextTurn(){
+  var P=S.players[S.turn];if(P.blocks>=GOAL){win(P);return;}
+  S.turn=(S.turn+1)%S.players.length;S.phase="draw";S.task=S.extra=null;S.picked=null;game();
+}
+function win(P){
+  beep(SND.win);var multi=S.players.length>1;
+  app.innerHTML='<div class="blk win"><h2>Well done!</h2><p class="lead">'+(multi?esc(P.name)+" первым построил дом!":"Дом построен!")+'</p><div class="bighouse" aria-hidden="true">'+SLOTS.map(function(s){return '<i class="'+s.k+'" style="--r:'+s.r+';--c:'+s.c+'"></i>';}).join("")+'</div><div class="go" style="justify-content:center"><button class="btn" id="again" type="button">Ещё раз</button><button class="btn alt" id="menu" type="button">В меню</button></div></div>';
+  document.getElementById("again").onclick=function(){S.players.forEach(function(p){p.blocks=0;p.streak=0;});S.turn=0;S.phase="draw";S.task=S.extra=null;game();};
+  document.getElementById("menu").onclick=setup;
+}
+setup();
+})();
+</script>
+</body>
+</html>
