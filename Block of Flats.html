@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Block of Flats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#dcefee; --surface:#fffaf3; --ink:#3b2a20; --muted:#6d5a4d;
+  --accent:#b4502f; --accent-ink:#fff;
+  --brick:#b9694c; --brick-dark:#8f4a33; --glass:#cfe6f2; --line:#e7d9c8;
+  --ok:#2f8a5b; --no:#c0392b; --hl:#ffd98a;
+  --r-s:10px; --r-m:16px; --r-l:24px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16211f; --surface:#22201d; --ink:#f3e9dc; --muted:#c4b4a4;
+    --line:#3d3630; --glass:#4b6b7a; --hl:#8a6a1f;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16211f; --surface:#22201d; --ink:#f3e9dc; --muted:#c4b4a4;
+  --line:#3d3630; --glass:#4b6b7a; --hl:#8a6a1f;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);
+  font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.wrap{max-width:1040px;margin:0 auto;padding:18px 16px 28px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-family:"Fredoka","Nunito",sans-serif;font-weight:600;font-size:clamp(26px,5vw,38px);margin:0;letter-spacing:.5px;color:var(--brick-dark)}
+:root[data-theme="dark"] h1{color:var(--hl)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) h1{color:#e9a98d}}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-weight:800;font-size:15px}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab .st{color:#e7a400;margin-left:4px}
+.icon-btn{border:2px solid var(--line);background:var(--surface);border-radius:999px;width:42px;height:42px;font-size:19px}
+
+.game{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:22px;align-items:start}
+@media (max-width:760px){.game{grid-template-columns:1fr}}
+
+/* building */
+.tower-wrap{display:flex;flex-direction:column;align-items:center}
+.roof{width:86%;height:16px;background:var(--brick-dark);border-radius:6px 6px 0 0}
+.tower{width:100%;background:var(--brick);border:4px solid var(--brick-dark);border-top:none;
+  background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.06) 0 2px,transparent 2px 12px);}
+.floor{display:grid;grid-template-columns:50px 1fr;align-items:center;gap:8px;width:100%;
+  height:44px;padding:0 8px;border:none;border-bottom:3px solid var(--brick-dark);
+  background:transparent;text-align:left;position:relative;transition:background .2s}
+.floor:hover{background:rgba(255,255,255,.12)}
+.floor .num{background:var(--surface);color:var(--ink);font-weight:800;font-size:14px;border-radius:8px;
+  text-align:center;padding:3px 0;box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.floor .row{display:flex;align-items:center;gap:6px;height:100%}
+.win{width:22px;height:26px;background:var(--glass);border:2px solid #f6efe6;border-radius:3px;flex:none}
+.tenant{margin-left:auto;display:flex;align-items:center;gap:6px;background:var(--surface);color:var(--ink);
+  border-radius:999px;padding:3px 10px 3px 3px;font-weight:800;font-size:14px;box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.ava{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;color:#fff;font-weight:800}
+.ava.he{background:#2f6f8a}.ava.she{background:#b4502f}
+.floor.hl{background:var(--hl)}
+.floor.ok{background:rgba(47,138,91,.45)}
+.floor.no{background:rgba(192,57,43,.45)}
+.ground{width:100%;height:46px;background:#8c8478;display:flex;justify-content:center;align-items:flex-end;border:4px solid #6c655b;border-top:none}
+.door{width:40px;height:36px;background:#5b3b2b;border-radius:6px 6px 0 0;border:3px solid #f6efe6;border-bottom:none}
+.lawn{width:110%;height:10px;background:#6aa36f;border-radius:0 0 10px 10px}
+
+/* panel */
+.panel{background:var(--surface);border-radius:var(--r-l);padding:22px;border:2px solid var(--line);min-height:300px}
+.kicker{font-weight:800;color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px}
+.prompt{font-family:"Fredoka","Nunito",sans-serif;font-weight:500;font-size:clamp(22px,3.4vw,30px);line-height:1.25;margin:4px 0 16px}
+.prompt.hidden-text{color:transparent;text-shadow:0 0 14px rgba(59,42,32,.55);user-select:none}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 16px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:transform .4s var(--ease);transform-origin:left}
+.row-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:none;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:var(--r-m);padding:12px 20px;font-size:17px;box-shadow:0 3px 0 var(--brick-dark)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--brick-dark)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.opts{display:grid;gap:10px;margin-top:6px}
+.opt{border:2px solid var(--line);background:var(--surface);border-radius:var(--r-m);padding:14px 16px;text-align:left;font-weight:700;font-size:18px}
+.opt:hover{border-color:var(--accent)}
+.opt.ok{border-color:var(--ok);background:rgba(47,138,91,.15)}
+.opt.no{border-color:var(--no);background:rgba(192,57,43,.12)}
+.fb{margin-top:14px;font-weight:800;min-height:26px}
+.fb.ok{color:var(--ok)} .fb.no{color:var(--no)}
+.toggle{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--muted);font-size:15px;margin-top:14px}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+.stars{font-size:46px;color:#e7a400;letter-spacing:4px;margin:6px 0}
+.example{margin-top:14px;padding:12px 14px;border-radius:var(--r-m);background:var(--bg);font-weight:700;font-size:19px}
+.hint{color:var(--muted);font-weight:700;font-size:15px;margin-top:10px}
+
+@media (prefers-reduced-motion: no-preference){
+  .shake{animation:shake .38s var(--ease)}
+  @keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+  .pop{animation:pop .45s var(--ease)}
+  @keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+  .fade{animation:fade .35s var(--ease)}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+}
+@media (max-width:420px){.floor{height:38px}.win{width:16px;height:20px}.win:nth-child(n+3){display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Block of Flats</h1>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <button class="icon-btn" id="mute" aria-label="Sound on or off">🔊</button>
+  </header>
+  <div class="game">
+    <div class="tower-wrap">
+      <div class="roof"></div>
+      <div class="tower" id="tower"></div>
+      <div class="ground"><div class="door"></div></div>
+      <div class="lawn"></div>
+    </div>
+    <section class="panel" id="panel" aria-live="polite"></section>
+  </div>
+</div>
+
+<script>
+/* ===================== CONTENT (edit here) ===================== */
+const RESIDENTS = [
+  {name:"Jack",    floor:1,  he:true},
+  {name:"Tim",     floor:2,  he:true},
+  {name:"Henry",   floor:3,  he:true},
+  {name:"Mary",    floor:4,  he:false},
+  {name:"Sally",   floor:5,  he:false},
+  {name:"Molly",   floor:6,  he:false},
+  {name:"Nadim",   floor:7,  he:true},
+  {name:"Mustafa", floor:8,  he:true},
+  {name:"Tessa",   floor:9,  he:false},
+  {name:"Omar",    floor:10, he:true},
+  {name:"Paula",   floor:11, he:false},
+  {name:"Libby",   floor:12, he:false}
+];
+const ORD = ["","first","second","third","fourth","fifth","sixth","seventh","eighth","ninth","tenth","eleventh","twelfth"];
+const PERSONAL = [
+  ["What floor do you live on?","I live on the ... floor."],
+  ["Do you live in a flat or a house?","I live in a ..."],
+  ["Who lives next door to you?","My neighbour ... lives next door."],
+  ["Does your best friend live in a block of flats?","Yes, she does. / No, she doesn't."],
+  ["What floor does your grandma live on?","She lives on the ... floor."]
+];
+/* =============================================================== */
+
+const TOP = RESIDENTS.length;
+const num = n => n + (n===1?"st":n===2?"nd":n===3?"rd":"th");
+const pr = r => r.he ? "he" : "she";
+const Pr = r => r.he ? "He" : "She";
+const byFloor = n => RESIDENTS.find(r=>r.floor===n);
+const shuffle = a => {a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const rnd = a => a[Math.random()*a.length|0];
+const otherFloor = f => {let x;do{x=1+(Math.random()*TOP|0)}while(x===f);return x};
+
+/* ---------- sound + voice ---------- */
+let muted=false, actx=null;
+function tone(f,d,t=0){ if(muted) return;
+  try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain(), s=actx.currentTime+t;
+    o.frequency.value=f; o.type="triangle"; g.gain.setValueAtTime(.18,s); g.gain.exponentialRampToValueAtTime(.001,s+d);
+    o.connect(g).connect(actx.destination); o.start(s); o.stop(s+d);
+  }catch(e){} }
+const sndOk=()=>{tone(660,.15);tone(880,.2,.12)};
+const sndNo=()=>tone(180,.25);
+const sndWin=()=>{[523,659,784,1046].forEach((f,i)=>tone(f,.25,i*.13))};
+let voice=null;
+function pickVoice(){ if(!("speechSynthesis" in window)) return;
+  const v=speechSynthesis.getVoices();
+  voice=v.find(x=>x.lang==="en-GB")||v.find(x=>x.lang&&x.lang.startsWith("en"))||null; }
+if("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
+function say(t){ if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  /* голосовой движок путает глагол lives /lɪvz/ с мн. ч. от life /laɪvz/, поэтому подменяем написание только для озвучки */
+  t=t.replace(/\blives\b/gi,"livs");
+  const u=new SpeechSynthesisUtterance(t);
+  u.lang="en-GB"; u.rate=.85; if(voice) u.voice=voice; speechSynthesis.speak(u); }
+document.getElementById("mute").onclick=e=>{muted=!muted;e.currentTarget.textContent=muted?"🔇":"🔊"};
+
+/* ---------- state ---------- */
+const LEVELS=[{id:1,label:"1 Move in"},{id:2,label:"2 Does...?"},{id:3,label:"3 Where...?"},{id:4,label:"4 Speak"}];
+const stars={1:0,2:0,3:0};
+let level=1, S={}, tenants={}, mark={};
+
+const tower=document.getElementById("tower"), panel=document.getElementById("panel");
+
+function renderTabs(){
+  document.getElementById("tabs").innerHTML = LEVELS.map(l=>
+    `<button class="tab" role="tab" aria-selected="${l.id===level}" data-l="${l.id}">${l.label}${stars[l.id]?`<span class="st">${"★".repeat(stars[l.id])}</span>`:""}</button>`).join("");
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>startLevel(+b.dataset.l));
+}
+function renderTower(popFloor){
+  let h="";
+  for(let n=TOP;n>=1;n--){
+    const r=tenants[n]?byFloor(n):null;
+    h+=`<button class="floor ${mark[n]||""}" data-n="${n}" aria-label="${ORD[n]} floor${r?", "+r.name:""}">
+      <span class="num">${num(n)}</span>
+      <span class="row"><i class="win"></i><i class="win"></i><i class="win"></i><i class="win"></i>
+      ${r?`<span class="tenant ${n===popFloor?"pop":""}"><span class="ava ${r.he?"he":"she"}">${r.name[0]}</span>${r.name}</span>`:""}</span>
+    </button>`;
+  }
+  tower.innerHTML=h;
+  tower.querySelectorAll(".floor").forEach(b=>b.onclick=()=>onFloor(+b.dataset.n,b));
+}
+function flash(n,cls,ms=900){ mark={[n]:cls}; renderTower(); setTimeout(()=>{ if(mark[n]===cls){mark={};renderTower();} },ms); }
+function fillAll(){ tenants={}; RESIDENTS.forEach(r=>tenants[r.floor]=true); }
+
+function startLevel(n){
+  level=n; mark={}; if("speechSynthesis" in window) speechSynthesis.cancel();
+  if(n===1){ tenants={}; S={q:shuffle(RESIDENTS),i:0,err:0,started:false}; }
+  if(n===2){ fillAll(); S={q:shuffle(RESIDENTS).slice(0,10).map(r=>{const t=Math.random()<.5;return{r,t,f:t?r.floor:otherFloor(r.floor)}}),i:0,err:0,answered:false}; }
+  if(n===3){ fillAll(); S={q:shuffle(RESIDENTS).slice(0,8).map(makeWhere),i:0,err:0,answered:false}; }
+  if(n===4){ fillAll(); S={deck:makeDeck(),i:0,show:false,spoken:-1}; }
+  renderTabs(); renderTower(); render();
+}
+
+/* ---------- audio-first question ---------- */
+function ask(text){
+  return `<p class="prompt hidden-text" id="pr">${text}</p>
+    <div class="row-btns"><button class="btn ghost" id="again">🔊 Listen again</button>
+    <button class="btn ghost" id="peek">Show text</button></div>`;
+}
+function wireAsk(text,auto=true){
+  document.getElementById("again").onclick=()=>say(text);
+  const pk=document.getElementById("peek");
+  pk.onclick=()=>{document.getElementById("pr").classList.remove("hidden-text");pk.remove()};
+  if(auto) setTimeout(()=>say(text),350);
+}
+
+/* ---------- level 1 ---------- */
+const clue1 = r => `${r.name} lives on the ${ORD[r.floor]} floor.`;
+function render1(){
+  if(!S.started){
+    panel.innerHTML=`<div class="fade"><p class="kicker">Level 1 · Move in</p>
+      <p class="prompt">New people are moving in! Listen and tap the right floor.</p>
+      <p class="hint">🎧 Every task is read aloud. If it's too hard, press "Show text".</p>
+      <div class="row-btns" style="margin-top:18px"><button class="btn" id="go">Start</button></div></div>`;
+    document.getElementById("go").onclick=()=>{S.started=true;render()};
+    return;
+  }
+  const r=S.q[S.i];
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level 1 · Move in · ${S.i+1} / ${TOP}</p>
+    <div class="bar"><i style="transform:scaleX(${S.i/TOP})"></i></div>
+    ${ask(clue1(r))}
+    <p class="fb" id="fb"></p></div>`;
+  wireAsk(clue1(r));
+}
+function check1(n,el){
+  if(!S.started) return;
+  const r=S.q[S.i], fb=document.getElementById("fb");
+  if(n===r.floor){
+    sndOk(); tenants[n]=true; S.i++;
+    if(S.i===TOP){ renderTower(n); return finish(1,S.err<=1?3:S.err<=4?2:1, `${S.err} mistake${S.err===1?"":"s"}`); }
+    renderTower(n); setTimeout(render,500);
+  }else{
+    sndNo(); S.err++; flash(n,"no",600); tower.querySelector(`[data-n="${n}"]`).classList.add("shake");
+    fb.className="fb no"; fb.textContent=`No, that's the ${ORD[n]} floor. Try again!`;
+  }
+}
+
+/* ---------- level 2 ---------- */
+function render2(){
+  const q=S.q[S.i], text=`Does ${q.r.name} live on the ${ORD[q.f]} floor?`;
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level 2 · Does...? · ${S.i+1} / ${S.q.length}</p>
+    <div class="bar"><i style="transform:scaleX(${S.i/S.q.length})"></i></div>
+    ${ask(text)}
+    <div class="opts" style="margin-top:16px"><button class="opt" data-a="1">Yes, ${pr(q.r)} does.</button><button class="opt" data-a="0">No, ${pr(q.r)} doesn't.</button></div>
+    <p class="fb" id="fb"></p><div id="nx"></div></div>`;
+  wireAsk(text);
+  panel.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer2(b,!!+b.dataset.a));
+}
+function answer2(b,yes){
+  if(S.answered) return; S.answered=true;
+  const q=S.q[S.i], right=yes===q.t, fb=document.getElementById("fb");
+  panel.querySelectorAll(".opt").forEach(o=>{ if(!!+o.dataset.a===q.t) o.classList.add("ok"); });
+  if(!right){ b.classList.add("no","shake"); S.err++; sndNo(); } else sndOk();
+  const full=`${Pr(q.r)} lives on the ${ORD[q.r.floor]} floor.`;
+  fb.className="fb "+(right?"ok":"no"); fb.textContent=(right?"Right! ":"Not quite. ")+full; setTimeout(()=>say(full),right?350:450);
+  mark={[q.r.floor]:"hl"}; renderTower();
+  nextBtn(()=>{S.i++;S.answered=false;mark={};renderTower();
+    if(S.i===S.q.length) finish(2,S.err===0?3:S.err<=2?2:1,`${S.q.length-S.err} / ${S.q.length} correct`); else render();});
+}
+
+/* ---------- level 3 ---------- */
+function makeWhere(r){
+  const P=Pr(r), o=ORD[r.floor], near=r.floor===TOP?r.floor-1:r.floor+1;
+  const wrong=shuffle([`${P} live on the ${o} floor.`,`${P} lives on the ${ORD[near]} floor.`,`${P} lives in the ${o} floor.`]).slice(0,2);
+  const right=`${P} lives on the ${o} floor.`;
+  return {r,right,opts:shuffle([right,...wrong])};
+}
+function render3(){
+  const q=S.q[S.i], text=`Where does ${q.r.name} live?`;
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level 3 · Where...? · ${S.i+1} / ${S.q.length}</p>
+    <div class="bar"><i style="transform:scaleX(${S.i/S.q.length})"></i></div>
+    ${ask(text)}
+    <div class="opts" style="margin-top:16px">${q.opts.map(o=>`<button class="opt">${o}</button>`).join("")}</div>
+    <p class="hint">Look at the building. Be careful with the grammar!</p>
+    <p class="fb" id="fb"></p><div id="nx"></div></div>`;
+  wireAsk(text);
+  panel.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer3(b));
+}
+function answer3(b){
+  if(S.answered) return; S.answered=true;
+  const q=S.q[S.i], right=b.textContent===q.right, fb=document.getElementById("fb");
+  panel.querySelectorAll(".opt").forEach(o=>{ if(o.textContent===q.right) o.classList.add("ok"); });
+  if(!right){ b.classList.add("no","shake"); S.err++; sndNo(); } else sndOk();
+  setTimeout(()=>say(q.right),350);
+  fb.className="fb "+(right?"ok":"no"); fb.textContent=right?"Great!":`The answer is: ${q.right}`;
+  mark={[q.r.floor]:"hl"}; renderTower();
+  nextBtn(()=>{S.i++;S.answered=false;mark={};renderTower();
+    if(S.i===S.q.length) finish(3,S.err===0?3:S.err<=2?2:1,`${S.q.length-S.err} / ${S.q.length} correct`); else render();});
+}
+
+/* ---------- level 4 ---------- */
+function makeDeck(){
+  const b=[], rs=shuffle(RESIDENTS);
+  for(let i=0;i<8;i++){
+    const r=rs[i], t=i%4;
+    if(t===0) b.push([`Ask me where ${r.name} lives.`,`Where does ${r.name} live?`]);
+    if(t===1){const f=Math.random()<.5?r.floor:otherFloor(r.floor);
+      b.push([`Ask me a yes / no question: ${r.name}, the ${ORD[f]} floor.`,`Does ${r.name} live on the ${ORD[f]} floor?`]);}
+    if(t===2) b.push([`Ask me who lives on the ${ORD[r.floor]} floor.`,`Who lives on the ${ORD[r.floor]} floor?`]);
+    if(t===3) b.push([`Tell me about ${r.name}.`,`${Pr(r)} lives on the ${ORD[r.floor]} floor.`]);
+  }
+  return [...shuffle(b),...shuffle(PERSONAL)];
+}
+function render4(){
+  const c=S.deck[S.i];
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level 4 · Speak · card ${S.i+1} / ${S.deck.length}</p>
+    <div class="bar"><i style="transform:scaleX(${S.i/S.deck.length})"></i></div>
+    ${ask(c[0])}
+    <div class="row-btns" style="margin-top:10px"><button class="btn ghost" id="ex">${S.show?"Hide":"Show"} example</button>
+    <button class="btn" id="nx4">${S.i===S.deck.length-1?"New cards":"Next card"}</button></div>
+    ${S.show?`<div class="example fade">${c[1]}</div>`:""}
+    <p class="hint">Say it out loud. Tap any floor to hear who lives there.</p></div>`;
+  wireAsk(c[0], S.spoken!==S.i); S.spoken=S.i;
+  document.getElementById("ex").onclick=()=>{S.show=!S.show;render()};
+  document.getElementById("nx4").onclick=()=>{ if(S.i===S.deck.length-1){S.deck=makeDeck();S.i=0;S.spoken=-1}else S.i++; S.show=false; render(); };
+}
+
+/* ---------- shared ---------- */
+function nextBtn(fn){ const d=document.getElementById("nx");
+  d.innerHTML=`<div class="row-btns" style="margin-top:14px"><button class="btn" id="nb">Next</button></div>`;
+  const b=document.getElementById("nb"); b.onclick=fn; b.focus(); }
+function finish(l,s,detail){
+  stars[l]=Math.max(stars[l],s); renderTabs(); sndWin();
+  panel.innerHTML=`<div class="fade"><p class="kicker">Level ${l} complete</p>
+    <div class="stars">${"★".repeat(s)}${"☆".repeat(3-s)}</div>
+    <p class="prompt">${s===3?"Excellent!":s===2?"Well done!":"Good try!"}</p><p class="hint">${detail}</p>
+    <div class="row-btns" style="margin-top:18px"><button class="btn ghost" id="rp">Play again</button>
+    <button class="btn" id="nl">Next level</button></div></div>`;
+  document.getElementById("rp").onclick=()=>startLevel(l);
+  document.getElementById("nl").onclick=()=>startLevel(l+1);
+}
+function onFloor(n,el){
+  if(level===1) return check1(n,el);
+  const r=byFloor(n); say(`${r.name} lives on the ${ORD[n]} floor.`); flash(n,"hl",1200);
+}
+function render(){ ({1:render1,2:render2,3:render3,4:render4})[level](); }
+
+startLevel(1);
+</script>
+</body>
+</html>
