@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weekend Detective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#67c9d1; --bg-deep:#4fb3bc; --paper:#fffaf0; --paper-2:#f6edd9;
+  --ink:#3b1d14; --ink-soft:#6b4a3c; --line:#e2d4b8; --stamp:#c2362b; --ok:#2f7d4f;
+  --me:#3b1d14; --me-ink:#fffaf0;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1d4a4f; --bg-deep:#163a3e; --paper:#2a2622; --paper-2:#332d27;
+    --ink:#f5eadb; --ink-soft:#cbb8a6; --line:#4a4038; --stamp:#ef6b5f; --ok:#6fcf97;
+    --me:#f5eadb; --me-ink:#2a2622;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1d4a4f; --bg-deep:#163a3e; --paper:#2a2622; --paper-2:#332d27;
+  --ink:#f5eadb; --ink-soft:#cbb8a6; --line:#4a4038; --stamp:#ef6b5f; --ok:#6fcf97;
+  --me:#f5eadb; --me-ink:#2a2622;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.45;
+}
+.hand{font-family:"Patrick Hand","Comic Sans MS",cursive}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+
+/* header */
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-family:"Patrick Hand",cursive;font-weight:400;font-size:clamp(2.2rem,7vw,3.4rem);line-height:1;margin:0;color:var(--ink)}
+.sub{margin:6px 0 0;color:var(--ink);opacity:.85;max-width:44ch}
+.progress{font-family:"Patrick Hand",cursive;font-size:1.35rem;background:var(--paper);padding:6px 14px;border-radius:12px;white-space:nowrap}
+
+/* board */
+.board{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(min-width:720px){.board{grid-template-columns:repeat(3,1fr);gap:20px}}
+.card{
+  position:relative;text-align:left;border:0;background:var(--paper);border-radius:14px;
+  padding:16px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  box-shadow:0 3px 0 var(--bg-deep);transition:transform .15s ease;
+}
+.card:nth-child(odd){transform:rotate(-1.2deg)}
+.card:nth-child(even){transform:rotate(1deg)}
+.card:hover{transform:rotate(0) translateY(-3px)}
+.card .name{font-family:"Patrick Hand",cursive;font-size:1.6rem;line-height:1}
+.card .status{font-size:.9rem;color:var(--ink-soft);text-align:center;min-height:2.6em}
+.card.solved .status{color:var(--ink)}
+.pin{position:absolute;top:-7px;left:50%;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--stamp);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.avatar{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-family:"Patrick Hand",cursive;font-size:2.2rem;color:#fff;border:3px solid var(--paper);box-shadow:0 0 0 2px var(--line)}
+.stamp{
+  position:absolute;top:34px;right:6px;transform:rotate(-14deg);
+  font-family:"Patrick Hand",cursive;font-size:1.1rem;color:var(--stamp);border:2.5px solid var(--stamp);
+  border-radius:8px;padding:0 8px;letter-spacing:.06em;background:color-mix(in srgb,var(--paper) 70%,transparent)
+}
+.stars{color:#e0a100;letter-spacing:2px}
+
+/* interview sheet */
+.overlay{position:fixed;inset:0;background:rgba(20,30,32,.55);display:none;align-items:flex-end;justify-content:center;z-index:10;padding-top:env(safe-area-inset-top,0px)}
+.overlay.open{display:flex}
+@media(min-width:720px){.overlay{align-items:center;padding:24px}}
+.sheet{
+  background:var(--paper);width:100%;max-width:640px;max-height:100%;overflow:auto;
+  border-radius:20px 20px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom,0px));
+}
+@media(min-width:720px){.sheet{border-radius:20px;max-height:92vh}}
+.sheet-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.sheet-head .avatar{width:54px;height:54px;font-size:1.7rem}
+.sheet-head h2{font-family:"Patrick Hand",cursive;font-weight:400;font-size:1.9rem;margin:0;line-height:1}
+.sheet-head p{margin:2px 0 0;color:var(--ink-soft);font-size:.9rem}
+.close{margin-left:auto;border:0;background:var(--paper-2);border-radius:50%;width:40px;height:40px;font-size:1.3rem;flex:none}
+
+.chat{background:var(--paper-2);border-radius:14px;padding:12px;min-height:120px;max-height:34vh;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.chat .empty{color:var(--ink-soft);font-size:.95rem;margin:auto;text-align:center}
+.bub{max-width:85%;padding:8px 12px;border-radius:14px;font-size:1rem}
+.bub.me{align-self:flex-end;background:var(--me);color:var(--me-ink);border-bottom-right-radius:4px}
+.bub.them{align-self:flex-start;background:var(--paper);border:1.5px solid var(--line);border-bottom-left-radius:4px}
+.bub.typing{color:var(--ink-soft)}
+@media (prefers-reduced-motion:no-preference){.bub{animation:pop .2s ease-out}}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+h3{font-family:"Patrick Hand",cursive;font-weight:400;font-size:1.4rem;margin:16px 0 8px}
+.qs{display:flex;flex-wrap:wrap;gap:8px}
+.q{border:2px solid var(--ink);background:transparent;border-radius:999px;padding:7px 14px;font-weight:700;font-size:.95rem}
+.q.asked{opacity:.45}
+.q:disabled{cursor:wait}
+
+.q[aria-pressed="true"]{background:var(--ink);color:var(--paper);opacity:1}
+.hint-line{margin:-4px 0 10px;color:var(--ink-soft);font-size:.92rem}
+.build{margin-top:12px;background:var(--paper-2);border-radius:14px;padding:12px}
+.line{min-height:54px;border-bottom:2.5px solid var(--ink);display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 2px}
+.line .ph{color:var(--ink-soft);font-size:.92rem}
+.qm{font-family:"Patrick Hand",cursive;font-size:1.8rem;margin-left:2px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.tile{border:2px solid var(--ink);background:var(--paper);border-radius:10px;padding:6px 12px;font-family:"Patrick Hand",cursive;font-size:1.45rem;line-height:1.1}
+.tile.in{background:var(--ink);color:var(--paper)}
+.pool .tile:disabled{opacity:.18;cursor:default}
+.build-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.notes{margin-top:6px;border-top:2px dashed var(--line);padding-top:4px}
+.acts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:520px){.acts{grid-template-columns:repeat(4,1fr)}}
+.act{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:8px 6px;font-size:.88rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.act .e{font-size:1.5rem}
+.act[aria-pressed="true"]{border-color:var(--ink);background:var(--paper-2);box-shadow:inset 0 0 0 1px var(--ink)}
+.faces{display:flex;gap:10px}
+.face{flex:1;border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:6px;font-size:.85rem;font-weight:700}
+.face .e{display:block;font-size:2rem;line-height:1.2}
+.face[aria-pressed="true"]{border-color:var(--ink);background:var(--paper-2);box-shadow:inset 0 0 0 1px var(--ink)}
+.solve{margin-top:16px;width:100%;border:0;background:var(--stamp);color:#fff;border-radius:14px;padding:14px;font-weight:800;font-size:1.05rem}
+.solve:disabled{opacity:.4;cursor:not-allowed}
+.feedback{margin:12px 0 0;min-height:1.5em;font-weight:700}
+.feedback.bad{color:var(--stamp)}
+.result{margin-top:14px;background:var(--paper-2);border-radius:14px;padding:14px;border-left:6px solid var(--ok)}
+.result .say{font-family:"Patrick Hand",cursive;font-size:1.6rem;line-height:1.2;margin:4px 0}
+.result small{color:var(--ink-soft)}
+.btn{border:2px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:12px;padding:10px 16px;font-weight:800;margin-top:10px}
+
+/* final */
+.final ol{padding-left:1.3em;margin:8px 0}
+.final li{font-family:"Patrick Hand",cursive;font-size:1.35rem;line-height:1.3;margin:4px 0}
+.yourturn{background:var(--paper-2);border-radius:14px;padding:12px 14px;margin-top:12px}
+.yourturn p{margin:3px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Weekend Detective</h1>
+      <p class="sub">Six kids, six weekends. Ask questions, find out what each person did and how it was.</p>
+    </div>
+    <div class="progress" id="progress">Cases closed: 0 / 6</div>
+  </header>
+  <main class="board" id="board"></main>
+</div>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="sheetName">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+/* ===== CONTENT: edit freely ===== */
+const ACTIVITIES = [
+  {id:"cinema",   e:"🎬", label:"go to the cinema",        past:"went to the cinema"},
+  {id:"dvd",      e:"📀", label:"watch a DVD",             past:"watched a DVD"},
+  {id:"party",    e:"🎉", label:"go to a party",           past:"went to a party"},
+  {id:"football", e:"⚽", label:"go to a football match",  past:"went to a football match"},
+  {id:"festival", e:"🎸", label:"go to a music festival",  past:"went to a music festival"},
+  {id:"bed",      e:"🛏️", label:"stay in bed",             past:"stayed in bed"},
+  {id:"wedding",  e:"💒", label:"go to a wedding",         past:"went to a wedding"},
+  {id:"tennis",   e:"🎾", label:"play tennis",             past:"played tennis"}
+];
+const MOODS = [
+  {id:"happy", e:"😄", label:"great"},
+  {id:"ok",    e:"😐", label:"OK"},
+  {id:"sad",   e:"🙁", label:"bad"}
+];
+/* words = correct order, extra = one trap word */
+const QUESTIONS = [
+  {id:"how",   icon:"😊", topic:"feelings", text:"How was your weekend?", words:["how","was","your","weekend"], extra:"were"},
+  {id:"what",  icon:"🎯", topic:"activity", text:"What did you do?",      words:["what","did","you","do"],      extra:"does"},
+  {id:"where", icon:"📍", topic:"place",    text:"Where did you go?",     words:["where","did","you","go"],     extra:"went"},
+  {id:"who",   icon:"👥", topic:"people",   text:"Who did you go with?",  words:["who","did","you","go","with"],extra:"went"},
+  {id:"good",  icon:"👍", topic:"opinion",  text:"Was it good?",          words:["was","it","good"],            extra:"were"}
+];
+const SUSPECTS = [
+  {id:"hayley", name:"Hayley", color:"#8e4fb8", activity:"festival", mood:"happy", phrase:"brilliant",
+   a:{how:"It was brilliant! I'm still so happy.",
+      what:"I listened to six bands and danced all day. I saw my favourite singer on a big stage!",
+      where:"I went to a big field outside the city. There were three stages and lots of tents.",
+      who:"I went with my cousin Priya. We slept in a tent for two nights.",
+      good:"Yes! It was brilliant. I want to go again next year."}},
+  {id:"helen", name:"Helen", color:"#d4688f", activity:"wedding", mood:"sad", phrase:"a bit boring",
+   a:{how:"Hmm. It was a bit boring, to be honest.",
+      what:"I wore a long pink dress. I saw my aunt in a beautiful white dress, and everybody cried.",
+      where:"I went to a church, and then to a big restaurant.",
+      who:"With my mum, my dad and about a hundred other people!",
+      good:"Not really. The speeches were sooo long. It was a bit boring."}},
+  {id:"sanjit", name:"Sanjit", color:"#3f8f4a", activity:"football", mood:"ok", phrase:"OK",
+   a:{how:"It was OK. Not great, not terrible.",
+      what:"I watched twenty-two players and one ball! I shouted a lot. The score was 1:1.",
+      where:"I went to the stadium in the city centre.",
+      who:"With my dad. He always wears a red scarf for our team.",
+      good:"It was OK. Our team didn't win, but they didn't lose."}},
+  {id:"tom", name:"Tom", color:"#c99a12", activity:"party", mood:"happy", phrase:"fantastic",
+   a:{how:"Fantastic! The best Saturday ever.",
+      what:"We danced, played games and ate pizza. Then there was a huge chocolate cake!",
+      where:"I went to my friend Jack's house. It was his birthday.",
+      who:"With my sister. Jack invited twenty kids.",
+      good:"Yes! It was fantastic. I gave Jack a skateboard."}},
+  {id:"chen", name:"Chen", color:"#e0702a", activity:"bed", mood:"sad", phrase:"terrible",
+   a:{how:"It was terrible. Really terrible.",
+      what:"Nothing! I didn't watch TV, I didn't play games. I slept and slept. I had a bad cold.",
+      where:"I didn't go anywhere. I stayed at home all weekend.",
+      who:"Only my cat, Mochi. She slept next to me.",
+      good:"No! It was terrible. And I missed a party."}},
+  {id:"martha", name:"Martha", color:"#2b9a8f", activity:"cinema", mood:"ok", phrase:"not bad",
+   a:{how:"It was not bad.",
+      what:"I saw a new film about dragons. I ate a big box of popcorn in the dark.",
+      where:"I went to the city centre, to a big building with a huge screen.",
+      who:"With my best friend, Lily.",
+      good:"It was not bad. The dragons were cool, but the ending was silly."}}
+];
+/* ===== END CONTENT ===== */
+
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let state, current = null, busy = false, builder = null;
+
+function reset(){
+  state = {};
+  SUSPECTS.forEach(s => state[s.id] = {asked:new Set(), log:[], wrong:0, solved:false, stars:0, pickA:null, pickM:null});
+  renderBoard();
+}
+const $ = s => document.querySelector(s);
+const act = id => ACTIVITIES.find(a => a.id === id);
+const mood = id => MOODS.find(m => m.id === id);
+const sentence = s => `${s.name} ${act(s.activity).past}. It was ${s.phrase}!`;
+
+function renderBoard(){
+  const solved = SUSPECTS.filter(s => state[s.id].solved).length;
+  $("#progress").textContent = `Cases closed: ${solved} / 6`;
+  $("#board").innerHTML = SUSPECTS.map(s => {
+    const st = state[s.id];
+    const status = st.solved
+      ? `${act(s.activity).e} ${mood(s.mood).e}<br><span class="stars">${"★".repeat(st.stars)}${"☆".repeat(3-st.stars)}</span>`
+      : `🔍 Tap to interview`;
+    return `<button class="card ${st.solved?"solved":""}" data-id="${s.id}" aria-label="${s.name}${st.solved?", solved":""}">
+      <span class="pin"></span>
+      <span class="avatar" style="background:${s.color}">${s.name[0]}</span>
+      <span class="name">${s.name}</span>
+      <span class="status">${status}</span>
+      ${st.solved?'<span class="stamp">SOLVED</span>':""}
+    </button>`;
+  }).join("");
+  document.querySelectorAll(".card").forEach(b => b.onclick = () => openCase(b.dataset.id));
+  if (solved === 6) setTimeout(showFinal, reduce ? 0 : 400);
+}
+
+function openCase(id){
+  current = SUSPECTS.find(s => s.id === id);
+  builder = null;
+  renderSheet();
+  $("#overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+  $(".close").focus();
+}
+function closeSheet(){
+  $("#overlay").classList.remove("open");
+  document.body.style.overflow = "";
+  current = null;
+  renderBoard();
+}
+
+function renderSheet(){
+  const s = current, st = state[s.id];
+  const log = st.log.length
+    ? st.log.map(m => `<div class="bub ${m.who}">${m.text}</div>`).join("")
+    : `<p class="empty">Choose a question and read it aloud.</p>`;
+  const notes = st.solved ? resultBlock(s) : `
+    <div class="notes">
+      <h3>What did ${s.name} do?</h3>
+      <div class="acts">${ACTIVITIES.map(a => `<button class="act" data-a="${a.id}" aria-pressed="${st.pickA===a.id}"><span class="e">${a.e}</span>${a.label}</button>`).join("")}</div>
+      <h3>How was it?</h3>
+      <div class="faces">${MOODS.map(m => `<button class="face" data-m="${m.id}" aria-pressed="${st.pickM===m.id}"><span class="e">${m.e}</span>${m.label}</button>`).join("")}</div>
+      <button class="solve" id="solve" ${st.pickA&&st.pickM?"":"disabled"}>Close the case</button>
+      <p class="feedback" id="fb" aria-live="polite"></p>
+    </div>`;
+  $("#sheet").innerHTML = `
+    <div class="sheet-head">
+      <span class="avatar" style="background:${s.color}">${s.name[0]}</span>
+      <div><h2 id="sheetName">${s.name}</h2><p>${st.solved ? "Case closed" : "Questions asked: " + st.asked.size}</p></div>
+      <button class="close" aria-label="Back to the board">✕</button>
+    </div>
+    <div class="chat" id="chat">${log}</div>
+    ${st.solved ? "" : `<h3>Ask ${s.name}</h3>
+    <p class="hint-line">Pick a topic and build the question. One word is extra!</p>
+    <div class="qs">${QUESTIONS.map(q => `<button class="q ${st.asked.has(q.id)?"asked":""}" data-q="${q.id}" aria-pressed="${builder&&builder.qid===q.id}" ${busy?"disabled":""}>${q.icon} ${q.topic}</button>`).join("")}</div>
+    <div id="builder"></div>`}
+    ${notes}`;
+  const chat = $("#chat"); chat.scrollTop = chat.scrollHeight;
+  $(".close").onclick = closeSheet;
+  document.querySelectorAll(".q").forEach(b => b.onclick = () => openBuilder(b.dataset.q));
+  renderBuilder();
+  document.querySelectorAll(".act").forEach(b => b.onclick = () => { st.pickA = b.dataset.a; refreshPicks(); });
+  document.querySelectorAll(".face").forEach(b => b.onclick = () => { st.pickM = b.dataset.m; refreshPicks(); });
+  const solve = $("#solve"); if (solve) solve.onclick = check;
+  const back = $("#backBtn"); if (back) back.onclick = closeSheet;
+}
+function refreshPicks(){
+  const st = state[current.id];
+  document.querySelectorAll(".act").forEach(b => b.setAttribute("aria-pressed", st.pickA === b.dataset.a));
+  document.querySelectorAll(".face").forEach(b => b.setAttribute("aria-pressed", st.pickM === b.dataset.m));
+  $("#solve").disabled = !(st.pickA && st.pickM);
+  $("#fb").textContent = ""; $("#fb").className = "feedback";
+}
+
+/* ===== question builder ===== */
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+  return a;
+}
+function openBuilder(qid){
+  if (busy) return;
+  const q = QUESTIONS.find(x => x.id === qid);
+  const pool = q.words.concat(q.extra);
+  let order;
+  do { order = shuffle(pool.map((w,i) => ({w, id:i}))); }
+  while (order.slice(0, q.words.length).map(t => t.w).join(" ") === q.words.join(" "));
+  builder = {qid, tiles:order, line:[], tries:0};
+  document.querySelectorAll(".q").forEach(b => b.setAttribute("aria-pressed", b.dataset.q === qid));
+  renderBuilder();
+}
+function renderBuilder(){
+  const box = $("#builder");
+  if (!box) return;
+  if (!builder){ box.innerHTML = ""; return; }
+  const q = QUESTIONS.find(x => x.id === builder.qid);
+  const placed = builder.line.map(id => builder.tiles.find(t => t.id === id));
+  const lineHtml = placed.length
+    ? placed.map((t,i) => `<button class="tile in" data-t="${t.id}">${i===0 ? t.w[0].toUpperCase()+t.w.slice(1) : t.w}</button>`).join("")
+    : `<span class="ph">Tap the words in order</span>`;
+  box.innerHTML = `
+    <div class="build">
+      <div class="line" id="line">${lineHtml}<span class="qm">?</span></div>
+      <div class="pool">${builder.tiles.map(t => `<button class="tile" data-t="${t.id}" ${builder.line.includes(t.id)?"disabled":""}>${t.w}</button>`).join("")}</div>
+      <div class="build-actions">
+        <button class="btn" id="sendQ" ${placed.length ? "" : "disabled"}>Ask</button>
+        ${builder.tries >= 2 ? `<button class="btn ghost" id="hintQ">Hint</button>` : ""}
+        <button class="btn ghost" id="clearQ">Clear</button>
+      </div>
+      <p class="feedback" id="bfb" aria-live="polite"></p>
+    </div>`;
+  box.querySelectorAll(".pool .tile").forEach(b => b.onclick = () => { builder.line.push(+b.dataset.t); renderBuilder(); });
+  box.querySelectorAll(".line .tile").forEach(b => b.onclick = () => { builder.line = builder.line.filter(id => id !== +b.dataset.t); renderBuilder(); });
+  $("#clearQ").onclick = () => { builder.line = []; renderBuilder(); };
+  $("#sendQ").onclick = checkQuestion;
+  const h = $("#hintQ"); if (h) h.onclick = hint;
+}
+function checkQuestion(){
+  const q = QUESTIONS.find(x => x.id === builder.qid);
+  const built = builder.line.map(id => builder.tiles.find(t => t.id === id).w);
+  if (built.join(" ") === q.words.join(" ")){
+    builder = null;
+    ask(q.id);
+    return;
+  }
+  builder.tries++;
+  renderBuilder();
+  const fb = $("#bfb");
+  fb.className = "feedback bad";
+  fb.textContent = built.includes(q.extra)
+    ? `Hmm, one word here is extra. Look again!`
+    : built.length < q.words.length ? "Some words are missing." : "Check the word order.";
+  const line = $("#line");
+  if (!reduce){ line.classList.remove("shake"); void line.offsetWidth; line.classList.add("shake"); }
+}
+function hint(){
+  const q = QUESTIONS.find(x => x.id === builder.qid);
+  const built = builder.line.map(id => builder.tiles.find(t => t.id === id).w);
+  let k = 0;
+  while (k < built.length && built[k] === q.words[k]) k++;
+  const used = new Set();
+  builder.line = q.words.slice(0, Math.min(k + 1, q.words.length)).map(w => {
+    const t = builder.tiles.find(t => t.w === w && !used.has(t.id) && w !== undefined);
+    used.add(t.id); return t.id;
+  });
+  renderBuilder();
+}
+
+function ask(qid){
+  if (busy) return;
+  const s = current, st = state[s.id];
+  const q = QUESTIONS.find(x => x.id === qid);
+  st.asked.add(qid);
+  st.log.push({who:"me", text:q.text});
+  busy = true;
+  renderSheet();
+  const chat = $("#chat");
+  const typing = document.createElement("div");
+  typing.className = "bub them typing"; typing.textContent = "...";
+  chat.appendChild(typing); chat.scrollTop = chat.scrollHeight;
+  setTimeout(() => {
+    st.log.push({who:"them", text:s.a[qid]});
+    busy = false;
+    if (current === s) renderSheet();
+  }, reduce ? 150 : 650);
+}
+
+function check(){
+  const s = current, st = state[s.id];
+  const okA = st.pickA === s.activity, okM = st.pickM === s.mood;
+  if (okA && okM){
+    st.solved = true;
+    let stars = 3;
+    if (st.asked.size > 3) stars--;
+    stars -= st.wrong;
+    st.stars = Math.max(1, stars);
+    renderSheet();
+    return;
+  }
+  st.wrong++;
+  const fb = $("#fb");
+  fb.className = "feedback bad";
+  fb.textContent = !okA && !okM
+    ? "Not this time. Ask more questions!"
+    : !okA ? "The feeling is right, but the activity isn't. Ask another question."
+           : "The activity is right, but check the feeling. Ask: Was it good?";
+}
+
+function resultBlock(s){
+  const st = state[s.id];
+  return `<div class="result">
+    <small>Case closed <span class="stars">${"★".repeat(st.stars)}${"☆".repeat(3-st.stars)}</span>. Now say it aloud:</small>
+    <p class="say">${sentence(s)}</p>
+    <button class="btn" id="backBtn">Back to the board</button>
+  </div>`;
+}
+
+function showFinal(){
+  if (current) return;
+  const total = SUSPECTS.reduce((n,s) => n + state[s.id].stars, 0);
+  $("#sheet").innerHTML = `
+    <div class="sheet-head">
+      <div><h2 id="sheetName">All cases closed!</h2><p>Your score: <span class="stars">★</span> ${total} / 18</p></div>
+      <button class="close" aria-label="Close">✕</button>
+    </div>
+    <div class="final">
+      <h3>Read your report aloud</h3>
+      <ol>${SUSPECTS.map(s => `<li>${sentence(s)}</li>`).join("")}</ol>
+      <div class="yourturn">
+        <h3 style="margin-top:0">Your turn</h3>
+        <p>Ask your teacher these questions. Then answer them about your weekend.</p>
+        ${QUESTIONS.map(q => `<p class="hand" style="font-size:1.3rem">${q.text}</p>`).join("")}
+      </div>
+      <button class="btn" id="again">Play again</button>
+    </div>`;
+  current = {id:"__final"};
+  $("#overlay").classList.add("open");
+  $(".close").onclick = () => { $("#overlay").classList.remove("open"); current = null; document.body.style.overflow=""; };
+  $("#again").onclick = () => { $("#overlay").classList.remove("open"); current = null; document.body.style.overflow=""; reset(); };
+}
+
+document.addEventListener("keydown", e => { if (e.key === "Escape" && current && current.id !== "__final") closeSheet(); });
+$("#overlay").addEventListener("click", e => { if (e.target.id === "overlay" && current && current.id !== "__final") closeSheet(); });
+reset();
+</script>
+</body>
+</html>
