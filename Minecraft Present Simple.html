@@ -1,0 +1,353 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Minecraft Present Simple</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Lilita+One&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: sky backdrop, snake board of plank blocks on the left, task panel on the right (stacks under on narrow screens). Single deliberate daylight look. */
+:root{
+  --sky:#7ec4f0; --sky2:#bfe6ff;
+  --grass:#5da431; --grassD:#3f7a1f;
+  --dirt:#8a5a35; --dirtD:#5e3a1f;
+  --plank:#c9a064; --plankD:#9c7440; --ink:#2b1d0e;
+  --stone:#8d8d8d; --stoneD:#5f5f5f;
+  --panel:#f3ead6; --panelD:#d8c7a2;
+  --gold:#f2c230; --red:#d9412e; --diamond:#3fd3d0; --blue:#3a6fd8;
+  --display:"Silkscreen","Courier New",monospace;
+  --chunky:"Lilita One","Arial Black",sans-serif;
+  --body:"Nunito",system-ui,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(var(--sky),var(--sky2) 70%,var(--grass) 70%,var(--grassD));color:var(--ink);font-family:var(--body);}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:14px 24px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(18px,3vw,30px);margin:0;color:#fff;text-shadow:3px 3px 0 #000;letter-spacing:.02em;text-wrap:balance}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{background:var(--stone);border:3px solid var(--stoneD);box-shadow:inset 2px 2px 0 #b5b5b5;color:#fff;font-family:var(--display);font-size:12px;padding:4px 8px;text-shadow:1px 1px 0 #000}
+.stat b{font-size:15px;font-variant-numeric:tabular-nums}
+.btn{font-family:var(--display);font-weight:700;font-size:13px;cursor:pointer;border:3px solid #000;background:#a0a0a0;color:#fff;text-shadow:2px 2px 0 #3a3a3a;padding:8px 12px;box-shadow:inset -3px -3px 0 #5a5a5a,inset 3px 3px 0 #d6d6d6}
+.btn:hover{background:#8aa8e8}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.green{background:#4c9b2c}.btn.green:hover{background:#5fb83a}
+.btn.red{background:#b8432f}.btn.red:hover{background:#d55a44}
+.btn.small{font-size:11px;padding:5px 8px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+@media (max-width:900px){main{grid-template-columns:minmax(0,1fr)}}
+.boardbox{background:var(--dirt);border:4px solid #000;padding:8px;box-shadow:inset 0 10px 0 var(--grass),6px 6px 0 rgba(0,0,0,.35);padding-top:16px}
+.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.cell{position:relative;aspect-ratio:1.15/1;background:var(--plank);border:2px solid var(--ink);box-shadow:inset -3px -3px 0 var(--plankD),inset 3px 3px 0 #e4c58f;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--chunky);font-size:clamp(9px,1.35vw,15px);line-height:1.05;padding:3px;overflow:hidden;word-break:break-word}
+.cell.start,.cell.finish{background:var(--grass);color:#fff;text-shadow:2px 2px 0 #000;font-family:var(--display);box-shadow:inset -3px -3px 0 var(--grassD),inset 3px 3px 0 #8fd45d}
+.cell.finish{background:var(--gold);box-shadow:inset -3px -3px 0 #b88d10,inset 3px 3px 0 #ffe27a}
+.cell .ic{position:absolute;top:1px;right:2px;font-size:clamp(11px,1.5vw,17px);line-height:1}
+.cell.neg{background:#c8b6a0}
+.cell.ch{background:#d9a35a}
+.cell.q{background:#b7c9e8}
+.cell.tnt{background:#e3786a}
+.cell.dia{background:#9fe8e3}
+.cell.here{outline:4px solid #fff;outline-offset:-1px;z-index:2}
+.num{position:absolute;bottom:1px;right:3px;font-family:var(--display);font-size:9px;opacity:.55}
+.steve{position:absolute;left:3px;bottom:3px;width:26%;aspect-ratio:1;background:linear-gradient(#4a2f1a 0 30%,#c98e62 30% 100%);border:2px solid #000;box-shadow:2px 2px 0 rgba(0,0,0,.4);z-index:3;transition:transform .15s}
+.steve::before,.steve::after{content:"";position:absolute;top:48%;width:18%;height:14%;background:#fff;box-shadow:inset -3px 0 0 #3b56b5}
+.steve::before{left:16%}.steve::after{right:16%}
+.steve.hop{transform:translateY(-6px)}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:4px solid #000;box-shadow:inset -4px -4px 0 var(--panelD),6px 6px 0 rgba(0,0,0,.3);padding:14px;display:flex;flex-direction:column;gap:10px}
+.dicerow{display:flex;align-items:center;gap:14px}
+.die{width:72px;height:72px;background:#fff;border:4px solid #000;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:7px;gap:3px;box-shadow:inset -4px -4px 0 #ccc;flex:none}
+.die i{background:transparent}
+.die i.on{background:#000}
+.die.spin{animation:wob .1s infinite alternate}
+@keyframes wob{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
+.tasktype{font-family:var(--chunky);font-size:18px;display:flex;gap:8px;align-items:center}
+.prompt{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--chunky);font-size:20px;padding:6px 10px;border:3px solid #000;background:#fff;transition:filter .2s}
+.chip.subj{background:#ffe08a}.chip.mark{background:#a6e3ff}.chip.verb{background:#c8f0a8}
+.blur .chip{filter:blur(9px);user-select:none}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.frame{display:flex;flex-wrap:wrap;gap:4px;align-items:stretch}
+.slot{border:3px dashed #000;padding:6px 8px;font-family:var(--chunky);font-size:16px;background:#fff;display:flex;flex-direction:column;align-items:center;gap:2px}
+.slot small{font-family:var(--body);font-size:10px;font-weight:800;opacity:.6;text-transform:uppercase;letter-spacing:.06em}
+.slot.help{background:#ffd3d3;border-style:solid}
+.slot .s{color:var(--red);font-size:13px}
+.helpers{display:flex;gap:6px;flex-wrap:wrap}
+.helper{font-family:var(--display);font-weight:700;font-size:12px;padding:6px 8px;border:3px solid #000;background:#fff7e0}
+.helper.hot{background:#ffcf4a;animation:pulse .8s 3}
+@keyframes pulse{50%{transform:scale(1.12)}}
+.msg{font-weight:800;min-height:1.3em}
+.answer{font-family:var(--chunky);font-size:17px;color:var(--blue)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal{background:var(--panel);border:4px solid #000;box-shadow:inset -5px -5px 0 var(--panelD);max-width:720px;width:100%;max-height:92vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.modal h2{font-family:var(--display);margin:0;font-size:22px}
+.modal p{margin:0;line-height:1.45;max-width:65ch}
+.scale{display:flex;flex-direction:column;gap:6px}
+.sc{display:grid;grid-template-columns:110px 1fr 40px;align-items:center;gap:8px;cursor:pointer;background:#fff;border:3px solid #000;padding:5px 8px}
+.sc:hover{background:#fff4c9}
+.sc .w{font-family:var(--chunky);font-size:19px}
+.hearts{font-size:15px;letter-spacing:-1px;white-space:nowrap;overflow:hidden}
+.sc .pct{font-family:var(--display);font-size:11px;text-align:right}
+.ex{background:#fff;border:3px solid #000;padding:8px 10px;font-family:var(--chunky);font-size:19px;cursor:pointer}
+.ex:hover{background:#e7f6ff}
+.ex em{font-style:normal;background:#a6e3ff;padding:0 4px}
+.ex .ru{display:block;font-family:var(--body);font-size:13px;font-weight:700;opacity:.7}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;font-size:14px;font-weight:700}
+.legend div{background:#fff;border:2px solid #000;padding:6px}
+.big{font-family:var(--display);font-size:38px;font-weight:700;font-variant-numeric:tabular-nums}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.res div{background:#fff;border:3px solid #000;padding:10px;text-align:center;font-weight:800}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Minecraft Present Simple</h1>
+    <div class="stats">
+      <div class="stat">ПО РАМКЕ <b id="sFrame">0</b></div>
+      <div class="stat">БЕЗ РАМКИ <b id="sFree">0</b></div>
+      <div class="stat">ВОПРОСЫ <b id="sQ">0</b></div>
+      <div class="stat">⏱ <b id="sTime">0:00</b></div>
+    </div>
+    <button class="btn small" id="ruleBtn">Правило</button>
+  </header>
+
+  <main>
+    <div class="boardbox"><div class="board" id="board"></div></div>
+    <div class="side">
+      <div class="card">
+        <div class="dicerow">
+          <div class="die" id="die"></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="btn green" id="rollBtn">Бросить кубик</button>
+            <div class="msg" id="msg">Нажми, чтобы начать!</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="taskCard" hidden>
+        <div class="tasktype" id="taskType"></div>
+        <div class="prompt blur" id="prompt"></div>
+        <div class="row">
+          <button class="btn small" id="againBtn">🔊 Ещё раз</button>
+          <button class="btn small" id="showBtn">Показать текст</button>
+          <button class="btn small" id="frameBtn">Рамка</button>
+        </div>
+        <div class="frame" id="frame" hidden></div>
+        <div class="helpers">
+          <div class="helper" id="hAm">AM / IS / ARE</div>
+          <div class="helper" id="hDo">DO / DOES</div>
+          <div class="helper" id="hCan">CAN</div>
+        </div>
+        <div class="row">
+          <button class="btn green" id="okBtn">✓ Есть!</button>
+          <button class="btn red" id="tryBtn">↺ Подумай</button>
+          <button class="btn small" id="ansBtn">🔑</button>
+        </div>
+        <div class="answer" id="answer" hidden></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="rule">
+  <div class="modal">
+    <h2>Как часто? ❤️</h2>
+    <p>Нажимай на слово, чтобы услышать. Чем больше сердечек, тем чаще.</p>
+    <div class="scale" id="scale"></div>
+    <h2>Куда ставить?</h2>
+    <div class="ex" data-say="I often play Minecraft.">I <em>often</em> play Minecraft.<span class="ru">Наречие (always, often, never…) стоит ПЕРЕД глаголом.</span></div>
+    <div class="ex" data-say="I play Minecraft every day.">I play Minecraft <em>every day</em>.<span class="ru">Every day, on Mondays, in the morning… стоят В КОНЦЕ.</span></div>
+    <div class="ex" data-say="Steve always builds houses.">Steve <em>always</em> builds houses.<span class="ru">He / She / Steve → глагол + s.</span></div>
+    <h2>Особые блоки</h2>
+    <div class="legend">
+      <div>⛏ Кирка: скажи с <b>don't / doesn't</b></div>
+      <div>📦 Сундук: про другого человека (+s)</div>
+      <div>🕐 Часы: задай вопрос учителю</div>
+      <div>💣 TNT: назад на 2</div>
+      <div>💎 Алмаз: вперёд на 2</div>
+    </div>
+    <button class="btn green" id="startBtn">Играть!</button>
+  </div>
+</div>
+
+<div class="overlay" id="finish" hidden>
+  <div class="modal">
+    <h2>🏆 FINISH!</h2>
+    <div class="res">
+      <div>По рамке<div class="big" id="fFrame">0</div></div>
+      <div>Без рамки<div class="big" id="fFree">0</div></div>
+      <div>Вопросы<div class="big" id="fQ">0</div></div>
+      <div>Отрицания<div class="big" id="fNeg">0</div></div>
+      <div>Время<div class="big" id="fTime">0:00</div></div>
+    </div>
+    <button class="btn green" id="restartBtn">Ещё раз</button>
+  </div>
+</div>
+
+<script>
+const ADV={always:10,usually:8,often:6,sometimes:4,rarely:2,seldom:2,never:0};
+const CELLS=[
+ ['always','n'],['rarely','n'],['every day','neg'],['sometimes','n'],['often','ch'],['seldom','n'],['on Mondays','q'],['usually','n'],
+ ['every week','tnt'],['never','n'],['in the morning','ch'],['always','q'],['every Thursday','neg'],['sometimes','n'],['rarely','ch'],['every summer','n'],
+ ['often','dia'],['in the evening','q'],['usually','neg'],['never','ch'],['every month','n'],['always','tnt'],['seldom','n'],['on Mondays','ch'],
+ ['often','q'],['every day','n'],['sometimes','ch'],['in the morning','neg'],['usually','q'],['rarely','n'],['every week','dia'],['always','ch'],
+ ['never','n'],['every Thursday','q'],['often','neg'],['seldom','ch'],['in the evening','n'],['usually','q']
+];
+const ICON={neg:'⛏',ch:'📦',q:'🕐',tnt:'💣',dia:'💎'};
+const VERBS=[
+ ['play','plays','Minecraft'],['build','builds','houses'],['mine','mines','diamonds'],['fight','fights','zombies'],
+ ['watch','watches','YouTube'],['ride','rides','a horse'],['eat','eats','apples'],['go','goes','to school'],
+ ['do','does','homework'],['read','reads','books'],['feed','feeds','the cat'],['get up','gets up','early'],
+ ['walk','walks','the dog'],['play','plays','Roblox'],['have','has','pizza'],['go','goes','swimming']
+];
+const PEOPLE=['Steve','Alex','My mum','My dad','My best friend','My teacher'];
+const $=id=>document.getElementById(id);
+
+/* ---------- sound ---------- */
+let AC=null;
+function beep(f,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.value=f;g.gain.value=.06;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d);}catch(e){}}
+let voice=null;
+function pickVoice(){const v=speechSynthesis.getVoices();voice=v.find(x=>x.lang==='en-GB')||v.find(x=>x.lang&&x.lang.startsWith('en'))||null;}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speak(t){
+  if(!('speechSynthesis' in window))return;
+  speechSynthesis.cancel();
+  const s=t.replace(/\blives\b/gi,'livz').replace(/\blive\b/gi,'liv');
+  const u=new SpeechSynthesisUtterance(s);u.lang='en-GB';u.rate=.82;if(voice)u.voice=voice;
+  speechSynthesis.speak(u);
+}
+
+/* ---------- board ---------- */
+const N=CELLS.length+2; // 40
+function cellInfo(i){if(i===0)return{start:1};if(i===N-1)return{finish:1};const c=CELLS[i-1];return{m:c[0],t:c[1]};}
+function buildBoard(){
+  const b=$('board');b.innerHTML='';
+  const els=new Array(N);
+  for(let i=0;i<N;i++){
+    const r=Math.floor(i/8),c=r%2===0?i%8:7-i%8;
+    const d=document.createElement('div');const info=cellInfo(i);
+    d.className='cell';d.style.gridRow=r+1;d.style.gridColumn=c+1;
+    if(info.start){d.classList.add('start');d.textContent='START';}
+    else if(info.finish){d.classList.add('finish');d.textContent='FINISH';}
+    else{d.textContent=info.m;if(info.t!=='n'){d.classList.add(info.t);const ic=document.createElement('span');ic.className='ic';ic.textContent=ICON[info.t];d.appendChild(ic);}
+      const n=document.createElement('span');n.className='num';n.textContent=i;d.appendChild(n);}
+    b.appendChild(d);els[i]=d;
+  }
+  return els;
+}
+let cellsEl=buildBoard();
+const steve=document.createElement('div');steve.className='steve';
+
+/* ---------- state ---------- */
+let pos=0,busy=false,task=null,usedFrame=false,started=0,timer=null,lastVerb=-1;
+let st={frame:0,free:0,q:0,neg:0};
+function place(){cellsEl.forEach(e=>e.classList.remove('here'));cellsEl[pos].appendChild(steve);cellsEl[pos].classList.add('here');}
+place();
+function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function tick(){$('sTime').textContent=fmt(Math.floor((Date.now()-started)/1000));}
+function upd(){$('sFrame').textContent=st.frame;$('sFree').textContent=st.free;$('sQ').textContent=st.q;}
+
+/* ---------- dice ---------- */
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function drawDie(n){$('die').innerHTML=Array.from({length:9},(_,k)=>`<i class="${PIPS[n].includes(k)?'on':''}"></i>`).join('');}
+drawDie(1);
+function roll(){
+  if(busy)return;busy=true;$('rollBtn').disabled=true;
+  if(!started){started=Date.now();timer=setInterval(tick,1000);}
+  $('die').classList.add('spin');let k=0;
+  const iv=setInterval(()=>{drawDie(1+Math.floor(Math.random()*6));beep(300+Math.random()*300,.05);
+    if(++k>9){clearInterval(iv);$('die').classList.remove('spin');const n=1+Math.floor(Math.random()*6);drawDie(n);
+      $('msg').textContent='Выпало '+n+'!';move(n,()=>{busy=false;arrive();});}},80);
+}
+function move(n,done){
+  const dir=n>0?1:-1;let left=Math.abs(n);
+  const step=()=>{if(left===0||(dir>0&&pos===N-1)||(dir<0&&pos===0)){done();return;}
+    pos+=dir;left--;place();steve.classList.add('hop');beep(dir>0?520:260,.07);
+    setTimeout(()=>steve.classList.remove('hop'),120);setTimeout(step,260);};
+  step();
+}
+
+/* ---------- tasks ---------- */
+function makeTask(i){
+  const info=cellInfo(i);let t=info.t;const m=info.m;
+  if(t==='tnt'||t==='dia')t='n';
+  let vi;do{vi=Math.floor(Math.random()*VERBS.length);}while(vi===lastVerb);lastVerb=vi;
+  const [v,v3,o]=VERBS[vi];const adv=m in ADV;
+  let subj='I',third=false;
+  if(t==='ch'){subj=PEOPLE[Math.floor(Math.random()*PEOPLE.length)];third=true;}
+  if(t==='neg'&&Math.random()<.5){subj=PEOPLE[Math.floor(Math.random()*PEOPLE.length)];third=true;}
+  const sv=third?v3:v;
+  let ans,frame,label,say;
+  if(t==='q'){
+    ans=adv?`Do you ${m} ${v} ${o}?`:`Do you ${v} ${o} ${m}?`;
+    label='🕐 Задай вопрос учителю';say=`Ask me. ${v} ${o}.`;
+    frame=[['help','DO / DOES ?','помощник'],['','you','кто'],...(adv?[['','…','как часто']]:[]),['','…','глагол'],['','…','что'],...(adv?[]:[['','…','когда']]),['','?','']];
+  }else if(t==='neg'){
+    const aux=third?"doesn't":"don't";
+    ans=adv?`${subj} ${aux} ${m} ${v} ${o}.`:`${subj} ${aux} ${v} ${o} ${m}.`;
+    label='⛏ Скажи с отрицанием';say=`Negative. ${subj}. ${v} ${o}.`;
+    frame=[['',subj,'кто'],['help',"DON'T / DOESN'T ?",'помощник'],...(adv?[['','…','как часто']]:[]),['','…','глагол'],['','…','что'],...(adv?[]:[['','…','когда']])];
+  }else{
+    ans=adv?`${subj} ${m} ${sv} ${o}.`:`${subj} ${sv} ${o} ${m}.`;
+    label=t==='ch'?'📦 Расскажи про другого человека':'Составь предложение про себя';
+    say=`${subj}. ${v} ${o}.`;
+    frame=[['',subj,'кто'],...(adv?[['','…','как часто']]:[]),['verb','…','глагол'],['','…','что'],...(adv?[]:[['','…','когда']])];
+  }
+  return {t,m,subj,v,o,ans,frame,label,say,third};
+}
+function arrive(){
+  if(pos===N-1){finish();return;}
+  if(pos===0){$('rollBtn').disabled=false;return;}
+  task=makeTask(pos);usedFrame=false;
+  $('taskCard').hidden=false;$('taskType').textContent=task.label;
+  $('prompt').className='prompt blur';$('showBtn').textContent='Показать текст';
+  $('prompt').innerHTML=`<span class="chip subj">${task.t==='q'?'you':task.subj}</span><span class="chip verb">${task.v} ${task.o}</span>`;
+  $('frame').hidden=true;
+  $('frame').innerHTML=task.frame.map(([k,w,lab])=>`<div class="slot ${k==='help'?'help':''}">${w}${k==='verb'?'<span class="s">+s ?</span>':''}<small>${lab}</small></div>`).join('');
+  $('answer').hidden=true;$('answer').textContent=task.ans;
+  ['hAm','hDo','hCan'].forEach(h=>$(h).classList.remove('hot'));
+  $('msg').textContent='Слушай! Как часто — смотри на свой блок 👀';
+  setTimeout(()=>speak(task.say),250);
+}
+function hint(){
+  beep(180,.18,'sawtooth');
+  $('msg').textContent='Посмотри на карточку 👀';
+  const h=(task.t==='q'||task.t==='neg')?'hDo':null;
+  if(h){$(h).classList.remove('hot');void $(h).offsetWidth;$(h).classList.add('hot');}
+  if(!$('frame').hidden){$('frame').querySelectorAll('.help,.s').forEach(e=>{e.style.animation='none';void e.offsetWidth;e.style.animation='pulse .8s 3';});}
+}
+function correct(){
+  if(!task)return;
+  usedFrame?st.frame++:st.free++;
+  if(task.t==='q')st.q++;if(task.t==='neg')st.neg++;
+  upd();beep(660,.08);setTimeout(()=>beep(880,.12),90);
+  speak(task.ans);
+  const info=cellInfo(pos);task=null;$('taskCard').hidden=true;
+  if(info.t==='tnt'){$('msg').textContent='💣 TNT! Назад на 2';setTimeout(()=>move(-2,arrive),900);return;}
+  if(info.t==='dia'){$('msg').textContent='💎 Алмаз! Вперёд на 2';setTimeout(()=>move(2,arrive),900);return;}
+  $('msg').textContent='Супер! Бросай дальше';$('rollBtn').disabled=false;
+}
+function finish(){
+  clearInterval(timer);tick();
+  $('fFrame').textContent=st.frame;$('fFree').textContent=st.free;$('fQ').textContent=st.q;$('fNeg').textContent=st.neg;$('fTime').textContent=$('sTime').textContent;
+  $('finish').hidden=false;[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.15),i*140));
+}
+function restart(){pos=0;st={frame:0,free:0,q:0,neg:0};started=0;clearInterval(timer);$('sTime').textContent='0:00';upd();place();
+  $('finish').hidden=true;$('taskCard').hidden=true;$('rollBtn').disabled=false;busy=false;$('msg').textContent='Нажми, чтобы начать!';}
+
+/* ---------- rule screen ---------- */
+$('scale').innerHTML=Object.entries(ADV).map(([w,h])=>`<div class="sc" data-say="${w}"><span class="w">${w}</span><span class="hearts">${'❤️'.repeat(h)}${'🖤'.repeat(10-h)}</span><span class="pct">${h*10}%</span></div>`).join('');
+document.querySelectorAll('[data-say]').forEach(e=>e.addEventListener('click',()=>speak(e.dataset.say)));
+
+/* ---------- wiring ---------- */
+$('rollBtn').onclick=roll;
+$('againBtn').onclick=()=>task&&speak(task.say);
+$('showBtn').onclick=()=>{const p=$('prompt');p.classList.toggle('blur');$('showBtn').textContent=p.classList.contains('blur')?'Показать текст':'Скрыть текст';};
+$('frameBtn').onclick=()=>{$('frame').hidden=!$('frame').hidden;if(!$('frame').hidden)usedFrame=true;};
+$('okBtn').onclick=correct;
+$('tryBtn').onclick=()=>task&&hint();
+$('ansBtn').onclick=()=>{$('answer').hidden=!$('answer').hidden;};
+$('ruleBtn').onclick=()=>{$('rule').hidden=false;};
+$('startBtn').onclick=()=>{$('rule').hidden=true;};
+$('restartBtn').onclick=restart;
+</script>
+
+</body></html>
