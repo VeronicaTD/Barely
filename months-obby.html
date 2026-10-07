@@ -1,0 +1,299 @@
+<title>Months Obby</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+/* Layout: one obby stage (start pad left, three floating month pads, lava below) under a slim prompt bar. Single deliberate bright "obby" look. */
+:root{
+  --sky1:#5fb7ff; --sky2:#c7ecff;
+  --lava1:#ff5a1f; --lava2:#ffb21f;
+  --ink:#141b2d; --panel:#ffffff; --muted:#5d6a85;
+  --p1:#2fd36b; --p2:#3d8bff; --p3:#ffcb2f; --p4:#ff5ab1;
+  --good:#1fae55; --bad:#e2372b; --accent:#7b4dff;
+  --chunky:"Lilita One","Arial Black",sans-serif;
+  --body:"Nunito",system-ui,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{margin:0;background:#1d2440;color:var(--ink);font-family:var(--body)}
+.wrap{max-width:1100px;margin:0 auto;padding-inline:16px;padding-block:14px 24px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+h1{margin:0;font-family:var(--chunky);font-weight:400;font-size:clamp(22px,3.4vw,34px);color:#fff;letter-spacing:.01em}
+h1 span{color:var(--p3)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font-family:var(--chunky);font-size:15px;padding:8px 12px;border-radius:10px;border:3px solid #000;background:#2c3561;color:#fff;cursor:pointer;box-shadow:0 4px 0 #000}
+.tab.on{background:var(--p3);color:var(--ink)}
+.tab:focus-visible,.btn:focus-visible,.plat:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.bar{background:var(--panel);border:3px solid #000;border-radius:14px;box-shadow:0 5px 0 #000;padding:10px 12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.say{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
+.ptext{font-family:var(--chunky);font-size:clamp(20px,2.6vw,28px);padding:2px 10px;border-radius:8px;background:#eef3ff;transition:filter .2s}
+.ptext.blur{filter:blur(10px);user-select:none}
+.btn{font-family:var(--chunky);font-size:15px;padding:8px 12px;border-radius:10px;border:3px solid #000;background:#fff;cursor:pointer;box-shadow:0 4px 0 #000;color:var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
+.btn.go{background:var(--p1)}.btn.no{background:#ff8a7a}.btn.blue{background:var(--p2);color:#fff}
+.count{display:flex;gap:10px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--muted);align-items:center}
+.count b{color:var(--ink);font-size:18px}
+.flags{display:flex;gap:3px}
+.flags i{width:10px;height:16px;border:2px solid #000;border-radius:2px;background:#dde3f2}
+.flags i.ok{background:var(--good)}.flags i.meh{background:var(--p3)}
+.stage{position:relative;width:100%;aspect-ratio:16/8.5;max-height:68vh;border:3px solid #000;border-radius:16px;overflow:hidden;background:linear-gradient(var(--sky1),var(--sky2));box-shadow:0 6px 0 #000;user-select:none}
+.cloud{position:absolute;background:#fff;border-radius:8px;opacity:.85}
+.lava{position:absolute;left:0;right:0;bottom:0;height:16%;background:repeating-linear-gradient(90deg,var(--lava1) 0 34px,var(--lava2) 34px 60px);animation:flow 3s linear infinite;border-top:4px solid #000}
+@keyframes flow{to{background-position:60px 0}}
+.plat{position:absolute;transform:translate(-50%,0);width:22%;height:11%;border:3px solid #000;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--chunky);font-size:clamp(14px,2.3vw,28px);color:var(--ink);cursor:pointer;box-shadow:0 7px 0 rgba(0,0,0,.45);background-image:linear-gradient(rgba(255,255,255,.35) 0 22%,transparent 22%);text-align:center;line-height:1;padding:0 4px}
+.plat:hover{filter:brightness(1.08)}
+.plat.start{background-color:#9aa4bd;cursor:default;width:14%;font-size:clamp(11px,1.4vw,16px)}
+.plat.win{animation:glow .6s 2}
+@keyframes glow{50%{box-shadow:0 0 0 8px #fff,0 7px 0 rgba(0,0,0,.45)}}
+.hero{position:absolute;width:6.2%;aspect-ratio:1/1.75;transform:translate(-50%,-100%);pointer-events:none;z-index:5}
+.hero .h{position:absolute;left:18%;right:18%;top:0;height:30%;background:#ffd25a;border:2px solid #000;border-radius:4px}
+.hero .h::before,.hero .h::after{content:"";position:absolute;top:38%;width:14%;height:22%;background:#000}
+.hero .h::before{left:24%}.hero .h::after{right:24%}
+.hero .t{position:absolute;left:10%;right:10%;top:30%;height:36%;background:var(--accent);border:2px solid #000}
+.hero .l{position:absolute;left:18%;right:18%;top:66%;bottom:0;background:#2b3245;border:2px solid #000}
+.coin{position:absolute;width:3%;aspect-ratio:1;border-radius:50%;background:var(--p3);border:2px solid #000;z-index:6;pointer-events:none}
+.toast{position:absolute;left:50%;top:10%;transform:translateX(-50%);font-family:var(--chunky);font-size:clamp(22px,3.5vw,40px);color:#fff;text-shadow:3px 3px 0 #000;z-index:7;pointer-events:none;white-space:nowrap}
+.speak{background:var(--panel);border:3px solid #000;border-radius:16px;box-shadow:0 6px 0 #000;padding:18px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.bigmonth{font-family:var(--chunky);font-size:clamp(34px,6vw,64px);padding:4px 18px;border-radius:12px;background:var(--p2);color:#fff;border:3px solid #000;transition:filter .2s}
+.bigmonth.blur{filter:blur(12px)}
+.frame{display:flex;flex-wrap:wrap;gap:6px}
+.slot{border:3px dashed #000;border-radius:8px;padding:6px 10px;font-family:var(--chunky);font-size:20px;background:#fff;display:flex;flex-direction:column;align-items:center}
+.slot small{font-family:var(--body);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.slot.fix{background:#eef3ff;border-style:solid}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.ans{font-family:var(--chunky);font-size:20px;color:var(--p2)}
+.cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}
+.cheat button{font-family:var(--body);font-weight:800;font-size:15px;text-align:left;border:2px solid #000;border-radius:8px;background:#fff;padding:6px 8px;cursor:pointer;color:var(--ink)}
+.cheat button b{font-family:var(--chunky);font-weight:400}
+.cheat button.tricky{background:#fff1c2}
+.overlay{position:fixed;inset:0;background:rgba(10,14,30,.7);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal{background:var(--panel);border:3px solid #000;border-radius:16px;box-shadow:0 6px 0 #000;max-width:760px;width:100%;max-height:92vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+.modal h2{margin:0;font-family:var(--chunky);font-weight:400;font-size:26px}
+.modal p{margin:0;max-width:65ch;line-height:1.45}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.res div{border:3px solid #000;border-radius:12px;padding:10px;text-align:center;font-weight:900}
+.res .n{font-family:var(--chunky);font-size:40px;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Months <span>Obby</span></h1>
+    <div class="tabs">
+      <button class="tab on" data-l="1">1 · Listen</button>
+      <button class="tab" data-l="2">2 · Which one?</button>
+      <button class="tab" data-l="3">3 · Speak</button>
+      <button class="tab" id="cheatBtn">Шпаргалка</button>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="say">
+      <button class="btn blue" id="again">🔊 Ещё раз</button>
+      <span class="ptext blur" id="ptext">the eighth month</span>
+      <button class="btn" id="show">Показать текст</button>
+    </div>
+    <div class="count"><span>Stage <b id="stageN">1</b>/<b id="stageT">12</b></span><div class="flags" id="flags"></div></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="cloud" style="left:8%;top:10%;width:12%;height:7%"></div>
+    <div class="cloud" style="left:55%;top:6%;width:16%;height:8%"></div>
+    <div class="cloud" style="left:80%;top:20%;width:10%;height:6%"></div>
+    <div class="lava"></div>
+    <div class="plat start" id="startPad" style="left:9%;top:60%">CHECKPOINT</div>
+    <div class="hero" id="hero"><div class="h"></div><div class="t"></div><div class="l"></div></div>
+  </div>
+
+  <div class="speak" id="speak" hidden>
+    <div class="bigmonth blur" id="bigMonth">October</div>
+    <div class="row">
+      <button class="btn" id="frameBtn">Рамка</button>
+      <button class="btn" id="ansBtn">🔑</button>
+    </div>
+    <div class="frame" id="frame" hidden>
+      <div class="slot">…<small>month</small></div>
+      <div class="slot fix">is<small>&nbsp;</small></div>
+      <div class="slot fix">the<small>&nbsp;</small></div>
+      <div class="slot">…<small>-th / -st / -nd / -rd</small></div>
+      <div class="slot fix">month.<small>&nbsp;</small></div>
+    </div>
+    <div class="ans" id="ans" hidden></div>
+    <div class="row">
+      <button class="btn go" id="ok">✓ Есть!</button>
+      <button class="btn no" id="retry">↺ Подумай</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="intro">
+  <div class="modal">
+    <h2>Months Obby</h2>
+    <p>Слушай и прыгай на правильную платформу. Неправильная падает в лаву, но ты возвращаешься на чекпоинт и пробуешь снова.</p>
+    <button class="btn go" id="play">Играть!</button>
+  </div>
+</div>
+
+<div class="overlay" id="cheat" hidden>
+  <div class="modal">
+    <h2>first … twelfth</h2>
+    <p>Нажми, чтобы услышать. Жёлтые запоминаем отдельно: они не просто «+th».</p>
+    <div class="cheat" id="cheatList"></div>
+    <button class="btn go" id="closeCheat">Закрыть</button>
+  </div>
+</div>
+
+<div class="overlay" id="done" hidden>
+  <div class="modal">
+    <h2 id="doneTitle">🏁 Finish!</h2>
+    <div class="res" id="res"></div>
+    <div class="row"><button class="btn go" id="nextLevel">Дальше</button><button class="btn" id="replay">Ещё раз</button></div>
+  </div>
+</div>
+
+<script>
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const ORD=['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth'];
+const TRICKY=[0,1,2,4,7,8,11];
+const CONF={6:[10],10:[6],4:[5],5:[4],7:[11],11:[7],0:[2],2:[0]};
+const COLORS=['--p1','--p2','--p3','--p4'];
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+/* sound */
+let AC=null;
+function beep(f,d,type){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.value=f;g.gain.value=.06;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d);}catch(e){}}
+let voice=null;
+function pickVoice(){const v=speechSynthesis.getVoices();voice=v.find(x=>x.lang==='en-GB')||v.find(x=>x.lang&&x.lang.startsWith('en'))||null;}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t.replace(/\blives\b/gi,'livz').replace(/\blive\b/gi,'liv'));u.lang='en-GB';u.rate=.8;if(voice)u.voice=voice;speechSynthesis.speak(u);}
+
+/* state */
+let level=1,rounds=[],r=0,busy=false,missed=false,usedFrame=false,started=0;
+let res={};
+const stage=$('stage'),hero=$('hero');
+const START={x:9,y:60};
+let heroPos={...START};
+function setHero(p){heroPos={...p};hero.style.left=p.x+'%';hero.style.top=p.y+'%';}
+setHero(START);
+
+function distractors(i,n,pool){
+  const cand=new Set([...(CONF[i]||[]),i-1,i+1,i-2,i+2].filter(k=>k>=0&&k<12&&k!==i));
+  let c=shuffle([...cand]).slice(0,n);
+  while(c.length<n){const k=Math.floor(Math.random()*12);if(k!==i&&!c.includes(k))c.push(k);}
+  return c;
+}
+function promptText(i){return level===1?`the ${ORD[i]} month`:MONTHS[i];}
+function label(k){return level===1?MONTHS[k]:`the ${ORD[k]}`;}
+
+function drawFlags(){
+  $('flags').innerHTML=rounds.map((_,k)=>`<i class="${k<r?(res.first[k]?'ok':'meh'):''}"></i>`).join('');
+  $('stageN').textContent=Math.min(r+1,rounds.length);$('stageT').textContent=rounds.length;
+}
+
+function startLevel(l){
+  level=l;r=0;busy=false;started=Date.now();
+  document.querySelectorAll('.tab[data-l]').forEach(t=>t.classList.toggle('on',+t.dataset.l===l));
+  const n=l===3?6:12;
+  rounds=shuffle([...Array(12).keys()]).slice(0,n);
+  res={first:[],frame:0,free:0};
+  $('stage').hidden=l===3;$('speak').hidden=l!==3;
+  drawFlags();round();
+}
+
+function round(){
+  if(r>=rounds.length){finish();return;}
+  missed=false;usedFrame=false;drawFlags();
+  const i=rounds[r];
+  $('ptext').classList.add('blur');$('show').textContent='Показать текст';
+  if(level===3){
+    $('ptext').textContent=MONTHS[i];
+    $('bigMonth').textContent=MONTHS[i];$('bigMonth').classList.add('blur');
+    $('frame').hidden=true;$('ans').hidden=true;$('ans').textContent=`${MONTHS[i]} is the ${ORD[i]} month.`;
+    setTimeout(()=>speak(MONTHS[i]),200);return;
+  }
+  $('ptext').textContent=promptText(i);
+  stage.querySelectorAll('.plat:not(.start)').forEach(p=>p.remove());
+  setHero(START);
+  const opts=shuffle([i,...distractors(i,2)]);
+  const xs=[38,62,86],cols=shuffle(COLORS);
+  opts.forEach((k,j)=>{
+    const p=document.createElement('button');p.className='plat';p.type='button';
+    const y=38+Math.random()*22;
+    p.style.left=xs[j]+'%';p.style.top=y+'%';p.style.backgroundColor=`var(${cols[j]})`;
+    p.textContent=label(k);p.dataset.k=k;p.dataset.x=xs[j];p.dataset.y=y;
+    p.onclick=()=>choose(p,k===i);
+    p.animate([{opacity:0,transform:'translate(-50%,40px)'},{opacity:1,transform:'translate(-50%,0)'}],{duration:350,delay:j*90,fill:'backwards'});
+    stage.appendChild(p);
+  });
+  setTimeout(()=>speak(promptText(i)),300);
+}
+
+function jump(to,cb){
+  const from={...heroPos},peak=Math.min(from.y,to.y)-18;
+  beep(440,.08);beep(660,.08);
+  const a=hero.animate([
+    {left:from.x+'%',top:from.y+'%'},
+    {left:(from.x+to.x)/2+'%',top:peak+'%',offset:.5},
+    {left:to.x+'%',top:to.y+'%'}],{duration:560,easing:'ease-in-out'});
+  a.onfinish=()=>{setHero(to);cb&&cb();};
+}
+
+function choose(p,right){
+  if(busy)return;busy=true;
+  const to={x:+p.dataset.x,y:+p.dataset.y};
+  jump(to,()=>{
+    if(right){
+      p.classList.add('win');[660,880,1100].forEach((f,k)=>setTimeout(()=>beep(f,.1),k*90));
+      coins(to);toast(missed?'OK!':'Perfect!');
+      res.first[r]=!missed;r++;
+      speak(level===1?`${MONTHS[rounds[r-1]]}. The ${ORD[rounds[r-1]]} month.`:`${MONTHS[rounds[r-1]]} is the ${ORD[rounds[r-1]]} month.`);
+      setTimeout(()=>{busy=false;round();},1700);
+    }else{
+      missed=true;beep(160,.35,'sawtooth');
+      p.animate([{transform:'translate(-50%,0)'},{transform:'translate(-48%,0)'},{transform:'translate(-52%,0)'},{transform:'translate(-50%,0)'}],{duration:240});
+      setTimeout(()=>{
+        p.animate([{transform:'translate(-50%,0) rotate(0)',opacity:1},{transform:'translate(-50%,500%) rotate(25deg)',opacity:0}],{duration:700,easing:'ease-in',fill:'forwards'});
+        const f=hero.animate([{top:to.y+'%'},{top:'115%'}],{duration:600,easing:'ease-in'});
+        f.onfinish=()=>{p.disabled=true;p.style.visibility='hidden';setHero(START);
+          hero.animate([{opacity:0},{opacity:1},{opacity:0},{opacity:1}],{duration:500});
+          busy=false;setTimeout(()=>speak(promptText(rounds[r])),300);};
+      },260);
+    }
+  });
+}
+function coins(at){for(let k=0;k<6;k++){const c=document.createElement('div');c.className='coin';c.style.left=at.x+'%';c.style.top=(at.y-8)+'%';stage.appendChild(c);
+  c.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${(Math.random()-.5)*160}px,${-60-Math.random()*80}px)`,opacity:0}],{duration:800,easing:'ease-out'}).onfinish=()=>c.remove();}}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;stage.appendChild(d);
+  d.animate([{opacity:0,transform:'translate(-50%,20px)'},{opacity:1,transform:'translate(-50%,0)',offset:.2},{opacity:1,offset:.8},{opacity:0}],{duration:1400}).onfinish=()=>d.remove();}
+
+function finish(){
+  const t=Math.round((Date.now()-started)/1000),tm=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+  let html;
+  if(level===3){html=`<div>По рамке<div class="n">${res.frame}</div></div><div>Без рамки<div class="n">${res.free}</div></div><div>Время<div class="n">${tm}</div></div>`;}
+  else{const ok=res.first.filter(Boolean).length;html=`<div>С первого прыжка<div class="n">${ok}/${rounds.length}</div></div><div>Со второй попытки<div class="n">${rounds.length-ok}</div></div><div>Время<div class="n">${tm}</div></div>`;}
+  $('res').innerHTML=html;$('doneTitle').textContent=`🏁 Level ${level} — done!`;
+  $('nextLevel').hidden=level===3;$('done').hidden=false;
+  [523,659,784,1046].forEach((f,k)=>setTimeout(()=>beep(f,.15),k*140));
+}
+
+/* speak level */
+$('frameBtn').onclick=()=>{$('frame').hidden=!$('frame').hidden;if(!$('frame').hidden)usedFrame=true;};
+$('ansBtn').onclick=()=>{$('ans').hidden=!$('ans').hidden;};
+$('ok').onclick=()=>{if(level!==3||r>=rounds.length)return;usedFrame?res.frame++:res.free++;res.first[r]=!missed;r++;
+  [660,880].forEach((f,k)=>setTimeout(()=>beep(f,.1),k*90));speak($('ans').textContent);setTimeout(round,1600);};
+$('retry').onclick=()=>{missed=true;beep(180,.2,'sawtooth');$('frame').hidden=false;usedFrame=true;};
+
+/* controls */
+$('again').onclick=()=>{if(r<rounds.length)speak(level===3?MONTHS[rounds[r]]:promptText(rounds[r]));};
+$('show').onclick=()=>{const b=$('ptext').classList.toggle('blur');$('show').textContent=b?'Показать текст':'Скрыть текст';if(level===3)$('bigMonth').classList.toggle('blur',b);};
+document.querySelectorAll('.tab[data-l]').forEach(t=>t.onclick=()=>{if(!busy)startLevel(+t.dataset.l);});
+$('cheatList').innerHTML=ORD.map((o,k)=>`<button type="button" class="${TRICKY.includes(k)?'tricky':''}" data-k="${k}"><b>${k+1}</b> ${o} · ${MONTHS[k]}</button>`).join('');
+$('cheatList').querySelectorAll('button').forEach(b=>b.onclick=()=>speak(`the ${ORD[+b.dataset.k]} month, ${MONTHS[+b.dataset.k]}`));
+$('cheatBtn').onclick=()=>{$('cheat').hidden=false;};
+$('closeCheat').onclick=()=>{$('cheat').hidden=true;};
+$('nextLevel').onclick=()=>{$('done').hidden=true;startLevel(level+1);};
+$('replay').onclick=()=>{$('done').hidden=true;startLevel(level);};
+
+$('play').onclick=()=>{$('intro').hidden=true;startLevel(1);};
+</script>
