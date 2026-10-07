@@ -1,0 +1,245 @@
+<title>Birthday Party Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
+<style>
+/* Layout: a party room scene on top that fills up with what Masha collects; below it the item shelf or the "tell" card. Single deliberate party look. */
+:root{
+  --wall:#ffe9f1; --wall2:#ffd2e3; --floor:#c98f5f;
+  --ink:#2a1630; --muted:#7b5a80; --card:#ffffff;
+  --pink:#ff4f9a; --yellow:#ffc83d; --teal:#21c7b6; --violet:#7a55ff; --good:#20a35a; --bad:#e2442f;
+  --chunky:"Lilita One","Arial Black",sans-serif;
+  --body:"Nunito",system-ui,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{margin:0;background:#3a1f45;color:var(--ink);font-family:var(--body)}
+.wrap{max-width:1000px;margin:0 auto;padding-inline:16px;padding-block:14px 26px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+h1{margin:0;font-family:var(--chunky);font-weight:400;color:#fff;font-size:clamp(22px,3.6vw,34px)}
+h1 span{color:var(--yellow)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font-family:var(--chunky);font-size:15px;padding:8px 12px;border-radius:999px;border:3px solid #fff;background:transparent;color:#fff;cursor:pointer}
+.tab.on{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+.tab:focus-visible,.btn:focus-visible,.item:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.room{position:relative;aspect-ratio:16/6.5;border-radius:18px;overflow:hidden;background:linear-gradient(var(--wall),var(--wall2) 72%,var(--floor) 72%);border:4px solid #000}
+.bunting{position:absolute;top:0;left:0;right:0;height:18%;display:flex;justify-content:space-around}
+.bunting i{width:0;height:0;border-left:clamp(10px,2vw,22px) solid transparent;border-right:clamp(10px,2vw,22px) solid transparent;border-top:clamp(16px,3vw,32px) solid var(--pink)}
+.bunting i:nth-child(3n+2){border-top-color:var(--teal)}.bunting i:nth-child(3n){border-top-color:var(--yellow)}
+.table{position:absolute;left:22%;right:22%;bottom:14%;height:10%;background:var(--violet);border:3px solid #000;border-radius:8px}
+.placed{position:absolute;font-size:clamp(26px,5vw,54px);transform:translate(-50%,-100%);filter:drop-shadow(2px 3px 0 rgba(0,0,0,.25))}
+.placed.pop{animation:pop .5s}
+@keyframes pop{0%{transform:translate(-50%,-100%) scale(0)}70%{transform:translate(-50%,-100%) scale(1.25)}100%{transform:translate(-50%,-100%) scale(1)}}
+.placed.hl{animation:hl .9s infinite alternate}
+@keyframes hl{to{transform:translate(-50%,-112%) scale(1.15)}}
+.counter{position:absolute;right:12px;top:12px;font-family:var(--chunky);background:#fff;border:3px solid #000;border-radius:999px;padding:4px 12px;font-variant-numeric:tabular-nums}
+.panel{background:var(--card);border:4px solid #000;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.say{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ptext{font-family:var(--chunky);font-size:clamp(20px,3vw,30px);background:#fff3c4;padding:2px 12px;border-radius:8px;transition:filter .2s}
+.ptext.blur{filter:blur(10px);user-select:none}
+.btn{font-family:var(--chunky);font-size:15px;padding:8px 14px;border:3px solid #000;border-radius:12px;background:#fff;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 #000}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
+.btn.go{background:#8be3a9}.btn.no{background:#ffb0a4}.btn.ear{background:var(--yellow)}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:3px solid #000;border-radius:14px;background:#fff;cursor:pointer;font-family:var(--body);font-weight:900;font-size:14px;color:var(--ink);text-align:center}
+.item .e{font-size:38px;line-height:1}
+.item .ru{font-weight:700;font-size:12px;color:var(--muted)}
+.item:hover{background:#fff6dc}
+.item.got{opacity:.3;pointer-events:none}
+.item.wrong{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.hidewords .item .w,.hidewords .item .ru{visibility:hidden}
+.tell{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.tell .e{font-size:72px;line-height:1}
+.subj{font-family:var(--chunky);font-size:22px;background:var(--teal);color:#fff;padding:4px 12px;border-radius:999px;border:3px solid #000}
+.freq{display:flex;gap:6px;flex-wrap:wrap}
+.freq button{font-family:var(--body);font-weight:900;font-size:14px;border:2px solid #000;border-radius:999px;background:#fff;padding:4px 10px;cursor:pointer;color:var(--ink)}
+.freq button span{font-size:11px;margin-left:3px}
+.frame{display:flex;flex-wrap:wrap;gap:6px}
+.slot{border:3px dashed #000;border-radius:10px;padding:6px 10px;font-family:var(--chunky);font-size:19px;background:#fff;display:flex;flex-direction:column;align-items:center}
+.slot small{font-family:var(--body);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.slot .s{color:var(--bad);font-size:13px}
+.helpers{display:flex;gap:6px;flex-wrap:wrap}
+.helper{font-family:var(--chunky);font-size:13px;padding:5px 9px;border:3px solid #000;border-radius:8px;background:#f1ebff}
+.helper.hot{background:var(--yellow);animation:pulse .8s 3}
+@keyframes pulse{50%{transform:scale(1.12)}}
+.ans{font-family:var(--chunky);font-size:20px;color:var(--violet)}
+.msg{font-weight:900;color:var(--muted);min-height:1.2em}
+.overlay{position:fixed;inset:0;background:rgba(30,10,40,.7);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal{background:#fff;border:4px solid #000;border-radius:18px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:12px}
+.modal h2{margin:0;font-family:var(--chunky);font-weight:400;font-size:28px}
+.modal p{margin:0;line-height:1.45;max-width:65ch}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.res div{border:3px solid #000;border-radius:14px;padding:10px;text-align:center;font-weight:900}
+.res .n{font-family:var(--chunky);font-size:40px;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Birthday Party <span>Builder</span></h1>
+    <div class="tabs">
+      <button class="tab on" data-m="learn">1 · Learn</button>
+      <button class="tab" data-m="find">2 · Find</button>
+      <button class="tab" data-m="tell">3 · Tell (8c)</button>
+    </div>
+  </header>
+
+  <div class="room" id="room">
+    <div class="bunting"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="table"></div>
+    <div class="counter" id="counter">0 / 14</div>
+  </div>
+
+  <div class="panel" id="shelfPanel">
+    <div class="bar">
+      <div class="say" id="sayRow" hidden>
+        <button class="btn ear" id="again">🔊 Ещё раз</button>
+        <span class="ptext blur" id="ptext"></span>
+        <button class="btn" id="show">Показать текст</button>
+      </div>
+      <div class="msg" id="msg">Нажми на предмет, чтобы услышать слово.</div>
+      <button class="btn" id="ruBtn">RU</button>
+    </div>
+    <div class="shelf" id="shelf"></div>
+  </div>
+
+  <div class="panel" id="tellPanel" hidden>
+    <div class="bar">
+      <div class="msg">How do people celebrate birthdays in Russia? <b id="tN">1</b>/<b id="tT">10</b></div>
+      <div class="say"><button class="btn ear" id="tAgain">🔊 Ещё раз</button><button class="btn" id="tShow">Показать текст</button></div>
+    </div>
+    <div class="tell">
+      <div class="e" id="tEmoji">🎂</div>
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+        <span class="subj" id="tSubj">In Russia people</span>
+        <span class="ptext blur" id="tText">have a birthday cake</span>
+      </div>
+    </div>
+    <div class="freq" id="freq"></div>
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="frameBtn">Рамка</button><button class="btn" id="ansBtn">🔑</button></div>
+    <div class="frame" id="frame" hidden></div>
+    <div class="helpers"><div class="helper">AM / IS / ARE</div><div class="helper" id="hDo">DO / DOES</div><div class="helper">CAN</div></div>
+    <div class="ans" id="ans" hidden></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn go" id="ok">✓ Есть!</button><button class="btn no" id="retry">↺ Подумай</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="intro">
+  <div class="modal">
+    <h2>🎉 Let's build a party!</h2>
+    <p><b>Learn</b>: слушаем слова. <b>Find</b>: голос называет предмет, ты находишь его и ставишь на вечеринку. <b>Tell</b>: рассказываешь, как празднуют дни рождения у нас.</p>
+    <button class="btn go" id="play">Начать</button>
+  </div>
+</div>
+
+<div class="overlay" id="done" hidden>
+  <div class="modal">
+    <h2 id="doneTitle">Party ready!</h2>
+    <div class="res" id="res"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn go" id="nextBtn">Дальше</button><button class="btn" id="replay">Ещё раз</button></div>
+  </div>
+</div>
+
+<script>
+const ITEMS=[
+ ['🎂','a birthday cake','торт',50,72],['🕯️','candles','свечи',44,62],['🎁','presents','подарки',66,72],['💌','birthday cards','открытки',34,72],
+ ['🎈','balloons','шарики',10,45],['💐','flowers','цветы',58,72],['🍬','sweets','конфеты',40,72],['🧸','toys','игрушки',90,92],
+ ['📚','books','книги',74,72],['👕','clothes','одежда',82,92],['🚲','a bike','велосипед',12,95],['🎬','the cinema','кино',30,40],
+ ['🎳','a bowling alley','боулинг',70,40],['🥳','a party','вечеринка',90,45]
+];
+const TELL=[
+ ['🎁','get presents','gets presents'],['💌','get birthday cards','gets birthday cards'],['🎂','have a birthday cake','has a birthday cake'],
+ ['🕯️','blow out the candles','blows out the candles'],['✨','make a wish','makes a wish'],['🎵','sing "Happy Birthday"','sings "Happy Birthday"'],
+ ['🥳','have a party','has a party'],['💐','give flowers','gives flowers'],['🍬','eat sweets','eats sweets'],['🎬','go to the cinema','goes to the cinema'],
+ ['🎳','go bowling','goes bowling'],['🚲','get a bike','gets a bike']
+];
+const FREQ=[['always',10],['usually',8],['often',6],['sometimes',4],['never',0]];
+const SUBJ=['In Russia people','In Russia people','In Russia people','In Russia people','On my birthday I','On my birthday I','On my birthday I','On my birthday I','My mum','My friend'];
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+let AC=null;
+function beep(f,d,t){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t||'triangle';o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d);}catch(e){}}
+let voice=null;function pickVoice(){const v=speechSynthesis.getVoices();voice=v.find(x=>x.lang==='en-GB')||v.find(x=>x.lang&&x.lang.startsWith('en'))||null;}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/\blives\b/gi,'livz').replace(/\blive\b/gi,'liv'));u.lang='en-GB';u.rate=.82;if(voice)u.voice=voice;speechSynthesis.speak(u);}
+
+let mode='learn',ru=false,order=[],fi=0,missed=false,started=0,res={};
+let placed=new Set();
+function placeItem(k,pop){if(placed.has(k))return;placed.add(k);const [e,,,x,y]=ITEMS[k];const d=document.createElement('div');d.className='placed'+(pop?' pop':'');d.textContent=e;d.style.left=x+'%';d.style.top=y+'%';d.dataset.e=e;$('room').appendChild(d);$('counter').textContent=placed.size+' / '+ITEMS.length;}
+function clearRoom(){placed.clear();$('room').querySelectorAll('.placed').forEach(e=>e.remove());$('counter').textContent='0 / '+ITEMS.length;}
+
+function drawShelf(){
+  $('shelf').innerHTML=ITEMS.map(([e,w,r],k)=>`<button type="button" class="item" data-k="${k}"><span class="e">${e}</span><span class="w">${w}</span><span class="ru" ${ru?'':'hidden'}>${r}</span></button>`).join('');
+  $('shelf').querySelectorAll('.item').forEach(b=>b.onclick=()=>tapItem(b,+b.dataset.k));
+  $('shelf').classList.toggle('hidewords',mode==='find');
+  if(mode==='find')placed.forEach(k=>$('shelf').querySelector(`[data-k="${k}"]`).classList.add('got'));
+}
+function tapItem(b,k){
+  if(mode==='learn'){speak(ITEMS[k][1]);placeItem(k,true);beep(700,.08);return;}
+  if(mode!=='find'||fi>=order.length)return;
+  if(k===order[fi]){
+    beep(660,.08);setTimeout(()=>beep(880,.12),90);speak(ITEMS[k][1]);
+    b.classList.add('got');placeItem(k,true);res.first.push(!missed);fi++;missed=false;
+    setTimeout(findNext,1200);
+  }else{missed=true;beep(160,.3,'sawtooth');b.classList.remove('wrong');void b.offsetWidth;b.classList.add('wrong');$('msg').textContent='Не то. Послушай ещё раз.';setTimeout(()=>speak(ITEMS[order[fi]][1]),400);}
+}
+function findNext(){
+  if(fi>=order.length){finish();return;}
+  $('ptext').textContent=ITEMS[order[fi]][1];$('ptext').classList.add('blur');$('show').textContent='Показать текст';
+  $('msg').textContent='Найди: '+(fi+1)+' / '+order.length;speak(ITEMS[order[fi]][1]);
+}
+
+/* tell */
+let tRounds=[],ti=0,usedFrame=false;
+function tellNext(){
+  if(ti>=tRounds.length){finish();return;}
+  const {subj,item}=tRounds[ti];const [e,v,v3]=item;usedFrame=false;
+  $('tN').textContent=ti+1;$('tT').textContent=tRounds.length;
+  $('tEmoji').textContent=e;$('tSubj').textContent=subj;$('tText').textContent=v;$('tText').classList.add('blur');$('tShow').textContent='Показать текст';
+  const third=/^My /.test(subj);
+  $('frame').hidden=true;
+  $('frame').innerHTML=`<div class="slot">${subj}<small>кто</small></div><div class="slot">…<small>как часто</small></div><div class="slot">…${'<span class="s">+s ?</span>'}<small>глагол</small></div><div class="slot">…<small>что / куда</small></div>`;
+  $('ans').hidden=true;$('ans').textContent=`${subj} usually ${third?v3:v}.`;
+  $('room').querySelectorAll('.placed').forEach(p=>p.classList.toggle('hl',p.dataset.e===e));
+  speak(v);
+}
+function finish(){
+  const t=Math.round((Date.now()-started)/1000),tm=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+  if(mode==='tell'){$('res').innerHTML=`<div>По рамке<div class="n">${res.frame}</div></div><div>Без рамки<div class="n">${res.free}</div></div><div>Время<div class="n">${tm}</div></div>`;$('doneTitle').textContent='🎉 Great party story!';$('nextBtn').hidden=true;}
+  else{const ok=res.first.filter(Boolean).length;$('res').innerHTML=`<div>С первого раза<div class="n">${ok}/${order.length}</div></div><div>Со второго<div class="n">${order.length-ok}</div></div><div>Время<div class="n">${tm}</div></div>`;$('doneTitle').textContent='🎉 Party ready!';$('nextBtn').hidden=false;}
+  $('done').hidden=false;[523,659,784,1046].forEach((f,k)=>setTimeout(()=>beep(f,.15),k*140));
+}
+
+function setMode(m){
+  mode=m;started=Date.now();res={first:[],frame:0,free:0};
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.m===m));
+  $('shelfPanel').hidden=m==='tell';$('tellPanel').hidden=m!=='tell';
+  $('room').querySelectorAll('.placed').forEach(p=>p.classList.remove('hl'));
+  if(m==='learn'){$('sayRow').hidden=true;$('msg').textContent='Нажми на предмет, чтобы услышать слово.';drawShelf();}
+  if(m==='find'){clearRoom();$('sayRow').hidden=false;order=shuffle([...ITEMS.keys()]);fi=0;missed=false;drawShelf();findNext();}
+  if(m==='tell'){
+    ITEMS.forEach((_,k)=>placeItem(k,false));
+    const items=shuffle(TELL).slice(0,10);
+    tRounds=shuffle(SUBJ).map((s,k)=>({subj:s,item:items[k]}));ti=0;tellNext();
+  }
+}
+
+$('freq').innerHTML=FREQ.map(([w,h])=>`<button type="button" data-w="${w}">${w}<span>${'❤️'.repeat(Math.round(h/2))||'🖤'}</span></button>`).join('');
+$('freq').querySelectorAll('button').forEach(b=>b.onclick=()=>speak(b.dataset.w));
+$('again').onclick=()=>{if(mode==='find'&&fi<order.length)speak(ITEMS[order[fi]][1]);};
+$('show').onclick=()=>{const b=$('ptext').classList.toggle('blur');$('show').textContent=b?'Показать текст':'Скрыть текст';};
+$('ruBtn').onclick=()=>{ru=!ru;$('shelf').querySelectorAll('.ru').forEach(e=>e.hidden=!ru);};
+$('tAgain').onclick=()=>{if(ti<tRounds.length)speak(tRounds[ti].item[1]);};
+$('tShow').onclick=()=>{const b=$('tText').classList.toggle('blur');$('tShow').textContent=b?'Показать текст':'Скрыть текст';};
+$('frameBtn').onclick=()=>{$('frame').hidden=!$('frame').hidden;if(!$('frame').hidden)usedFrame=true;};
+$('ansBtn').onclick=()=>{$('ans').hidden=!$('ans').hidden;};
+$('ok').onclick=()=>{if(mode!=='tell'||ti>=tRounds.length)return;usedFrame?res.frame++:res.free++;beep(660,.08);setTimeout(()=>beep(880,.12),90);ti++;setTimeout(tellNext,700);};
+$('retry').onclick=()=>{beep(160,.25,'sawtooth');$('frame').hidden=false;usedFrame=true;const h=$('hDo');h.classList.remove('hot');void h.offsetWidth;h.classList.add('hot');};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setMode(t.dataset.m));
+$('play').onclick=()=>{$('intro').hidden=true;setMode('learn');};
+$('nextBtn').onclick=()=>{$('done').hidden=true;setMode(mode==='learn'?'find':'tell');};
+$('replay').onclick=()=>{$('done').hidden=true;setMode(mode);};
+drawShelf();
+</script>
