@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Review Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffe9ec;--ink:#2b2340;--card:#fff;--a:#ff7a8a;--b:#5bb8ff;--ok:#3cc47c;--no:#ff6b6b;--gold:#ffc83d}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Baloo 2',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;flex-wrap:wrap}
+h1{margin:0;font-size:30px;font-weight:800}
+.players{display:flex;gap:10px}
+.pl{background:#fff;border-radius:18px;padding:6px 16px;font-size:20px;font-weight:700;border:4px solid transparent;cursor:pointer;transition:.2s}
+.pl.on{border-color:var(--gold);transform:scale(1.07);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.pl b{font-size:26px;margin-left:6px}
+.tools button{font:inherit;font-size:16px;border:0;border-radius:12px;padding:6px 12px;background:#fff;cursor:pointer;margin-left:6px}
+.board{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;padding:6px 18px 24px;max-width:1300px;margin:0 auto}
+.cat{background:var(--ink);color:#fff;border-radius:14px;padding:8px 4px;text-align:center;font-weight:700;font-size:15px;line-height:1.15;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cat span{font-size:26px}
+.tile{background:linear-gradient(180deg,#fff,#ffe1e6);border:0;border-radius:14px;font:inherit;font-size:30px;font-weight:800;color:var(--a);height:82px;cursor:pointer;box-shadow:0 4px 0 #f3b3bd;transition:.15s}
+.tile:hover{transform:translateY(-3px)}
+.tile.done{background:#f3dfe2;color:transparent;box-shadow:none;cursor:default}
+.tile.done.win::after{content:"⭐";color:#000;font-size:28px}
+.tile.done.lose::after{content:"•";color:#c9a3a9}
+@media(max-width:760px){.board{gap:5px;padding:4px 6px 20px}.cat{font-size:10px;min-height:56px}.cat span{font-size:18px}.tile{font-size:16px;height:56px}h1{font-size:22px}.pl{font-size:15px}}
+.ov{position:fixed;inset:0;background:rgba(43,35,64,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:5}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:26px;width:min(820px,100%);max-height:96vh;overflow:auto;padding:20px 22px;text-align:center;animation:pop .25s}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+.mtop{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:18px;color:#8a7d99}
+.pts{background:var(--gold);color:var(--ink);border-radius:12px;padding:2px 12px}
+.q{font-size:32px;font-weight:800;margin:10px 0 6px;line-height:1.2}
+.sub{font-size:18px;color:#8a7d99;margin-bottom:8px}
+.pic{min-height:150px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;font-size:64px;margin:6px 0}
+.pic svg{width:150px;height:150px}
+.grid12{display:grid;grid-template-columns:repeat(7,auto);gap:4px;font-size:40px}
+.scene{display:flex;align-items:flex-end;justify-content:flex-start;width:100%;max-width:640px;height:170px;border-bottom:6px solid #e7c8a8;padding:0 10px;position:relative}
+.scene .kid{font-size:80px}
+.scene .grp{display:flex;gap:4px;align-items:flex-end}
+.scene .near{margin-left:14px;font-size:62px}
+.scene .far{margin-left:auto;font-size:30px;opacity:.85}
+.scene .hand{font-size:42px;margin-bottom:46px}
+.tag{position:absolute;top:6px;font-size:14px;color:#b9adc7}
+.opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0;min-height:10px}
+.opts span{background:#eef6ff;border:3px solid var(--b);border-radius:14px;padding:4px 16px;font-size:24px;font-weight:700}
+.ans{font-size:30px;font-weight:800;color:var(--ok);min-height:44px;margin:6px 0}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.btns button{font:inherit;font-size:20px;font-weight:700;border:0;border-radius:16px;padding:10px 20px;cursor:pointer;color:#fff}
+.say{background:#9b8cff}.hint{background:var(--b)}.show{background:var(--a)}
+.yes{background:var(--ok)}.nope{background:var(--no)}.close{background:#b9adc7}
+.hidden{display:none!important}
+.end h2{font-size:40px;margin:6px 0}
+.conf{position:fixed;top:-20px;font-size:26px;animation:fall linear forwards;pointer-events:none;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎯 Big Review Board</h1>
+  <div class="players">
+    <div class="pl on" id="p0" title="Click to rename">🦊 <span class="nm">Fox</span><b id="s0">0</b></div>
+    <div class="pl" id="p1" title="Click to rename">🐼 <span class="nm">Panda</span><b id="s1">0</b></div>
+  </div>
+  <div class="tools"><button id="snd">🔊 On</button><button id="reset">↺ New game</button></div>
+</header>
+<div class="board" id="board"></div>
+
+<div class="ov" id="ov"><div class="modal">
+  <div class="mtop"><span id="mcat"></span><span class="pts" id="mpts"></span></div>
+  <div class="q" id="mq"></div>
+  <div class="sub" id="msub"></div>
+  <div class="pic" id="mpic"></div>
+  <div class="opts" id="mopts"></div>
+  <div class="ans" id="mans"></div>
+  <div class="btns" id="b1">
+    <button class="say" id="bsay">🔊 Listen</button>
+    <button class="hint" id="bhint">💡 Hint</button>
+    <button class="show" id="bshow">👀 Answer</button>
+  </div>
+  <div class="btns hidden" id="b2">
+    <button class="yes" id="byes">✓ Right!</button>
+    <button class="nope" id="bno">✗ Not yet</button>
+  </div>
+</div></div>
+
+<div class="ov" id="endov"><div class="modal end">
+  <h2>🏆</h2><h2 id="endt"></h2><div class="sub" id="ends"></div>
+  <div class="btns"><button class="show" id="again">Play again</button></div>
+</div></div>
+
+<script>
+var SVG={
+cupboard:'<svg viewBox="0 0 100 100"><rect x="18" y="8" width="64" height="86" rx="4" fill="#c98b55" stroke="#7a4d26" stroke-width="3"/><line x1="50" y1="10" x2="50" y2="92" stroke="#7a4d26" stroke-width="3"/><circle cx="44" cy="52" r="3" fill="#7a4d26"/><circle cx="56" cy="52" r="3" fill="#7a4d26"/><rect x="22" y="92" width="8" height="6" fill="#7a4d26"/><rect x="70" y="92" width="8" height="6" fill="#7a4d26"/></svg>',
+cdplayer:'<svg viewBox="0 0 100 100"><rect x="8" y="30" width="84" height="50" rx="10" fill="#6c7a89" stroke="#3b4652" stroke-width="3"/><circle cx="30" cy="55" r="15" fill="#2b3440"/><circle cx="70" cy="55" r="15" fill="#2b3440"/><circle cx="30" cy="55" r="5" fill="#9aa6b2"/><circle cx="70" cy="55" r="5" fill="#9aa6b2"/><rect x="38" y="20" width="24" height="10" rx="3" fill="#3b4652"/><path d="M20 30 Q50 6 80 30" fill="none" stroke="#3b4652" stroke-width="4"/><circle cx="50" cy="24" r="0"/><rect x="42" y="68" width="16" height="6" rx="2" fill="#e8c547"/></svg>',
+pencilcase:'<svg viewBox="0 0 100 100"><rect x="10" y="35" width="80" height="36" rx="16" fill="#ff8fb1" stroke="#c4466e" stroke-width="3"/><line x1="18" y1="44" x2="82" y2="44" stroke="#c4466e" stroke-width="3" stroke-dasharray="4 3"/><circle cx="84" cy="44" r="4" fill="#c4466e"/><rect x="24" y="22" width="6" height="22" fill="#ffd34d"/><polygon points="24,22 30,22 27,14" fill="#333"/><rect x="40" y="18" width="6" height="26" fill="#5bb8ff"/><polygon points="40,18 46,18 43,10" fill="#333"/></svg>',
+board:'<svg viewBox="0 0 100 100"><rect x="6" y="16" width="88" height="60" rx="4" fill="#2f6b4f" stroke="#8a5a2b" stroke-width="5"/><text x="20" y="46" font-size="16" fill="#fff" font-family="Comic Sans MS">ABC</text><text x="52" y="64" font-size="14" fill="#fff" font-family="Comic Sans MS">1 2 3</text><line x1="30" y1="76" x2="22" y2="96" stroke="#8a5a2b" stroke-width="4"/><line x1="70" y1="76" x2="78" y2="96" stroke="#8a5a2b" stroke-width="4"/></svg>'
+};
+function rep(e,n){var s='';for(var i=0;i<n;i++)s+='<span>'+e+'</span>';return s}
+function scene(item,n,far){
+  var g=rep(item,n);
+  return '<div class="scene"><span class="kid">🧒</span><span class="hand">👉</span>'+
+  (far?'<div class="grp far">'+g+'</div>':'<div class="grp near">'+g+'</div>')+'</div>';
+}
+var CATS=[
+{icon:'🏫',name:"Peter's School",sub:'True or False?',qs:[
+ {q:"Peter's classroom is upstairs.",opts:['True','False'],a:'True ✓'},
+ {q:'There are 14 girls in his class.',opts:['True','False'],a:'False. There are 12 girls.'},
+ {q:"Peter's teacher is Mr Cooper.",opts:['True','False'],a:'False. Mrs Cooper.'},
+ {q:'Peter sits with his friend Henry.',opts:['True','False'],a:'True ✓'}]},
+{icon:'🪑',name:'Classroom words',sub:'What is it?',qs:[
+ {q:'What is it?',pic:'<span>🪟</span>',a:"It's a window.",say:'window'},
+ {q:'What is it?',svg:'pencilcase',a:"It's a pencil case.",say:'pencil case'},
+ {q:'What is it?',svg:'cupboard',a:"It's a cupboard.",say:'cupboard'},
+ {q:'What is it?',svg:'cdplayer',a:"It's a CD player.",say:'CD player'}]},
+{icon:'🔢',name:'There is / There are',sub:'Say about the picture',qs:[
+ {q:'Computer?',pic:'<span>💻</span>',opts:['There is','There are'],a:'There is a computer.'},
+ {q:'Windows?',pic:rep('🪟',2),opts:['There is','There are'],a:'There are two windows.'},
+ {q:'Pencils? Count!',pic:'<div class="grid12">'+rep('✏️',12)+'</div>',opts:['There is','There are'],a:'There are twelve pencils.'},
+ {q:'Books? Count!',pic:'<div class="grid12">'+rep('📕',14)+'</div>',opts:['There is','There are'],a:'There are fourteen books.'}]},
+{icon:'👉',name:'This / That / These / Those',sub:'Say it!',qs:[
+ {q:'Say it!',pic:scene('🎒',1,false),opts:['This','That','These','Those'],a:'This is a bag.'},
+ {q:'Say it!',pic:scene('🪑',1,true),opts:['This','That','These','Those'],a:'That is a chair.'},
+ {q:'Say it!',pic:scene('✏️',3,false),opts:['This','That','These','Those'],a:'These are pencils.'},
+ {q:'Say it!',pic:scene('📕',3,true),opts:['This','That','These','Those'],a:'Those are books.'}]},
+{icon:'📅',name:'Numbers & Days',sub:'',qs:[
+ {q:'What day comes after Monday?',opts:['Sunday','Tuesday'],a:'Tuesday'},
+ {q:'Say the number:',pic:'<span style="font-size:90px;font-weight:800;color:#5bb8ff">13</span>',opts:['thirteen','thirty'],a:'thirteen',say:'thirteen'},
+ {q:'What day comes before Friday?',opts:['Thursday','Saturday'],a:'Thursday'},
+ {q:'Spell the number:',pic:'<span style="font-size:90px;font-weight:800;color:#5bb8ff">20</span>',opts:['twenty','twelve'],a:'T-W-E-N-T-Y',say:'twenty'}]},
+{icon:'🧩',name:'Grammar mix',sub:'Fill the gap',qs:[
+ {q:'She ___ got long hair.',pic:'<span>👧</span>',opts:['has','have'],a:'She has got long hair.'},
+ {q:'This is Peter. ___ name is Peter.',pic:'<span>👦</span>',opts:['His','Her'],a:'His name is Peter.'},
+ {q:'There ___ 12 girls in the class.',pic:'<span>👧👧👧</span>',opts:['is','are'],a:'There are 12 girls.'},
+ {q:'This is Mrs Cooper. ___ is a teacher.',pic:'<span>👩‍🏫</span>',opts:['He','She'],a:'She is a teacher.'}]},
+{icon:'🔤',name:'Spell it!',sub:'Listen and spell',qs:[
+ {q:'Listen and spell!',pic:'<span>🎒</span>',a:'B-A-G',say:'bag'},
+ {q:'Listen and spell!',pic:'<span>🚪</span>',a:'D-O-O-R',say:'door'},
+ {q:'Listen and spell!',svg:'board',a:'B-O-A-R-D',say:'board'},
+ {q:'Listen and spell!',pic:'<span>🪟</span>',a:'W-I-N-D-O-W',say:'window'}]}
+];
+var score=[0,0],turn=0,done={},cur=null,sound=true;
+function $(i){return document.getElementById(i)}
+function speak(t){if(!sound||!window.speechSynthesis)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+function build(){
+  var b=$('board');b.innerHTML='';
+  CATS.forEach(function(c){b.insertAdjacentHTML('beforeend','<div class="cat"><span>'+c.icon+'</span>'+c.name+'</div>')});
+  for(let r=0;r<4;r++)CATS.forEach(function(c,ci){
+    var k=ci+'-'+r,t=document.createElement('button');t.className='tile';t.textContent=(r+1)*100;
+    if(done[k]){t.classList.add('done',done[k])}else t.onclick=function(){open(ci,r)};
+    b.appendChild(t)});
+}
+function paint(){for(var i=0;i<2;i++){$('s'+i).textContent=score[i];$('p'+i).classList.toggle('on',i===turn)}}
+function open(ci,r){
+  var c=CATS[ci],q=c.qs[r];cur={ci:ci,r:r,q:q};
+  $('mcat').textContent=c.icon+' '+c.name;$('mpts').textContent=(r+1)*100;
+  $('mq').textContent=q.q;$('msub').textContent=c.sub===q.q?'':c.sub;
+  $('mpic').innerHTML=q.svg?SVG[q.svg]:(q.pic||'');
+  $('mopts').innerHTML='';$('mans').textContent='';
+  $('bhint').classList.toggle('hidden',!q.opts);
+  $('bsay').classList.toggle('hidden',!q.say&&ci!==0&&ci!==4&&ci!==5);
+  $('b1').classList.remove('hidden');$('b2').classList.add('hidden');
+  $('ov').classList.add('show');
+  if(q.say&&ci===6)setTimeout(function(){speak(q.say)},300);
+}
+$('bsay').onclick=function(){var q=cur.q;speak(q.say&&cur.ci===6?q.say:q.q.replace('___','blank'))};
+$('bhint').onclick=function(){$('mopts').innerHTML=cur.q.opts.map(function(o){return '<span>'+o+'</span>'}).join('')};
+$('bshow').onclick=function(){$('mans').textContent=cur.q.a;$('b1').classList.add('hidden');$('b2').classList.remove('hidden');speak(cur.q.a.replace(/-/g,' ').replace('✓',''))};
+function finish(ok){
+  var k=cur.ci+'-'+cur.r;done[k]=ok?'win':'lose';
+  if(ok){score[turn]+=(cur.r+1)*100;burst(12)}
+  turn=1-turn;$('ov').classList.remove('show');build();paint();
+  if(Object.keys(done).length===28)setTimeout(end,600);
+}
+$('byes').onclick=function(){finish(true)};$('bno').onclick=function(){finish(false)};
+function nm(i){return $('p'+i).querySelector('.nm').textContent}
+function end(){
+  var t=score[0]===score[1]?'Draw! Great job, both!':(score[0]>score[1]?nm(0):nm(1))+' wins!';
+  $('endt').textContent=t;$('ends').textContent=nm(0)+': '+score[0]+'   '+nm(1)+': '+score[1];
+  $('endov').classList.add('show');burst(40);
+}
+function burst(n){var e=['⭐','🎉','✨','🌟','💖'];for(var i=0;i<n;i++){var d=document.createElement('div');d.className='conf';d.textContent=e[i%5];d.style.left=Math.random()*100+'vw';d.style.animationDuration=(1.5+Math.random()*2)+'s';document.body.appendChild(d);setTimeout(function(x){return function(){x.remove()}}(d),4000)}}
+function reset(){score=[0,0];turn=0;done={};build();paint();$('endov').classList.remove('show')}
+$('reset').onclick=function(){if(confirm('Start a new game?'))reset()};
+$('again').onclick=reset;
+$('snd').onclick=function(){sound=!sound;this.textContent=sound?'🔊 On':'🔇 Off'};
+[0,1].forEach(function(i){$('p'+i).onclick=function(e){if(e.detail>1)return;var v=prompt('Name:',nm(i));if(v)$('p'+i).querySelector('.nm').textContent=v.slice(0,14)}});
+build();paint();
+</script>
+</body>
+</html>
