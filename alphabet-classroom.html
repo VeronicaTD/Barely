@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alphabet + Classroom</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2b2622;--bg:#b7d9f5;--card:#fffdf7;--blue:#3a7bd5;--green:#3fb46b;--red:#e8483d;--yellow:#ffd23f;--pink:#ff6fa0;--orange:#ff9a3c;--purple:#9b6ee0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Fredoka',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:14px}
+button{font-family:inherit;color:var(--ink)}
+.app{max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:clamp(22px,3.4vw,36px);font-weight:700;line-height:1.1}
+h1 span{color:var(--blue)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tab{border:3px solid var(--ink);background:#fff;border-radius:16px;padding:7px 13px;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 4px 0 var(--ink);display:flex;gap:8px;align-items:center;transition:transform .1s}
+.tab:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.tab.on{background:var(--yellow)}
+.tab small{font-weight:500;font-size:13px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:0 6px}
+.snd{width:44px;height:44px;border-radius:50%;border:3px solid var(--ink);background:#fff;font-size:20px;cursor:pointer;box-shadow:0 4px 0 var(--ink)}
+.card{background:var(--card);border:4px solid var(--ink);border-radius:26px;padding:16px;box-shadow:0 8px 0 var(--ink)}
+.stagebar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.nav{width:42px;height:42px;border-radius:50%;border:3px solid var(--ink);background:#fff;font-size:18px;font-weight:700;cursor:pointer;flex:none}
+.nav:disabled{opacity:.3;cursor:default}
+.dots{display:flex;gap:5px;flex-wrap:wrap;flex:1;align-items:center}
+.dot{width:28px;height:28px;border-radius:50%;border:2.5px solid var(--ink);background:#fff;font-weight:600;font-size:12px;cursor:pointer}
+.dot.done{background:var(--green);color:#fff}
+.dot.cur{outline:3px solid var(--blue);outline-offset:2px}
+.mix{border:3px solid var(--ink);background:#fff;border-radius:14px;padding:6px 10px;font-weight:600;font-size:14px;cursor:pointer}
+.task{text-align:center;margin-bottom:12px}
+.task .en{font-size:clamp(20px,3vw,30px);font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.task .ru{font-size:15px;opacity:.65;margin-top:4px}
+.bigletter{display:inline-block;background:var(--orange);color:#fff;border:3px solid var(--ink);border-radius:20px;padding:0 18px;font-size:clamp(34px,6vw,58px);line-height:1.25;box-shadow:0 4px 0 var(--ink)}
+.scene{position:relative;width:100%;aspect-ratio:16/10;border:3px solid var(--ink);border-radius:20px;overflow:hidden;background:linear-gradient(#fdf1d8 0 62%,#8a5a2b 62% 63.3%,#ecd0a3 63.3%)}
+.scene .win{position:absolute;left:62%;top:30%;width:0}
+.item{position:absolute;cursor:pointer;transition:transform .2s,filter .2s,opacity .25s}
+.item svg{width:100%;height:auto;display:block;overflow:visible}
+.item:hover{transform:scale(1.06)}
+.item.found svg{filter:drop-shadow(0 0 5px #3fb46b) drop-shadow(0 0 3px #3fb46b)}
+.item.dim{opacity:.28;pointer-events:none}
+.item.target{animation:glow 1s ease-in-out infinite alternate}
+.item.pulse{animation:pulse .5s ease-in-out 3}
+@keyframes glow{from{filter:drop-shadow(0 0 2px #ff9a3c)}to{filter:drop-shadow(0 0 12px #ff9a3c);transform:scale(1.07)}}
+@keyframes pulse{50%{transform:scale(1.18)}}
+.tag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:1px 9px;font-weight:600;font-size:clamp(11px,1.8vw,20px);white-space:nowrap;transition:transform .25s;pointer-events:none;z-index:2}
+.found .tag,.show .tag{transform:translate(-50%,-50%) scale(1)}
+.wrong .tag{transform:translate(-50%,-50%) scale(1);background:#ffe1de;border-color:var(--red)}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.tools{display:flex;justify-content:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.tool{border:3px solid var(--ink);background:#fff;border-radius:14px;padding:7px 14px;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.letters{display:flex;justify-content:center;gap:14px;margin-top:14px;flex-wrap:wrap}
+.lbtn{min-width:96px;border:3px solid var(--ink);background:var(--yellow);border-radius:22px;font-size:clamp(30px,5vw,46px);font-weight:600;padding:2px 16px;cursor:pointer;box-shadow:0 5px 0 var(--ink)}
+.lbtn.ok,.ans.ok{background:var(--green);color:#fff}
+/* round 2 */
+.scene2{aspect-ratio:16/7;background:linear-gradient(#e6f2fb 0 42%,#8a5a2b 42% 43.3%,#f3dcb4 43.3%,#d9ae78)}
+.kid{position:absolute;left:2%;bottom:4%;width:8%}
+.kid svg,.grp svg{width:100%;height:auto;display:block}
+.grp{position:absolute;display:flex;align-items:flex-end;justify-content:space-between;animation:pop .35s}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.sentence{text-align:center;font-size:clamp(24px,4vw,40px);font-weight:600;margin-top:10px}.sentence:empty{display:none}.answers[hidden]{display:none}
+.sentence b{color:var(--blue)}
+.answers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px}
+.ans{border:3px solid var(--ink);border-radius:18px;padding:8px 4px;cursor:pointer;box-shadow:0 5px 0 var(--ink);font-size:clamp(20px,3.4vw,32px);font-weight:600;line-height:1.1}
+.ans small{display:block;font-size:13px;font-weight:500;opacity:.75}
+.ans:nth-child(1){background:#ffe36e}.ans:nth-child(2){background:#ffb7cf}.ans:nth-child(3){background:#a9dcff}.ans:nth-child(4){background:#c9b6f2}
+.ans.ok{background:var(--green)!important}
+/* round 3 */
+.spell{display:flex;flex-direction:column;align-items:center;gap:16px}
+.pic{width:min(230px,48vw);cursor:pointer}
+.pic svg{width:100%;height:auto;display:block}
+.slots{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.slot{width:clamp(34px,6vw,54px);height:clamp(44px,7.5vw,64px);border-bottom:5px solid var(--ink);font-size:clamp(28px,5vw,46px);font-weight:600;display:flex;align-items:flex-end;justify-content:center}
+.slot.fill{color:var(--blue);animation:pop .25s}
+.gap{width:clamp(14px,3vw,26px)}
+.tiles{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+.tile{width:clamp(46px,7.5vw,64px);height:clamp(46px,7.5vw,64px);border:3px solid var(--ink);border-radius:16px;background:var(--yellow);font-size:clamp(26px,4.4vw,38px);font-weight:600;cursor:pointer;box-shadow:0 4px 0 var(--ink)}
+.tile.used{visibility:hidden}
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(43,38,34,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+.ov.on{display:flex}
+.ovbox{background:var(--card);border:4px solid var(--ink);border-radius:28px;padding:26px 30px;text-align:center;box-shadow:0 8px 0 var(--ink);animation:pop .35s;max-width:420px}
+.ovbox .big{font-size:64px}
+.ovbox h2{font-size:32px;margin:6px 0 4px}
+.ovbox p{opacity:.7;margin-bottom:16px}
+.ovbox .tool{margin:4px}
+.conf{position:fixed;top:-20px;width:12px;height:16px;border-radius:3px;z-index:30;pointer-events:none;animation:fall 1.6s linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+@media (max-width:640px){.answers{grid-template-columns:repeat(2,1fr)}.dot{width:24px;height:24px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Alphabet <span>+ Classroom</span></h1>
+    <div class="tabs" id="tabs"></div>
+  </header>
+  <div class="card">
+    <div class="stagebar" id="bar"></div>
+    <div id="stage"></div>
+  </div>
+</div>
+<div class="ov" id="ov"><div class="ovbox" id="ovbox"></div></div>
+
+<script>
+/* ===================== OBJECTS ===================== */
+const S = 'stroke="#2b2622" stroke-width="3" stroke-linejoin="round"';
+const OBJ = {
+  board:{w:'board',pl:'boards',vb:'0 0 140 90',wall:true,svg:`<g ${S}><rect x="28" y="74" width="84" height="7" rx="3" fill="#8a5a2b"/><rect x="4" y="4" width="132" height="68" rx="5" fill="#2f6b4f" stroke="#8a5a2b" stroke-width="6"/></g><text x="70" y="47" text-anchor="middle" font-family="Fredoka,sans-serif" font-size="26" font-weight="600" fill="#fff" opacity=".9">A B C</text><path d="M24 60h44" stroke="#fff" stroke-width="2.5" opacity=".55" stroke-linecap="round"/>`},
+  poster:{w:'poster',pl:'posters',vb:'0 0 70 90',wall:true,svg:`<g ${S}><rect x="6" y="8" width="58" height="78" rx="3" fill="#fff6c7"/><circle cx="35" cy="34" r="12" fill="#ffd23f"/></g><g stroke="#ff9a3c" stroke-width="3" stroke-linecap="round"><path d="M35 16v-3M35 52v3M17 34h-3M53 34h3M22 21l-2-2M48 47l2 2M48 21l2-2M22 47l-2 2"/></g><path d="M15 66h40M15 76h28" stroke="#3a7bd5" stroke-width="4" stroke-linecap="round"/><circle cx="12" cy="13" r="4" fill="#e8483d" stroke="#2b2622" stroke-width="1.5"/><circle cx="58" cy="13" r="4" fill="#e8483d" stroke="#2b2622" stroke-width="1.5"/>`},
+  picture:{w:'picture',pl:'pictures',vb:'0 0 90 72',wall:true,svg:`<g ${S}><rect x="4" y="4" width="82" height="64" rx="4" fill="#d9a441"/><rect x="13" y="13" width="64" height="46" fill="#bfe6ff"/><circle cx="60" cy="26" r="7" fill="#ffd23f"/><path d="M13 59l20-26 14 16 9-9 21 19z" fill="#5cc35c"/></g>`},
+  cupboard:{w:'cupboard',pl:'cupboards',vb:'0 0 80 140',svg:`<g ${S}><rect x="10" y="126" width="10" height="11" fill="#8a5a2b"/><rect x="60" y="126" width="10" height="11" fill="#8a5a2b"/><rect x="4" y="4" width="72" height="126" rx="5" fill="#c98547"/><rect x="10" y="12" width="28" height="110" rx="3" fill="#d99a5c"/><rect x="42" y="12" width="28" height="110" rx="3" fill="#d99a5c"/><circle cx="33" cy="68" r="3.5" fill="#ffd23f"/><circle cx="47" cy="68" r="3.5" fill="#ffd23f"/></g>`},
+  drawer:{w:'drawer',pl:'drawers',vb:'0 0 100 90',svg:`<g ${S}><rect x="14" y="80" width="8" height="8" fill="#8a5a2b"/><rect x="78" y="80" width="8" height="8" fill="#8a5a2b"/><rect x="8" y="8" width="84" height="74" rx="4" fill="#c98547"/><rect x="14" y="44" width="72" height="15" rx="2" fill="#d99a5c"/><rect x="14" y="62" width="72" height="15" rx="2" fill="#d99a5c"/><circle cx="50" cy="51.5" r="3" fill="#ffd23f"/><circle cx="50" cy="69.5" r="3" fill="#ffd23f"/><path d="M14 14h72l12 12H2z" fill="#f2c08a"/><rect x="22" y="16" width="20" height="8" rx="1" fill="#3a7bd5" stroke-width="2"/><rect x="50" y="17" width="26" height="6" rx="3" fill="#e8483d" stroke-width="2"/><rect x="2" y="26" width="96" height="16" rx="2" fill="#e9a86a"/><circle cx="50" cy="34" r="3" fill="#ffd23f"/></g>`},
+  table:{w:'table',pl:'tables',vb:'0 0 120 70',svg:`<g ${S}><rect x="12" y="14" width="9" height="52" rx="2" fill="#a86a33"/><rect x="99" y="14" width="9" height="52" rx="2" fill="#a86a33"/><rect x="4" y="5" width="112" height="13" rx="4" fill="#d08a4e"/></g>`},
+  computer:{w:'computer',pl:'computers',vb:'0 0 80 72',svg:`<g ${S}><rect x="34" y="50" width="12" height="14" fill="#9aa7b4"/><rect x="20" y="62" width="40" height="8" rx="3" fill="#9aa7b4"/><rect x="4" y="4" width="72" height="50" rx="6" fill="#5b6b7d"/><rect x="11" y="10" width="58" height="37" rx="3" fill="#8fd3ff"/></g><path d="M18 38l12-12 9 8 8-6 15 10" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="56" cy="19" r="4" fill="#ffd23f"/>`},
+  cdplayer:{w:'CD player',pl:'CD players',vb:'0 0 90 60',svg:`<g ${S}><path d="M26 16V6h38v10" fill="none" stroke-width="4"/><rect x="3" y="14" width="84" height="42" rx="9" fill="#ff6fa0"/><circle cx="21" cy="36" r="12" fill="#3b3b4f"/><circle cx="69" cy="36" r="12" fill="#3b3b4f"/><circle cx="21" cy="36" r="5" fill="#9aa7b4"/><circle cx="69" cy="36" r="5" fill="#9aa7b4"/><circle cx="45" cy="32" r="10" fill="#e3ecf5"/><circle cx="45" cy="32" r="3" fill="#fff" stroke-width="1.5"/><rect x="37" y="46" width="6" height="5" rx="1" fill="#ffd23f" stroke-width="1.5"/><rect x="47" y="46" width="6" height="5" rx="1" fill="#5cc35c" stroke-width="1.5"/></g>`},
+  bag:{w:'bag',pl:'bags',vb:'0 0 60 74',svg:`<g ${S}><path d="M18 22q0-16 12-16t12 16" fill="none" stroke-width="4"/><rect x="6" y="20" width="48" height="50" rx="10" fill="#ff7a45"/><rect x="14" y="40" width="32" height="20" rx="5" fill="#ffa070" stroke-width="2.5"/><rect x="26" y="37" width="8" height="6" rx="2" fill="#ffd23f" stroke-width="1.5"/></g>`},
+  pencilcase:{w:'pencil case',pl:'pencil cases',vb:'0 0 90 42',svg:`<g ${S}><path d="M28 12l4-10 4 10z" fill="#ffd23f" stroke-width="2"/><path d="M40 12l4-9 4 9z" fill="#5cc35c" stroke-width="2"/><rect x="4" y="10" width="82" height="28" rx="12" fill="#b07de0"/><path d="M12 20h66" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="76" cy="20" r="4" fill="#ffd23f" stroke-width="1.5"/></g>`}
+};
+const KEYS = Object.keys(OBJ);
+const first = k => OBJ[k].w[0].toLowerCase();
+const svgOf = k => `<svg viewBox="${OBJ[k].vb}" xmlns="http://www.w3.org/2000/svg">${OBJ[k].svg}</svg>`;
+
+/* classroom layout for round 1: left / top / width in % of scene */
+const POS = {
+  poster:{l:7,t:9,w:11}, board:{l:28,t:7,w:31}, picture:{l:65,t:11,w:13},
+  cupboard:{l:84,t:44,w:13}, drawer:{l:3,t:58,w:15},
+  table:{l:33,t:56,w:28}, computer:{l:36,t:41.5,w:11}, cdplayer:{l:49,t:48,w:10},
+  bag:{l:68,t:65,w:8}, pencilcase:{l:20,t:84,w:11}
+};
+
+const KID = a => `<svg viewBox="0 0 70 124" xmlns="http://www.w3.org/2000/svg"><g ${S}>
+<rect x="19" y="78" width="10" height="40" rx="4" fill="#3b3b4f"/><rect x="33" y="78" width="10" height="40" rx="4" fill="#3b3b4f"/>
+<rect x="14" y="40" width="34" height="42" rx="11" fill="#4aa3ff"/>
+<g transform="rotate(${a} 44 50)"><rect x="40" y="45" width="22" height="9" rx="4.5" fill="#4aa3ff"/><circle cx="64" cy="49.5" r="5" fill="#f6c9a0"/></g>
+<circle cx="31" cy="24" r="16" fill="#f6c9a0"/>
+<path d="M15 22q0-18 16-18t16 18q-8-7-16-7t-16 7z" fill="#7a4a2a"/></g>
+<circle cx="26" cy="26" r="2" fill="#2b2622"/><circle cx="36" cy="26" r="2" fill="#2b2622"/>
+<path d="M25 32q6 5 12 0" fill="none" stroke="#2b2622" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+
+/* ===================== HELPERS ===================== */
+const $ = id => document.getElementById(id);
+const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+let sound = true, ac, advT;
+function say(t){ if(!sound||!window.speechSynthesis) return; try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-GB'; u.rate=.85; speechSynthesis.speak(u);}catch(e){} }
+function beep(f=660,d=.12,type='sine',v=.1){ if(!sound) return;
+  try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); const o=ac.createOscillator(),g=ac.createGain();
+    o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);
+    o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d);}catch(e){} }
+function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); beep(200,.15,'square',.05); }
+function confetti(){ if(reduce) return; const c=['#ffd23f','#ff6fa0','#3a7bd5','#3fb46b','#ff9a3c','#9b6ee0'];
+  for(let i=0;i<34;i++){ const s=document.createElement('span'); s.className='conf';
+    s.style.left=Math.random()*100+'vw'; s.style.background=c[i%c.length]; s.style.animationDelay=Math.random()*.4+'s';
+    document.body.appendChild(s); setTimeout(()=>s.remove(),2200);} }
+
+/* ===================== ROUNDS ===================== */
+function buildR1(){
+  const finds=['b','c','p','t','d'].map(L=>({type:'find',L}));
+  const lets=shuffle(KEYS.slice()).map(k=>({type:'letter',k}));
+  const out=[]; let i=0;
+  finds.forEach(f=>{ out.push(f, lets[i++], lets[i++]); });
+  return out;                                   // 15 stages
+}
+function buildR2(){
+  const ans=shuffle(['This','This','This','That','That','That','These','These','These','Those','Those','Those']);
+  const pool=shuffle(KEYS.filter(k=>k!=='board')); let pi=0, board=false;
+  return ans.map(a=>{
+    const near=a==='This'||a==='These', many=a==='These'||a==='Those';
+    let k; if(a==='That'&&!board){k='board';board=true;} else k=pool[pi++%pool.length];
+    return {type:'tt',k,a,near,many};
+  });                                           // 12 stages
+}
+function buildR3(){
+  return ['bag','table','board','poster','drawer','picture','computer','cupboard','pencilcase','cdplayer'].map(k=>({type:'spell',k})); // 10 stages
+}
+const R = [
+  {name:'Letters', build:buildR1},
+  {name:'This · That', build:buildR2},
+  {name:'Spell it', build:buildR3}
+];
+let cur=0;
+const rounds = R.map(r=>({stages:r.build(), idx:0, done:new Set()}));
+
+/* ===================== CHROME ===================== */
+function renderChrome(){
+  $('tabs').innerHTML = R.map((r,i)=>`<button class="tab ${i===cur?'on':''}" data-r="${i}">${i+1}. ${r.name} <small>${rounds[i].done.size}/${rounds[i].stages.length}</small></button>`).join('')
+    + `<button class="snd" id="snd" title="Звук">${sound?'🔊':'🔇'}</button>`;
+  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(+b.dataset.r, rounds[+b.dataset.r].idx));
+  $('snd').onclick=()=>{ sound=!sound; if(!sound&&window.speechSynthesis) speechSynthesis.cancel(); renderChrome(); };
+  const R0=rounds[cur], n=R0.stages.length;
+  $('bar').innerHTML = `<button class="nav" id="prev" ${R0.idx===0?'disabled':''}>◀</button>
+    <div class="dots">${R0.stages.map((s,i)=>`<button class="dot ${R0.done.has(i)?'done':''} ${i===R0.idx?'cur':''}" data-i="${i}">${i+1}</button>`).join('')}</div>
+    <button class="nav" id="next" ${R0.idx===n-1?'disabled':''}>▶</button>
+    <button class="mix" id="mix" title="Новый набор заданий">🔀 Перемешать</button>`;
+  $('prev').onclick=()=>go(cur,R0.idx-1);
+  $('next').onclick=()=>go(cur,R0.idx+1);
+  $('mix').onclick=()=>{ rounds[cur]={stages:R[cur].build(),idx:0,done:new Set()}; go(cur,0); };
+  document.querySelectorAll('.dot').forEach(d=>d.onclick=()=>go(cur,+d.dataset.i));
+}
+function go(r,i){
+  clearTimeout(advT); closeOv();
+  cur=r; const R0=rounds[r]; R0.idx=Math.max(0,Math.min(i,R0.stages.length-1));
+  renderChrome(); renderStage();
+}
+function win(){
+  const R0=rounds[cur]; R0.done.add(R0.idx); confetti(); beep(880,.15); setTimeout(()=>beep(1175,.2),130);
+  renderChrome();
+  advT=setTimeout(()=>{
+    if(R0.done.size===R0.stages.length) return roundDone();
+    let n=R0.idx+1; if(n>=R0.stages.length){ n=R0.stages.findIndex((s,i)=>!R0.done.has(i)); }
+    go(cur,n);
+  }, 1800);
+}
+
+/* ===================== OVERLAY ===================== */
+function closeOv(){ $('ov').classList.remove('on'); }
+function roundDone(){
+  const last = cur===R.length-1;
+  $('ovbox').innerHTML = last
+    ? `<div class="big">🏆</div><h2>Super! All done!</h2><p>Все раунды пройдены</p>
+       <button class="tool" id="o1">🔁 Сначала</button><button class="tool" id="o2">Закрыть</button>`
+    : `<div class="big">⭐</div><h2>Round ${cur+1} — done!</h2><p>Раунд пройден</p>
+       <button class="tool" id="o1">Round ${cur+2} ▶</button><button class="tool" id="o2">Остаться</button>`;
+  $('ov').classList.add('on'); confetti();
+  $('o1').onclick=()=>{ if(last){ R.forEach((r,i)=>rounds[i]={stages:r.build(),idx:0,done:new Set()}); go(0,0);} else go(cur+1,rounds[cur+1].idx); };
+  $('o2').onclick=closeOv;
+}
+
+/* ===================== STAGES ===================== */
+function renderStage(){
+  const st=rounds[cur].stages[rounds[cur].idx], box=$('stage');
+  ({find:rFind,letter:rLetter,tt:rTT,spell:rSpell})[st.type](st,box);
+}
+function classroom(sc,onClick){
+  KEYS.forEach(k=>{
+    const p=POS[k], d=document.createElement('div');
+    d.className='item'; d.dataset.k=k;
+    d.style.cssText=`left:${p.l}%;top:${p.t}%;width:${p.w}%`;
+    d.innerHTML=svgOf(k)+`<div class="tag">${OBJ[k].w}</div>`;
+    d.onclick=()=>onClick(k,d); sc.appendChild(d);
+  });
+}
+
+/* Round 1a — find all things on a letter */
+function rFind(st,box){
+  const targets=KEYS.filter(k=>first(k)===st.L), found=new Set(); let over=false;
+  box.innerHTML=`<div class="task"><div class="en">Find things that begin with <span class="bigletter">${st.L.toUpperCase()}${st.L}</span></div>
+    <div class="ru">Найди и назови все предметы на эту букву · осталось: <b id="left">${targets.length}</b></div></div>
+    <div class="scene" id="scene"></div>
+    <div class="tools"><button class="tool" id="hint">💡 Подсказка</button></div>`;
+  classroom($('scene'),(k,d)=>{
+    if(over||found.has(k)) return say(OBJ[k].w);
+    if(first(k)===st.L){
+      found.add(k); d.classList.add('found'); say(OBJ[k].w); beep(760);
+      $('left').textContent=targets.length-found.size;
+      if(found.size===targets.length){ over=true; win(); }
+    } else {
+      shake(d); d.classList.add('wrong'); say(OBJ[k].w);
+      setTimeout(()=>d.classList.remove('wrong'),1100);
+    }
+  });
+  $('hint').onclick=()=>targets.filter(k=>!found.has(k)).forEach(k=>{
+    const d=box.querySelector(`[data-k="${k}"]`); d.classList.remove('pulse'); void d.offsetWidth; d.classList.add('pulse');
+  });
+}
+
+/* Round 1b — which letter does it begin with? */
+function rLetter(st,box){
+  const L=first(st.k), pool='abcdefghlmnoprstw'.split('').filter(x=>x!==L);
+  const opts=shuffle([L,...shuffle(pool).slice(0,2)]); let over=false;
+  box.innerHTML=`<div class="task"><div class="en">What letter does it begin with?</div>
+    <div class="ru">Назови предмет. С какой буквы он начинается?</div></div>
+    <div class="scene" id="scene"></div>
+    <div class="letters" id="letters">${opts.map(o=>`<button class="lbtn" data-l="${o}">${o.toUpperCase()}${o}</button>`).join('')}</div>
+    <div class="tools"><button class="tool" id="listen">🔊 Послушать слово</button></div>`;
+  classroom($('scene'),()=>{});
+  box.querySelectorAll('.item').forEach(d=>d.classList.add(d.dataset.k===st.k?'target':'dim'));
+  const tgt=box.querySelector(`[data-k="${st.k}"]`);
+  $('listen').onclick=()=>say(OBJ[st.k].w);
+  box.querySelectorAll('.lbtn').forEach(b=>b.onclick=()=>{
+    if(over) return;
+    if(b.dataset.l===L){ over=true; b.classList.add('ok'); tgt.classList.remove('target'); tgt.classList.add('found');
+      say(`${L.toUpperCase()}. ${OBJ[st.k].w}`); win(); }
+    else shake(b);
+  });
+}
+
+/* Round 2 — this / that / these / those */
+function rTT(st,box){
+  const o=OBJ[st.k], cnt=st.many?3:1; let over=false;
+  /* size each copy by height cap and total-width cap (scene is 16:7) */
+  const vb=o.vb.split(' ').map(Number), ar=vb[3]/vb[2], SR=7/16;
+  const fit=(H,W)=>Math.min(W/cnt, H*SR/ar);
+  let pos, cw;
+  if(st.near){ cw=fit(56, st.many?46:26); pos=`left:14%;bottom:4%`; }
+  else if(o.wall){ cw=fit(st.k==='board'?26:20, st.many?24:14); pos=`right:9%;top:7%`; }
+  else { cw=fit(17, st.many?20:9); pos=`right:9%;bottom:47%`; }
+  pos+=`;width:${(cw*cnt+(cnt-1)*1.2).toFixed(1)}%`;
+  const child=(cw/(cw*cnt+(cnt-1)*1.2)*100).toFixed(1)+'%';
+  box.innerHTML=`<div class="scene scene2" id="scene">
+      <div class="kid">${KID(st.near?35:-28)}</div>
+      <div class="grp" style="${pos}">${Array.from({length:cnt},()=>`<div style="width:${child}">${svgOf(st.k)}</div>`).join('')}</div>
+    </div>
+    <div class="sentence" id="sent"></div>
+    <div class="answers" id="answers" hidden>
+      <button class="ans" data-a="This">This</button>
+      <button class="ans" data-a="That">That</button>
+      <button class="ans" data-a="These">These</button>
+      <button class="ans" data-a="Those">Those</button>
+    </div>
+    <div class="tools"><button class="tool" id="hint">💡 Подсказка</button><button class="tool" id="reveal">✅ Ответ</button></div>`;
+  const finish=()=>{
+    if(over) return; over=true;
+    const s = st.many ? `${st.a} are ${o.pl}.` : `${st.a} is a ${o.w}.`;
+    $('sent').innerHTML = st.many ? `<b>${st.a} are</b> ${o.pl}.` : `<b>${st.a} is</b> a ${o.w}.`;
+    box.querySelector(`.ans[data-a="${st.a}"]`).classList.add('ok');
+    say(s); win();
+  };
+  $('hint').onclick=()=>{ $('answers').hidden=false; $('hint').hidden=true; };
+  $('reveal').onclick=finish;
+  box.querySelectorAll('.ans').forEach(b=>b.onclick=()=>{
+    if(over) return;
+    if(b.dataset.a===st.a) finish(); else shake(b);
+  });
+}
+
+/* Round 3 — spell the word */
+function rSpell(st,box){
+  const word=OBJ[st.k].w, chars=word.split(''); let pos=0, over=false;
+  const tiles=shuffle(chars.map((c,i)=>({c,i})).filter(t=>t.c!==' '));
+  box.innerHTML=`<div class="task"><div class="en">Spell the word!</div>
+    <div class="ru">Назови предмет и собери слово по буквам</div></div>
+    <div class="spell">
+      <div class="pic" id="pic" title="Послушать">${svgOf(st.k)}</div>
+      <div class="slots">${chars.map((c,i)=>c===' '?'<span class="gap"></span>':`<span class="slot" id="s${i}"></span>`).join('')}</div>
+      <div class="tiles">${tiles.map((t,j)=>`<button class="tile" data-j="${j}">${t.c}</button>`).join('')}</div>
+    </div>
+    <div class="tools"><button class="tool" id="listen">🔊 Послушать</button><button class="tool" id="hint">💡 Следующая буква</button></div>`;
+  const skip=()=>{ while(pos<chars.length&&chars[pos]===' ') pos++; };
+  const tap=(b)=>{
+    if(over||b.classList.contains('used')) return;
+    const t=tiles[+b.dataset.j];
+    if(t.c.toLowerCase()===chars[pos].toLowerCase()){
+      const s=$('s'+pos); s.textContent=chars[pos]; s.classList.add('fill'); b.classList.add('used');
+      say(t.c.toUpperCase()); beep(620+pos*30,.08); pos++; skip();
+      if(pos>=chars.length){ over=true; setTimeout(()=>say(word),500); win(); }
+    } else shake(b);
+  };
+  box.querySelectorAll('.tile').forEach(b=>b.onclick=()=>tap(b));
+  $('pic').onclick=$('listen').onclick=()=>say(word);
+  $('hint').onclick=()=>{ if(over) return;
+    const b=[...box.querySelectorAll('.tile:not(.used)')].find(b=>tiles[+b.dataset.j].c.toLowerCase()===chars[pos].toLowerCase());
+    if(b) tap(b); };
+}
+
+go(0,0);
+</script>
+</body>
+</html>
