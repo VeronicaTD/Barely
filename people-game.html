@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Who has got what?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbf4e6; --ink:#2b2622; --muted:#7a6f63; --card:#fffdf8; --line:#eadfcb;
+  --sun:#ffb81c; --sun-d:#e09600; --ok:#2fb36b; --bad:#ef4b3f;
+  --near:#ff7a45; --far:#5a8ff0;
+  --r:18px; --r-s:12px;
+  --shadow:0 4px 0 rgba(43,38,34,.12), 0 10px 24px rgba(43,38,34,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;min-height:100dvh;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sun-d);outline-offset:2px}
+
+.wrap{max-width:980px;margin:0 auto;padding:16px 14px 30px;display:grid;gap:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:'Fredoka';font-weight:700;margin:0;font-size:clamp(24px,4.4vw,38px);line-height:1}
+h1 small{display:block;font-size:.45em;color:var(--muted);font-weight:600;margin-top:4px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.stars{display:flex;gap:4px;flex-wrap:wrap}
+.stars span{font-size:20px;filter:grayscale(1);opacity:.3;transition:transform .3s}
+.stars span.on{filter:none;opacity:1;transform:scale(1.12)}
+.stars span.half{filter:none;opacity:.6}
+.stars span.cur{opacity:.8;filter:none;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.2)}}
+
+/* ---------------- 3D CLASSROOM ---------------- */
+.stage{perspective:1100px}
+.room{position:relative;aspect-ratio:16/10;border-radius:22px;overflow:hidden;box-shadow:var(--shadow);
+  background:#f6e9cf;transform-style:preserve-3d;transition:transform .25s ease-out}
+.wall{position:absolute;left:0;right:0;top:0;height:40%;background:linear-gradient(#cfe8d7,#bfe0ca);border-bottom:6px solid #9fc9ad}
+.floor{position:absolute;left:0;right:0;bottom:0;height:60%;
+  background:repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(120,80,40,.12) calc(10% - 2px) 10%),
+    linear-gradient(#e7c99a,#d6a96b);
+  transform-origin:50% 0;transform:perspective(500px) rotateX(38deg) scaleX(1.7)}
+.window{position:absolute;top:9%;width:13%;height:20%;background:linear-gradient(#bfe3ff,#e8f6ff);
+  border:5px solid #fff;border-radius:6px}
+.window::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:4px;background:#fff;transform:translateX(-50%)}
+.board{position:absolute;top:8%;right:6%;width:18%;height:20%;background:#fff;border:4px solid #3a6fd8;border-radius:6px}
+.zone-tag{position:absolute;left:50%;transform:translateX(-50%);font-weight:800;font-size:12px;letter-spacing:.06em;
+  color:rgba(43,38,34,.25);text-transform:uppercase;pointer-events:none}
+
+.kid{position:absolute;left:3%;bottom:2%;width:17%;z-index:5;filter:drop-shadow(0 6px 6px rgba(0,0,0,.2))}
+.hand{position:absolute;z-index:6;font-size:clamp(30px,5.5vw,52px);transform-origin:20% 50%;transition:transform .5s cubic-bezier(.2,1.4,.4,1)}
+
+.objs{position:absolute;inset:0;z-index:3}
+.grp{position:absolute;transform:translate(-50%,-100%);display:flex;gap:1%;align-items:flex-end;
+  animation:land .55s cubic-bezier(.2,1.4,.4,1) backwards}
+.grp .p{display:block}
+.grp.near .p{height:clamp(120px,27vw,260px)}
+.grp.far  .p{height:clamp(72px,15vw,145px)}
+.grp .p svg{height:100%;width:auto;display:block}
+.grp::after{content:'';position:absolute;left:8%;right:8%;bottom:-4px;height:10px;border-radius:50%;background:rgba(0,0,0,.15);z-index:-1}
+@keyframes land{from{opacity:0;transform:translate(-50%,-140%) scale(.6)}}
+
+svg.ray{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+svg.ray line{stroke:var(--ink);stroke-width:3;stroke-dasharray:2 9;stroke-linecap:round;opacity:.35;animation:dash 1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-22}}
+
+.bubble{position:absolute;left:3%;top:4%;z-index:7;background:#fff;border:3px solid var(--ink);border-radius:20px;
+  padding:10px 16px;font-family:'Fredoka';font-weight:600;font-size:clamp(17px,3vw,28px);
+  box-shadow:0 4px 0 var(--ink);max-width:60%}
+.bubble::after{content:'';position:absolute;left:18px;bottom:-14px;width:18px;height:18px;background:#fff;
+  border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg)}
+.bubble .gap{display:inline-block;min-width:2.6em;border-bottom:3px dashed var(--muted);color:var(--ok);text-align:center}
+.bubble.pop{animation:bpop .4s cubic-bezier(.2,1.5,.4,1)}
+@keyframes bpop{from{transform:scale(.6);opacity:0}}
+
+/* ---------------- CONTROL CARD ---------------- */
+.card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:16px 18px;display:grid;gap:12px}
+.task{font-family:'Fredoka';font-weight:600;font-size:clamp(20px,3.6vw,28px);margin:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.task .ru{font-family:'Nunito';font-size:15px;color:var(--muted);font-weight:700}
+.topic{display:inline-flex;gap:6px;align-items:center;background:#fff3d4;border:2px solid #f3dca5;border-radius:999px;padding:4px 12px;font-family:'Nunito';font-size:15px;font-weight:800}
+.hints{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.hint-chip{border-radius:999px;padding:7px 14px;font-weight:800;font-size:15px;color:#fff;animation:bpop .35s}
+.hint-chip.near{background:var(--near)} .hint-chip.far{background:var(--far)}
+.hint-chip.one{background:#2fb36b} .hint-chip.many{background:#9b5de5}
+.table4{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;font-weight:800;font-size:14px;min-width:260px;animation:bpop .35s}
+.table4 div{padding:6px 10px;border-radius:10px;background:#fff3d4;text-align:center}
+.table4 .h{background:transparent;color:var(--muted)}
+.bank{display:grid;gap:6px;animation:bpop .35s}
+.bank div{display:flex;gap:6px;flex-wrap:wrap}
+.bank span{background:#fff;border:2px solid var(--line);border-radius:10px;padding:5px 10px;font-weight:800;font-size:15px}
+
+.write{display:flex;gap:10px;flex-wrap:wrap}
+.write input{flex:1 1 300px;font:inherit;font-size:21px;font-weight:800;padding:12px 14px;border-radius:var(--r-s);border:2px solid var(--line);background:#fff}
+.write input.ok{border-color:var(--ok);background:#e6f7ed}
+.write input.no{border-color:var(--bad);background:#fdecea;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.oral{color:var(--muted);font-weight:700;margin:0}
+.verdict{font-weight:800;font-size:18px;min-height:24px}
+.verdict.ok{color:var(--ok)} .verdict.no{color:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.btn{background:var(--sun);border:none;border-radius:var(--r-s);padding:12px 18px;font-family:'Fredoka';font-weight:600;font-size:19px;
+  box-shadow:0 5px 0 var(--sun-d);transition:transform .1s, box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--sun-d)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:#fff;border:2px solid var(--line);box-shadow:0 5px 0 var(--line)}
+.btn.good{background:var(--ok);color:#fff;box-shadow:0 5px 0 #228c52}
+.btn.bad{background:var(--bad);color:#fff;box-shadow:0 5px 0 #c9372d}
+
+.final{text-align:center}
+.final .big{font-family:'Fredoka';font-size:clamp(32px,6vw,48px);margin:0}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:3px;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Who has got what? <small>This, That, These, Those + hair and eyes</small></h1>
+    <div class="tools">
+      <button class="chip" id="answerBtn" aria-pressed="false">🗣️ Отвечаем устно</button>
+      <button class="chip" id="soundBtn" aria-pressed="false">🔊 Звук</button>
+      <button class="chip" id="restartBtn">↺ Заново</button>
+    </div>
+  </header>
+  <div class="stars" id="stars"></div>
+
+  <div class="stage">
+    <div class="room" id="room">
+      <div class="wall"></div>
+      <div class="floor"></div>
+      <div class="window" style="left:30%"></div>
+      <div class="window" style="left:46%"></div>
+      <div class="board"></div>
+      <div class="zone-tag" style="top:43%">far</div>
+      <div class="zone-tag" style="bottom:3%">near</div>
+      <svg class="ray" viewBox="0 0 100 62.5" preserveAspectRatio="none"><line id="rayLine" x1="0" y1="0" x2="0" y2="0" vector-effect="non-scaling-stroke"/></svg>
+      <div class="objs" id="objs"></div>
+      <svg class="kid" viewBox="0 0 120 170" aria-hidden="true">
+        <ellipse cx="60" cy="165" rx="40" ry="5" fill="rgba(0,0,0,.12)"/>
+        <rect x="38" y="120" width="16" height="42" rx="7" fill="#33435c"/><rect x="66" y="120" width="16" height="42" rx="7" fill="#33435c"/>
+        <path d="M28 82q0-22 32-22t32 22v44H28z" fill="#e8483d"/>
+        <rect x="52" y="60" width="16" height="16" fill="#f7c9a0"/>
+        <circle cx="60" cy="40" r="28" fill="#f7c9a0"/>
+        <path d="M32 36q2-26 28-26t28 22q-8-8-20-8-10 8-36 12z" fill="#3b2a1f"/>
+        <circle cx="50" cy="42" r="3.5" fill="#2b2622"/><circle cx="72" cy="42" r="3.5" fill="#2b2622"/>
+        <path d="M50 54q10 9 22 0" stroke="#2b2622" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="hand" id="hand">👉</div>
+      <div class="bubble" id="bubble"></div>
+    </div>
+  </div>
+
+  <main class="card" id="card"></main>
+</div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ===================== НАСТРОЙКИ ===================== */
+const ROUNDS_COUNT = 12;   // всего раундов
+const EYE_ROUNDS = 4;      // из них про глаза, остальные про волосы
+
+const LENGTHS = ['long','short'];
+const STYLES  = ['curly','straight'];
+const HAIR    = { black:'#2a2220', brown:'#7a4a25', blonde:'#f0c95a' };
+const EYES    = { blue:'#3d86e8', green:'#3fae55', brown:'#7a4a25' };
+const ANSWER  = { 'near-one':'This', 'far-one':'That', 'near-many':'These', 'far-many':'Those' };
+
+/* ===================== PERSON SVG ===================== */
+function person(p){
+  const h = HAIR[p.hair], e = EYES[p.eyes];
+  const shirt = p.who === 'girl' ? '#e86fa8' : '#4f8de0';
+  let back = '', front = '';
+  const curls = (pts, r) => pts.map(([x,y]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${h}"/>`).join('');
+  if (p.len === 'long'){
+    back = p.style === 'straight'
+      ? `<path d="M23 44 Q23 16 50 16 Q77 16 77 44 L80 104 Q50 112 20 104Z" fill="${h}"/>`
+      : `<path d="M24 44 Q24 18 50 18 Q76 18 76 44 L78 98 L22 98Z" fill="${h}"/>` +
+        curls([[22,50],[78,50],[20,64],[80,64],[21,78],[79,78],[23,92],[77,92],[30,100],[70,100],[40,102],[60,102]], 8);
+  }
+  front = p.style === 'straight'
+    ? `<path d="M25 46 Q23 17 50 16 Q77 17 75 46 Q70 30 50 29 Q30 30 25 46Z" fill="${h}"/>`
+    : curls([[28,38],[34,27],[44,21],[56,21],[66,27],[72,38],[39,30],[61,30],[50,26]], 8) +
+      (p.len === 'short' ? curls([[25,48],[75,48]], 6) : '');
+  return `<svg viewBox="0 0 100 165" aria-hidden="true">
+    ${back}
+    ${p.who === 'girl'
+      ? `<path d="M30 76 Q50 68 70 76 L80 128 L20 128Z" fill="${shirt}"/>`
+      : `<path d="M28 80 Q50 68 72 80 L72 124 L28 124Z" fill="${shirt}"/>`}
+    <rect x="34" y="124" width="12" height="36" rx="5" fill="#33435c"/><rect x="54" y="124" width="12" height="36" rx="5" fill="#33435c"/>
+    <rect x="44" y="62" width="12" height="12" fill="#f7c9a0"/>
+    <circle cx="50" cy="46" r="24" fill="#f7c9a0"/>
+    ${front}
+    <ellipse cx="41" cy="48" rx="6.5" ry="7" fill="#fff"/><ellipse cx="59" cy="48" rx="6.5" ry="7" fill="#fff"/>
+    <circle cx="41" cy="49" r="4.6" fill="${e}"/><circle cx="59" cy="49" r="4.6" fill="${e}"/>
+    <circle cx="41" cy="49" r="2" fill="#1d1a18"/><circle cx="59" cy="49" r="2" fill="#1d1a18"/>
+    <circle cx="42.5" cy="47.5" r="1" fill="#fff"/><circle cx="60.5" cy="47.5" r="1" fill="#fff"/>
+    <path d="M43 59 Q50 64 57 59" stroke="#2b2622" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+/* ===================== STATE ===================== */
+let rounds, r, results, written = false, sound = false, hintLevel, cur, tries;
+const $ = id => document.getElementById(id);
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const rnd = (a,b) => a + Math.random()*(b-a);
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+let ac;
+function beep(f=600,d=.12,type='sine',v=.12){ if(!sound) return;
+  try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); const o=ac.createOscillator(),g=ac.createGain();
+    o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);
+    o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d);}catch(e){} }
+function speak(t){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='en-GB'; u.rate=.85; speechSynthesis.speak(u);}catch(e){} }
+function confetti(n){ if(reduce) return; const box=$('confetti'),cols=['#ffb81c','#ef4b3f','#5a8ff0','#2fb36b','#9b5de5'];
+  for(let i=0;i<n;i++){const c=document.createElement('i');c.style.left=Math.random()*100+'vw';c.style.background=cols[i%cols.length];
+    c.style.animationDelay=Math.random()*.4+'s';c.style.animationDuration=1.4+Math.random()+'s';box.appendChild(c);setTimeout(()=>c.remove(),2600);} }
+
+/* ===================== ROUNDS ===================== */
+function buildRounds(){
+  const kinds = shuffle(Array.from({length:ROUNDS_COUNT}, (_,i) => Object.keys(ANSWER)[i % 4]));
+  for (let i = 2; i < kinds.length; i++)
+    if (kinds[i] === kinds[i-1] && kinds[i] === kinds[i-2]){ const j=(i+1)%kinds.length; [kinds[i],kinds[j]]=[kinds[j],kinds[i]]; }
+  const topics = shuffle(Array.from({length:ROUNDS_COUNT}, (_,i) => i < EYE_ROUNDS ? 'eyes' : 'hair'));
+  let last = '';
+  return kinds.map((k, i) => {
+    const [dist, num] = k.split('-');
+    let p, sig;
+    do {
+      p = { who: pick(['girl','boy']), len: pick(LENGTHS), style: pick(STYLES),
+            hair: pick(Object.keys(HAIR)), eyes: pick(Object.keys(EYES)) };
+      if (p.who === 'boy' && Math.random() < .7) p.len = 'short';
+      sig = p.who + p.len + p.style + p.hair + p.eyes;
+    } while (sig === last);
+    last = sig;
+    return { ...p, dist, num, topic: topics[i], count: num === 'one' ? 1 : 2 + Math.floor(Math.random()*2), ans: ANSWER[k] };
+  });
+}
+const noun = R => R.num === 'one' ? R.who : R.who + 's';
+const verb = R => R.num === 'one' ? 'has got' : 'have got';
+const desc = R => R.topic === 'hair' ? `${R.len} ${R.style} ${R.hair} hair` : `${R.eyes} eyes`;
+const sentence = R => `${R.ans} ${noun(R)} ${verb(R)} ${desc(R)}.`;
+
+/* ===================== SCENE ===================== */
+function placeScene(R){
+  const objs = $('objs'); objs.innerHTML = '';
+  const el = document.createElement('div');
+  el.className = 'grp ' + R.dist;
+  if (R.x == null){
+    if (R.dist === 'far'){ R.x = rnd(60, 80); R.y = 52; }
+    else { R.x = R.count > 1 ? rnd(46, 54) : rnd(38, 48); R.y = 98; }
+  }
+  el.style.left = R.x + '%'; el.style.top = R.y + '%';
+  el.innerHTML = Array.from({length:R.count}, () => `<span class="p">${person(R)}</span>`).join('');
+  objs.appendChild(el);
+
+  setTimeout(() => {
+    const room = $('room').getBoundingClientRect(), ob = el.getBoundingClientRect();
+    const hx = 15, hy = 78;
+    const tx = ((ob.left + ob.width/2) - room.left) / room.width * 100;
+    const ty = ((ob.top + ob.height*.35) - room.top) / room.height * 100;
+    const hand = $('hand');
+    hand.style.left = hx + '%'; hand.style.top = hy + '%';
+    const ang = Math.atan2((ty - hy) * room.height, (tx - hx) * room.width) * 180 / Math.PI;
+    hand.style.transform = `translateY(-50%) rotate(${ang}deg)`;
+    const L = $('rayLine'), k = .625;
+    L.setAttribute('x1', hx + 4); L.setAttribute('y1', hy * k);
+    L.setAttribute('x2', tx); L.setAttribute('y2', ty * k);
+  }, reduce ? 0 : 600);
+
+  const b = $('bubble');
+  b.innerHTML = `<span class="gap" id="g1">?</span> ${noun(R)} <span class="gap" id="g2">…</span> ${R.topic}.`;
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+}
+
+$('room').addEventListener('pointermove', e => {
+  if (reduce) return;
+  const rc = $('room').getBoundingClientRect();
+  const dx = (e.clientX - rc.left) / rc.width - .5, dy = (e.clientY - rc.top) / rc.height - .5;
+  $('room').style.transform = `rotateY(${dx*6}deg) rotateX(${-dy*5}deg)`;
+});
+$('room').addEventListener('pointerleave', () => $('room').style.transform = '');
+
+/* ===================== FLOW ===================== */
+function renderStars(){
+  $('stars').innerHTML = rounds.map((_,i)=>`<span class="${results[i]==='star'?'on':results[i]==='ok'?'half':''} ${i===r?'cur':''}">⭐</span>`).join('');
+}
+function start(){ rounds = buildRounds(); r = 0; results = []; showRound(); }
+
+function showRound(){
+  cur = rounds[r]; hintLevel = 0; tries = 0;
+  renderStars(); placeScene(cur);
+  $('card').innerHTML = `
+    <p class="task">What does he say? <span class="ru">Что он скажет?</span>
+      <span class="topic">${cur.topic === 'hair' ? '💇 hair' : '👀 eyes'}</span></p>
+    ${written
+      ? `<div class="write"><input id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Напиши предложение целиком" aria-label="Ответ"><button class="btn" id="checkBtn">Проверить</button></div>`
+      : `<p class="oral">Подумай и скажи всё предложение вслух 🗣️</p>`}
+    <div class="hints" id="hints"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="row" id="row">
+      <button class="btn ghost" id="hintBtn">💡 Подсказка</button>
+      ${written ? '' : '<button class="btn" id="showBtn">Показать ответ</button>'}
+    </div>`;
+  $('hintBtn').onclick = hint;
+  if (written){
+    $('inp').focus();
+    $('checkBtn').onclick = checkWritten;
+    $('inp').addEventListener('keydown', e => { if (e.key === 'Enter') checkWritten(); });
+  } else {
+    $('showBtn').onclick = () => {
+      reveal();
+      $('row').innerHTML = `<button class="btn bad" id="noBtn">❌ Ошибся</button><button class="btn good" id="yesBtn">✅ Сказал верно</button>`;
+      $('yesBtn').onclick = () => done(true);
+      $('noBtn').onclick = () => done(false);
+    };
+  }
+}
+
+/* Подсказка в 4 шага */
+function hint(){
+  hintLevel++;
+  const h = $('hints');
+  if (hintLevel === 1)
+    h.innerHTML += cur.dist === 'near' ? `<span class="hint-chip near">👉 рядом</span>` : `<span class="hint-chip far">🔭 далеко</span>`;
+  if (hintLevel === 2)
+    h.innerHTML += cur.num === 'one' ? `<span class="hint-chip one">1 человек</span>` : `<span class="hint-chip many">много</span>`;
+  if (hintLevel === 3)
+    h.innerHTML += `<div class="table4">
+      <div class="h"></div><div class="h">1</div><div class="h">много</div>
+      <div class="h">рядом</div><div>this</div><div>these</div>
+      <div class="h">далеко</div><div>that</div><div>those</div>
+      <div class="h"></div><div>has got</div><div>have got</div></div>`;
+  if (hintLevel === 4){
+    h.innerHTML += cur.topic === 'hair'
+      ? `<div class="bank"><div><span>long</span><span>short</span></div><div><span>curly</span><span>straight</span></div><div><span>black</span><span>brown</span><span>blonde</span></div></div>`
+      : `<div class="bank"><div><span>blue</span><span>green</span><span>brown</span></div></div>`;
+    $('hintBtn').disabled = true;
+  }
+  beep(520,.08);
+}
+
+function reveal(){
+  $('g1').textContent = cur.ans;
+  $('g2').textContent = verb(cur) + ' ' + (cur.topic === 'hair' ? `${cur.len} ${cur.style} ${cur.hair}` : cur.eyes);
+  speak(sentence(cur));
+  const v = $('verdict'); v.className = 'verdict'; v.textContent = sentence(cur);
+}
+
+function norm(s){
+  return s.toLowerCase().replace(/[.,!?]/g,' ').replace(/'s got/g,' has got').replace(/'ve got/g,' have got')
+    .replace(/blond\b/g,'blonde').replace(/\s+/g,' ').trim().split(' ');
+}
+function checkWritten(){
+  const inp = $('inp'), v = $('verdict');
+  const w = norm(inp.value); if (!w[0]) return;
+  const want = norm(sentence(cur));
+  const det = w[0], nn = w[1], vb = w[2], gt = w[3];
+  const adjs = w.slice(4, -1).sort().join(' '), wantAdjs = want.slice(4, -1).sort().join(' ');
+  const last = w[w.length-1];
+  const D = { this:['near','one'], that:['far','one'], these:['near','many'], those:['far','many'] };
+  let msg = '';
+  if (!D[det]) msg = 'Начни с This, That, These или Those.';
+  else if (D[det][0] !== cur.dist) msg = 'Посмотри: они рядом или далеко?';
+  else if (D[det][1] !== cur.num) msg = 'Сколько их? Один или много?';
+  else if (nn !== noun(cur)) msg = nn && nn.replace(/s$/,'') === cur.who ? `Проверь: ${cur.who} или ${cur.who}s?` : 'Кто это? Girl или boy?';
+  else if (`${vb} ${gt}` !== verb(cur)) msg = `Один: has got. Много: have got.`;
+  else if (last !== cur.topic) msg = `В конце: ${cur.topic}.`;
+  else if (adjs !== wantAdjs) msg = cur.topic === 'hair' ? 'Посмотри ещё раз на волосы: длина, какие, цвет.' : 'Посмотри ещё раз: какого цвета глаза?';
+  if (!msg){ inp.className = 'ok'; reveal(); return done(true); }
+  tries++;
+  inp.className=''; void inp.offsetWidth; inp.className='no';
+  beep(200,.25,'sawtooth',.06);
+  v.className = 'verdict no'; v.textContent = msg;
+  if (tries >= 2){ inp.disabled = true; $('checkBtn').disabled = true; reveal(); return done(false); }
+  inp.select();
+}
+
+function done(ok){
+  const v = $('verdict');
+  if (ok){
+    results[r] = hintLevel === 0 && tries === 0 ? 'star' : 'ok';
+    v.className = 'verdict ok'; v.textContent = `Yes! ${sentence(cur)} ⭐`;
+    confetti(28); beep(660,.1); setTimeout(()=>beep(880,.15),110);
+  } else {
+    results[r] = 'miss';
+    v.className = 'verdict no'; v.textContent = `Правильно: ${sentence(cur)}`;
+  }
+  renderStars();
+  $('row').innerHTML = `<button class="btn" id="nextBtn">${r === rounds.length-1 ? 'Финиш!' : 'Дальше'}</button>`;
+  $('nextBtn').focus();
+  $('nextBtn').onclick = () => { r++; r < rounds.length ? showRound() : finish(); };
+}
+
+function finish(){
+  const stars = results.filter(x=>x==='star').length, ok = results.filter(x=>x==='ok').length;
+  renderStars(); confetti(90); speak('Well done!');
+  $('objs').innerHTML = ''; $('bubble').innerHTML = 'Well done! 🎉';
+  $('rayLine').setAttribute('x2', $('rayLine').getAttribute('x1')); $('rayLine').setAttribute('y2', $('rayLine').getAttribute('y1'));
+  $('card').innerHTML = `<div class="final">
+    <p class="big">Well done! 🎉</p>
+    <p>Сам, без подсказок: <b>${stars} из ${rounds.length}</b> ⭐<br>С подсказкой: <b>${ok}</b></p>
+    <button class="btn" id="againBtn">Играть ещё</button></div>`;
+  $('againBtn').onclick = start;
+}
+
+$('restartBtn').onclick = start;
+$('answerBtn').onclick = () => {
+  written = !written; $('answerBtn').setAttribute('aria-pressed', written);
+  $('answerBtn').textContent = written ? '✍️ Отвечаем письменно' : '🗣️ Отвечаем устно';
+  showRound();
+};
+$('soundBtn').onclick = () => { sound=!sound; $('soundBtn').setAttribute('aria-pressed',sound); $('soundBtn').textContent = sound?'🔊 Звук вкл':'🔊 Звук'; beep(700,.1); };
+addEventListener('resize', () => cur && placeScene(cur));
+start();
+</script>
+</body>
+</html>
