@@ -28,6 +28,10 @@ h1 small{display:block;font-size:.45em;color:var(--muted);font-weight:600;margin
 .chip{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
+.navrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.blocks{display:flex;gap:6px;flex-wrap:wrap}
+.blocks .chip{font-size:13px;padding:6px 12px}
+.blocks .chip.on{background:var(--sun);border-color:var(--sun-d)}
 .stars{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
 .stars span{font-size:20px;filter:grayscale(1);opacity:.3;transition:transform .3s}
 .stars span.on{filter:none;opacity:1;transform:scale(1.12)}
@@ -125,7 +129,12 @@ input.ans.bad{border-color:var(--bad);animation:shake .4s}
       <button class="chip" id="restartBtn">↺ Заново</button>
     </div>
   </header>
-  <div class="stars" id="stars"></div>
+  <div class="navrow"><div class="stars" id="stars"></div>
+    <div class="blocks" id="blocks">
+      <button class="chip" data-b="find">1 · 👂 Найди</button>
+      <button class="chip" data-b="name">2 · 🗣️ Спроси и ответь</button>
+      <button class="chip" data-b="tt">3 · 👉 Покажи и скажи</button>
+    </div></div>
 
   <div class="stage">
     <div class="room" id="room">
@@ -259,7 +268,7 @@ function build(){
   const findW = noRepeats([...CONFIG.newWords, ...rest.slice(0,half)]);
   const nameW = noRepeats([...CONFIG.newWords, ...rest.slice(half), rest[0]]);
   findW.forEach(w=>rounds.push({type:'find',w}));
-  nameW.forEach(w=>rounds.push({type:'name',w}));
+  assignNamePronouns(nameW).forEach(r=>rounds.push(r));
   let prons = shuffle(Object.keys(TT));
   while(prons.length<CONFIG.thisThatRounds) prons.push(shuffle(Object.keys(TT))[0]);
   const items = shuffle(TT_ITEMS);
@@ -317,7 +326,11 @@ function start(){
   else if(cur.type==='name') roundName();
   else roundTT();
 }
-function head(tag){ return `<div class="tag">${tag} · ${idx+1} / ${rounds.length}</div>`; }
+function jumpTo(type){ const i = rounds.findIndex(r=>r.type===type); if(i>=0){ idx = i; start(); } }
+document.querySelectorAll('#blocks .chip').forEach(b=>b.onclick = ()=>jumpTo(b.dataset.b));
+function head(tag){
+  document.querySelectorAll('#blocks .chip').forEach(b=>b.classList.toggle('on', cur && b.dataset.b===cur.type));
+  return `<div class="tag">${tag} · ${idx+1} / ${rounds.length}</div>`; }
 
 /* 1. Слушай и найди */
 function roundFind(){
@@ -346,53 +359,91 @@ function roundFind(){
   });
 }
 
-/* 2. What's this? */
+/* 2. Спроси и ответь: What's this / What are these / What's that / What are those */
 const PLURAL = ['drawers','pegs'];
-function article(w){ return PLURAL.includes(w) ? 'They are '+w+'.' : 'It\'s a '+w+'.'; }
-function question(w){ return PLURAL.includes(w) ? 'What are these?' : 'What\'s this?'; }
+const FIXED = ['board','door','window','drawers','pegs']; // стоят в классе, их не поднести: только that / those
+const Q = {this:"What's this?", these:'What are these?', that:"What's that?", those:'What are those?'};
+function itemOf(w){ return TT_ITEMS.find(it=>it.k===w); }
+function assignNamePronouns(words){
+  const used = {this:0, that:0, these:0, those:0};
+  const out = words.map(w=>{
+    if(FIXED.includes(w)){ const p = PLURAL.includes(w) ? 'those' : 'that'; used[p]++; return {type:'name', w, p}; }
+    return {type:'name', w, p:null};
+  });
+  shuffle(out.filter(r=>!r.p)).forEach(r=>{
+    const min = Math.min(...Object.values(used));
+    const p = shuffle(Object.keys(used).filter(k=>used[k]===min))[0];
+    used[p]++; r.p = p;
+  });
+  return out;
+}
+function answerOf(r){
+  const P = r.p[0].toUpperCase()+r.p.slice(1);
+  if(PLURAL.includes(r.w)) return `${P} are ${r.w}.`;
+  if(TT[r.p].many) return `${P} are ${itemOf(r.w).many}.`;
+  return `${P} is a ${r.w}.`;
+}
+function normFull(s){
+  return s.toLowerCase().replace(/[’`]/g,"'").replace(/\b(that|this|it)'s\b/g,'$1 is').replace(/\b(these|those|they)'re\b/g,'$1 are')
+    .replace(/\b(a|an|the)\b/g,' ').replace(/[^a-z]/g,'');
+}
+function sceneTT(k, near, n){
+  objs.innerHTML = ''; room.classList.remove('find'); room.classList.add('tt');
+  ['board','window','door'].forEach(d=>{ const e = objEl(d, LAYOUT[d]); e.classList.add('deco'); e.tabIndex=-1; objs.appendChild(e); });
+  const nearW = itemOf(k).near, farW = nearW*0.5, els = [];
+  for(let i=0;i<n;i++){
+    const pos = near ? {l:35 + i*(nearW+1.5), t:0, w:nearW} : {l:62 + i*(farW+1.2), t:0, w:farW};
+    const el = objEl(k, pos); el.style.top = 'auto';
+    el.style.bottom = near ? '6%' : (k==='poster'||k==='picture' ? '52%' : '37%');
+    objs.appendChild(el); els.push(el);
+  }
+  return els;
+}
 function roundName(){
-  fullRoom();
-  objs.querySelectorAll('.obj').forEach(o=>{ if(o.dataset.k===cur.w) o.classList.add('glow'); else o.classList.add('dim'); });
-  const q = question(cur.w);
-  card.innerHTML = head('🗣️ Назови') + `
-    <p class="q">${q}<span class="ru">Как называется предмет, который светится?</span></p>
+  const t = TT[cur.p];
+  let els;
+  if(!t.near && !t.many){        // один предмет далеко: светится в полном классе
+    fullRoom(); room.classList.add('tt');
+    objs.querySelectorAll('.obj').forEach(o=>{ if(o.dataset.k===cur.w) o.classList.add('glow'); else o.classList.add('dim'); });
+    els = [objs.querySelector('.obj.glow')];
+  } else if(PLURAL.includes(cur.w)){ // drawers / pegs: всегда далеко, в полном классе
+    fullRoom(); room.classList.add('tt');
+    objs.querySelectorAll('.obj').forEach(o=>{ if(o.dataset.k===cur.w) o.classList.add('glow'); else o.classList.add('dim'); });
+    els = [objs.querySelector('.obj.glow')];
+  } else {
+    els = sceneTT(cur.w, t.near, t.many ? 3 : 1);
+  }
+  bubble.classList.remove('show');
+  [60,400].forEach(ms=>setTimeout(()=>{ if(els[0] && els[0].isConnected) drawRay(els); }, ms));
+  const q = Q[cur.p], ans = answerOf(cur);
+  cur.sentence = ans;
+  card.innerHTML = head('🗣️ Спроси и ответь') + `
+    <p class="q">${q}<span class="ru">Ответь целой фразой</span></p>
     ${answerZone()}
     <div class="row"><button class="btn ghost" id="hintB">💡 Подсказка</button><button class="btn ghost" id="again">🔊 Вопрос</button></div>
     <div id="hintBox"></div><p class="fb" id="fb"></p>`;
   setTimeout(()=>say(q), 350);
   $('#again').onclick = ()=>say(q, true);
   $('#hintB').onclick = showNameHint;
-  wireAnswer(txt=>norm(txt)===norm(cur.w), ()=>{
-    const o = objs.querySelector('.obj.glow'); o.classList.remove('glow'); o.classList.add('right'); addLabel(o, cur.w);
-    say(article(cur.w)); good(article(cur.w));
+  wireAnswer(txt=>normFull(txt)===normFull(ans), ()=>{
+    els.forEach(e=>{ e.classList.remove('glow'); e.classList.add('right'); });
+    bubble.innerHTML = ans; bubble.classList.add('show');
+    say(ans); good(ans);
   }, showNameHint);
 }
 function showNameHint(){
-  hinted = true;
+  hinted = true; const t = TT[cur.p];
   const other = shuffle([...CONFIG.newWords, ...CONFIG.oldWords].filter(w=>w!==cur.w))[0];
   const pair = shuffle([cur.w, other]);
-  $('#hintBox').innerHTML = `<div class="hint">Это… <div class="pair"><b>${pair[0]}</b> или <b>${pair[1]}</b>?</div></div>`;
+  $('#hintBox').innerHTML = `<div class="hint">👉 <span class="pill ${t.near?'near':'far'}">${t.near?'рядом':'далеко'}</span>
+    &nbsp; ${(t.many||PLURAL.includes(cur.w))?'🟡🟡🟡 много':'🟡 один'}
+    <div class="pair">Это… <b>${pair[0]}</b> или <b>${pair[1]}</b>?</div></div>`;
 }
 
 /* 3. This / That / These / Those */
 function roundTT(){
-  objs.innerHTML = ''; room.classList.remove('find'); room.classList.add('tt');
-  ['board','window','door'].forEach(d=>{ const e = objEl(d, LAYOUT[d]); e.classList.add('deco'); e.tabIndex=-1; objs.appendChild(e); });
-  const t = TT[cur.p], k = cur.it.k, n = t.many ? 3 : 1;
-  const nearW = cur.it.near;
-  const farW  = nearW*0.5;
-  const els = [];
-  for(let i=0;i<n;i++){
-    let pos;
-    if(t.near){ // рядом с мальчиком, на переднем плане
-      pos = {l:35 + i*(nearW+1.5), t:0, w:nearW};
-    } else {    // в глубине класса
-      pos = {l:62 + i*(farW+1.2), t:0, w:farW};
-    }
-    const el = objEl(k, pos); el.style.top = 'auto';
-    el.style.bottom = t.near ? '6%' : (k==='poster'||k==='picture' ? '52%' : '37%');
-    objs.appendChild(el); els.push(el);
-  }
+  const t = TT[cur.p], k = cur.it.k;
+  const els = sceneTT(k, t.near, t.many ? 3 : 1);
   const sentence = (cur.p[0].toUpperCase()+cur.p.slice(1)) + (t.many ? ' are ' + cur.it.many : ' is ' + cur.it.one) + '.';
   const rest = (t.many ? ' are ' + cur.it.many : ' is ' + cur.it.one) + '.';
   cur.sentence = sentence;
@@ -486,7 +537,7 @@ function confetti(n){
 $('#answerBtn').onclick = e=>{
   oral = !oral; e.currentTarget.setAttribute('aria-pressed', oral);
   e.currentTarget.textContent = oral ? '🗣️ Отвечаем устно' : '✍️ Отвечаем письменно';
-  if(cur && results[idx]===undefined && cur.type!=='find') start();
+  if(cur && cur.type!=='find' && ($('#yes')||$('#ans'))) start();
 };
 $('#soundBtn').onclick = e=>{ sound = !sound; e.currentTarget.setAttribute('aria-pressed', sound); e.currentTarget.textContent = sound?'🔊 Звук':'🔇 Без звука'; };
 $('#restartBtn').onclick = build;
