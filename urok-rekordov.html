@@ -220,7 +220,7 @@ if('speechSynthesis'in window){pickVoice();speechSynthesis.onvoiceschanged=pickV
 function say(t,rate=.8){if(!ttsOn||!('speechSynthesis'in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.lang=voice?voice.lang:'en-GB';u.rate=rate;speechSynthesis.speak(u)}catch(e){}}
 
 /* ---------- разметка слов ---------- */
-const DG=/(th|sh|ch|ck)/g;
+const DG=/(th|sh|ch|ck|ng|nk)/g;
 const markDg=w=>w.replace(DG,'<span class="dg">$1</span>');
 const VOW=/[aeiou]/g;
 const markV=w=>w.replace(/(th|sh|ch|ck)|([aeiou])/g,(m,d,v)=>d?m:`<span class="vw">${v}</span>`);
@@ -260,23 +260,24 @@ const LEVELS=[
  {n:10,t:'Смешанный столбик',s:'20 слов, две цифры ошибок',min:4},
  {n:11,t:'Текст',s:`8 строк · ${TEXTWORDS} слов`,min:12},
  {n:12,t:'Цифра дня',s:'все рекорды урока',min:3},
- {n:13,t:'Бонус',s:'скороговорки и резерв',min:0}];
+ {n:13,t:'Столбик с сочетаниями',s:'stop · ring · think · chin',min:4},
+ {n:14,t:'Бонус',s:'скороговорки и резерв',min:0}];
 
 /* ---------- каркас ---------- */
 let cur=store.get('cur',0);
 const app=$('#app');
-function renderPills(){const p=$('#pills');p.innerHTML='';p.append(h('button',{class:'pill'+(cur===0?' on':''),title:'Карта уровней',onclick:()=>go(0)},'⌂'));LEVELS.forEach(l=>p.append(h('button',{class:'pill'+(cur===l.n?' on':'')+(R['done'+l.n]?' done':''),title:l.t,onclick:()=>go(l.n)},l.n===13?'★':String(l.n))))}
+function renderPills(){const p=$('#pills');p.innerHTML='';p.append(h('button',{class:'pill'+(cur===0?' on':''),title:'Карта уровней',onclick:()=>go(0)},'⌂'));LEVELS.forEach(l=>p.append(h('button',{class:'pill'+(cur===l.n?' on':'')+(R['done'+l.n]?' done':''),title:l.t,onclick:()=>go(l.n)},l.n===14?'★':String(l.n))))}
 function teacher(html){return h('div',{class:'teacher',hidden:!teacherOn,html})}
-function head(l){return h('div',{class:'lvlhead'},h('div',{class:'lvlnum'},l.n===13?'★':String(l.n).padStart(2,'0')),h('div',{},h('div',{class:'lvlttl'},l.t),h('div',{class:'lvlsub'},l.s+(l.min?` · ${l.min} мин`:''))))}
+function head(l){return h('div',{class:'lvlhead'},h('div',{class:'lvlnum'},l.n===14?'★':String(l.n).padStart(2,'0')),h('div',{},h('div',{class:'lvlttl'},l.t),h('div',{class:'lvlsub'},l.s+(l.min?` · ${l.min} мин`:''))))}
 function nav(n){const done=()=>{R['done'+n]=true;saveR()};return h('div',{class:'navbar'},
   h('button',{class:'btn ghost',onclick:()=>go(n-1)},n===1?'← Карта':'← Назад'),
-  n<13?h('button',{class:'btn big',onclick:()=>{done();go(n+1)}},'Уровень пройден →'):h('button',{class:'btn ghost',onclick:()=>go(0)},'Карта'))}
-function go(n){if('speechSynthesis'in window)speechSynthesis.cancel();cur=Math.max(0,Math.min(13,n));store.set('cur',cur);renderPills();app.innerHTML='';
+  n<14?h('button',{class:'btn big',onclick:()=>{done();go(n+1)}},'Уровень пройден →'):h('button',{class:'btn ghost',onclick:()=>go(0)},'Карта'))}
+function go(n){if('speechSynthesis'in window)speechSynthesis.cancel();cur=Math.max(0,Math.min(14,n));store.set('cur',cur);renderPills();app.innerHTML='';
   if(cur===0)return home();const l=LEVELS[cur-1];app.append(head(l));BUILD[cur](l);app.append(nav(cur));scrollTo({top:0})}
 
 function home(){
   app.append(h('div',{class:'hero'},h('div',{},h('h1',{html:'Урок <em>рекордов</em>'}),h('p',{},'Двенадцать уровней. В каждом своя цифра. В конце считаем всё вместе и сравниваем с прошлыми уроками.'))));
-  const m=h('div',{class:'map'});LEVELS.forEach(l=>m.append(h('button',{class:'mcard'+(R['done'+l.n]?' done':''),onclick:()=>go(l.n)},h('div',{class:'n'},l.n===13?'★':String(l.n)),h('div',{},h('b',{},l.t),h('small',{},l.s)))));
+  const m=h('div',{class:'map'});LEVELS.forEach(l=>m.append(h('button',{class:'mcard'+(R['done'+l.n]?' done':''),onclick:()=>go(l.n)},h('div',{class:'n'},l.n===14?'★':String(l.n)),h('div',{},h('b',{},l.t),h('small',{},l.s)))));
   app.append(m,h('div',{class:'gap'}),h('div',{class:'row'},h('button',{class:'btn big',onclick:()=>go(1)},'Начать с уровня 1'),
     h('button',{class:'btn ghost',onclick:e=>{const b=e.currentTarget;if(b.dataset.c){for(const k in R)delete R[k];saveR();go(0)}else{b.dataset.c=1;b.textContent='Точно стереть результаты? Нажми ещё раз'}}},'Новый урок: стереть результаты')));
   app.append(teacher('Ученик открывает ссылку и показывает экран. Озвучка слов звучит у него. Эти серые рамки видны, пока включена кнопка «учитель» сверху: перед демонстрацией экрана её можно выключить.'));
@@ -303,6 +304,9 @@ function speedColumn(words,key,two){
 const BUILD={};
 BUILD[1]=()=>{app.append(teacher('<i>Twenty words. Finger. Go.</i> Один заход. Это напоминание, что она уже много умеет.'),speedColumn(L1,'l1',false))};
 BUILD[10]=()=>{app.append(teacher('<i>Twenty words. Finger. Go.</i> Ошибки по th/w/s/t и по гласным считаются отдельно, обе цифры уйдут в уровень 12.'),speedColumn(L10,'l10',true))};
+
+const L13=['stop','this','ring','ship','frog','duck','think','chin','flag','moth','sing','fish','stick','with','pink','shop','drum','sky','long','lunch'];
+BUILD[13]=()=>{app.append(teacher('<i>Twenty words — old and new. Finger. Go.</i> Две согласные в начале + ng / nk + все пройденные пары. Первый заход — точка отсчёта, второй сразу — первый рекорд. Рекорд засчитываем только при 2 ошибках и меньше.'),speedColumn(L13,'l13',true))};
 
 /* ---------- 2: на слух ---------- */
 function listenGame(rows,seq,key,intro){
@@ -469,6 +473,7 @@ BUILD[12]=()=>{
   card('Гласные на слух',R.l7listen?`${R.l7listen.ok} / ${R.l7listen.total}`:'—','');
   card('Поймала ошибку',R.l9?`${R.l9.ok} / ${R.l9.total}`:'—','');
   const l10=R.l10||{};card('Смешанный столбик',l10.time!=null?l10.time+' с':'—',`th/w/s/t: ${l10.e1??'—'} ош. · гласные: ${l10.e2??'—'} ош.`);
+  const l13=R.l13||{};card('Столбик с сочетаниями',l13.time!=null?l13.time+' с':'—',`согласные: ${l13.e1??'—'} ош. · гласные: ${l13.e2??'—'} ош.`);
   const t=R.l11||{};const best=Math.min(...[t.t1,t.t2].filter(Boolean));
   card('Текст',`${TEXTWORDS} слов`,`${t.t1?t.t1+' с':'—'} → ${t.t2?t.t2+' с':'—'}${isFinite(best)?` · ${Math.round(TEXTWORDS/best*60)} слов в минуту`:''}`);
   const hist=[['урок 6',24],['урок 7',34],['урок 8',38],['сегодня',TEXTWORDS]];const mx=TEXTWORDS;
@@ -476,7 +481,7 @@ BUILD[12]=()=>{
   app.append(h('div',{class:'panel'},g),h('div',{class:'gap'}),h('div',{class:'panel'},h('div',{class:'lvlsub',style:'font-weight:700'},'Слов в тексте'),bars))};
 
 /* ---------- 13: бонус ---------- */
-BUILD[13]=()=>{
+BUILD[14]=()=>{
   app.append(teacher('Резерв, если осталось время. Скороговорки: медленно, потом быстро. Девятая строка: она сама дописывает из слов на доске, ты записываешь, она читает.'));
   const F=['Tim and Sam sit with ten thin cats.','Beth sets the wet dish on the mat.','Seth has a thick sock and a thin sock.','Is it a bag, a bug or a big bog?'];
   const list=h('div',{class:'textlines'});F.forEach(f=>list.append(h('div',{class:'tl'},h('button',{class:'ico',onclick:()=>say(f,.75)},'🔊'),h('div',{class:'t',html:markDg(f)}))));
