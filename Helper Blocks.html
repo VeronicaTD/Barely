@@ -1,0 +1,419 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Helper Blocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#8fd0ff;--sky2:#dff2ff;--ink:#1b1b1b;--panel:#f4efe6;--muted:#5c5648;
+  --grass:#5ba33b;--grass2:#4a8a2f;--dirt:#8a5a35;--dirt2:#74492a;--stone:#9a9a9a;--stone2:#7d7d7d;
+  --wood:#b98a52;--wood2:#9c723f;--gold:#f2c230;--gold2:#d4a514;--ok:#2f9e44;--no:#d9363e;--r:4px;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sky1:#13213d;--sky2:#24365a;--ink:#f1ede4;--panel:#2a2621;--muted:#bdb3a2}}
+:root[data-theme="dark"]{--sky1:#13213d;--sky2:#24365a;--ink:#f1ede4;--panel:#2a2621;--muted:#bdb3a2}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:linear-gradient(var(--sky1),var(--sky2));color:var(--ink);font-family:Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:600}
+.ground{height:22px;background:linear-gradient(var(--grass) 0 8px,var(--dirt) 8px);border-bottom:4px solid var(--dirt2)}
+header{display:flex;align-items:center;gap:12px;padding:14px 18px;max-width:900px;margin:0 auto}
+h1{font-family:Silkscreen,monospace;font-weight:700;font-size:clamp(20px,4vw,30px);margin:0;color:#fff;text-shadow:3px 3px 0 #1b1b1b}
+.spacer{flex:1}
+.gems{font-family:Silkscreen,monospace;background:var(--panel);border:4px solid #1b1b1b;padding:6px 10px;font-size:16px}
+.gems.bump{animation:bump .35s}@keyframes bump{50%{transform:scale(1.25)}}
+main{max-width:900px;margin:0 auto;padding:0 18px 28px}
+.panel{background:var(--panel);border:4px solid #1b1b1b;box-shadow:6px 6px 0 rgba(0,0,0,.35);padding:20px}
+h2{font-family:Silkscreen,monospace;font-weight:700;font-size:22px;margin:0 0 8px}
+.prog{font-family:Silkscreen,monospace;font-size:13px;color:var(--muted);margin-bottom:6px}
+.ru{background:rgba(242,194,48,.22);border-left:6px solid var(--gold2);padding:10px 12px;margin:8px 0 14px;font-size:17px;line-height:1.45}
+.btn{font:inherit;font-weight:800;font-size:17px;padding:10px 16px;border:4px solid #1b1b1b;background:var(--gold);color:#1b1b1b;cursor:pointer;
+  box-shadow:inset -4px -4px 0 var(--gold2),inset 4px 4px 0 rgba(255,255,255,.4)}
+.btn:active{transform:translateY(2px)}
+.btn:focus-visible{outline:3px solid #2b6fd6;outline-offset:2px}
+.btn.ghost{background:#e7e1d4;box-shadow:inset -4px -4px 0 #c9c1af,inset 4px 4px 0 rgba(255,255,255,.5)}
+.btn.small{font-size:14px;padding:6px 10px}
+.btn.ok{background:var(--ok);color:#fff;box-shadow:none}.btn.no{background:var(--no);color:#fff;box-shadow:none;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.menu{display:grid;gap:10px;margin-top:12px}.menu .btn{text-align:left}
+.blocks{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;min-height:64px}
+.blk{font:inherit;font-weight:800;font-size:20px;padding:12px 14px;border:4px solid #1b1b1b;color:#1b1b1b;cursor:pointer;position:relative;
+  box-shadow:inset -4px -4px 0 rgba(0,0,0,.22),inset 4px 4px 0 rgba(255,255,255,.3);transition:transform .15s}
+.blk.static{cursor:default}
+.blk.subj{background:var(--wood)}.blk.aux{background:var(--gold)}.blk.verb{background:var(--grass);color:#fff;text-shadow:1px 1px 0 #1b1b1b}
+.blk.rest{background:var(--stone)}
+.blk.used{opacity:.25;pointer-events:none}
+.blk.bad{background:var(--no)!important;color:#fff;animation:shake .4s}
+.blk.good{outline:4px solid var(--ok);outline-offset:2px}
+.blk .lab{position:absolute;top:-22px;left:0;font-size:12px;font-family:Silkscreen,monospace;white-space:nowrap;color:var(--muted);text-shadow:none}
+.s{color:#d9363e;background:#fff;padding:0 3px;border:2px solid #d9363e;margin-left:2px;display:inline-block}
+.s.jump{animation:jump .7s ease}
+@keyframes jump{0%{transform:translate(70px,-30px) scale(.6);opacity:0}100%{transform:none;opacity:1}}
+.strike{text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:var(--no)}
+.frame{padding-top:26px;min-height:96px}
+.cap{font-size:17px;margin-top:8px;min-height:26px}
+.build{border:4px dashed #1b1b1b;background:rgba(0,0,0,.05);padding:10px;min-height:76px;margin-bottom:12px}
+.build:empty::before{content:"Tap the blocks…";color:var(--muted)}
+.big{font-size:24px;font-weight:800;margin:6px 0}
+.gap{display:inline-block;min-width:90px;border-bottom:4px solid #1b1b1b;text-align:center}
+.say{font-size:22px;font-weight:800;margin:0;padding:10px 12px;background:rgba(0,0,0,.06);transition:filter .2s}
+.say.blur{filter:blur(8px);user-select:none}
+.fb{min-height:28px;font-weight:800;font-size:18px;margin-top:12px}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--no)}
+.answer{font-size:24px;font-weight:800;color:var(--ok);min-height:34px;margin-top:10px}
+.cards{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.card{font-family:Silkscreen,monospace;font-size:14px;padding:6px 10px;border:3px solid #1b1b1b;background:#e7e1d4;color:#1b1b1b}
+.card.main{background:var(--gold)}
+.card.pulse{animation:pulse 1.4s ease 2}
+@keyframes pulse{0%,100%{transform:none}50%{transform:scale(1.25);box-shadow:0 0 0 6px rgba(242,194,48,.7)}}
+.slots{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.slot{min-width:80px;min-height:52px;border:4px dashed #1b1b1b;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted)}
+.slot.one{border-color:var(--gold2);background:rgba(242,194,48,.15)}
+.sort-card{font-size:30px;font-weight:800;text-align:center;padding:22px;border:4px solid #1b1b1b;background:#fff;color:#1b1b1b;margin:8px 0}
+.sort-card .plus{color:var(--muted)}
+.timer{font-family:Silkscreen,monospace;font-size:22px}
+.baskets{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.baskets .btn{font-size:26px;padding:18px}
+.text{font-size:19px;line-height:1.6;background:#fff;color:#1b1b1b;border:4px solid #1b1b1b;padding:14px 16px;margin:8px 0}
+.text.hidden{display:none}
+.formula{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;font-size:20px;font-weight:800;margin:6px 0}
+@media (max-width:600px){.blk{font-size:17px;padding:9px 11px}.big{font-size:20px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="ground"></div>
+<header>
+  <h1>Helper Blocks</h1>
+  <div class="spacer"></div>
+  <button class="btn ghost small" id="menuBtn">Menu</button>
+  <div class="gems" id="gems" aria-live="polite">💎 0</div>
+</header>
+<main><section class="panel" id="panel"></section></main>
+<script>
+/* ===== CONTENT ===== */
+const SUBJ = [
+  {w:"I",p:false,pos:"my"},{w:"You",p:false,pos:"your"},{w:"We",p:false,pos:"our"},{w:"They",p:false,pos:"their"},
+  {w:"Henry and Nadim",p:false,pos:"their"},
+  {w:"He",p:true,pos:"his"},{w:"She",p:true,pos:"her"},{w:"Henry",p:true,pos:"his"},{w:"Masha",p:true,pos:"her"},{w:"My mum",p:true,pos:"her"}
+];
+/* [base, -s form, rest]; do and have appear more often on purpose */
+const VERBS = [
+  ["live","lives","in a flat"],["live","lives","on the second floor"],["go","goes","to school"],["go","goes","swimming"],
+  ["have","has","a guitar lesson"],["have","has","breakfast at eight"],["have","has","a dog"],
+  ["do","does","{pos} homework"],["do","does","{pos} homework after dinner"],["do","does","sport"],
+  ["play","plays","football"],["like","likes","Maths"],["watch","watches","TV in the evening"],
+  ["take","takes","the bus to school"],["get up","gets up","at seven o'clock"],["finish","finishes","school at 3.30"]
+];
+/* ==================== */
+
+const $ = id => document.getElementById(id);
+const rnd = n => Math.floor(Math.random() * n);
+const pick = a => a[rnd(a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function make(opts = {}){
+  const s = opts.p === undefined ? pick(SUBJ) : pick(SUBJ.filter(x => x.p === opts.p));
+  const v = opts.verb ? pick(VERBS.filter(x => x[0] === opts.verb)) : pick(VERBS);
+  const rest = v[2].replace("{pos}", s.pos), aux = s.p ? "doesn't" : "don't";
+  return {s, v, rest, aux, posS:`${s.w} ${s.p ? v[1] : v[0]} ${rest}.`, negS:`${s.w} ${aux} ${v[0]} ${rest}.`};
+}
+
+/* speech */
+let voice = null;
+function pickVoice(){ try { const v = speechSynthesis.getVoices(); voice = v.find(x => /en[-_]GB/i.test(x.lang)) || v.find(x => /^en/i.test(x.lang)) || null; } catch(e){} }
+if ("speechSynthesis" in window){ speechSynthesis.onvoiceschanged = pickVoice; pickVoice(); }
+function say(t){
+  try { speechSynthesis.cancel(); t = String(t).replace(/\blives\b/gi, "livz").replace(/\blive\b/gi, "liv");
+    const u = new SpeechSynthesisUtterance(t); if (voice) u.voice = voice; u.lang = voice ? voice.lang : "en-GB"; u.rate = .85; speechSynthesis.speak(u); } catch(e){}
+}
+let ac = null;
+function beep(ok){
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain();
+    o.type = "square"; o.frequency.setValueAtTime(ok ? 660 : 160, ac.currentTime); if (ok) o.frequency.setValueAtTime(990, ac.currentTime + .08);
+    g.gain.setValueAtTime(.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + .22);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .23); } catch(e){}
+}
+let gems = 0;
+function addGem(){ gems++; const el = $("gems"); el.textContent = "💎 " + gems; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+function fb(msg, cls){ const el = $("fb"); el.innerHTML = msg; el.className = "fb " + (cls || ""); }
+const blk = (t, cls, extra = "") => `<span class="blk static ${cls}">${extra}${t}</span>`;
+
+const cards = () => `<div class="cards"><span class="card">AM / IS / ARE</span><span class="card main" id="dodoes">DO / DOES</span><span class="card">CAN</span></div>`;
+function pointCard(){ beep(false); const c = $("dodoes"); if (!c) return; c.classList.remove("pulse"); void c.offsetWidth; c.classList.add("pulse"); }
+const stat = {built:0, frame:0, free:0, zoe:0, speed:0};
+/* MENU */
+function menu(){
+  $("panel").innerHTML = `<h2>Helper Blocks</h2>
+    <div class="ru">В отрицании появляется блок-помощник <b>don't / doesn't</b>. Учимся ставить его правильно.</div>
+    <div class="menu">
+      <button class="btn" data-g="learn">📖 Learn. Как работает помощник</button>
+      <button class="btn" data-g="speed">⏱️ Speed Sort (20)</button>
+      <button class="btn ghost" data-g="l1">1. Don't or doesn't?</button>
+      <button class="btn ghost" data-g="l2">2. Build the negative</button>
+      <button class="btn ghost" data-g="l3">3. Say it with the frame</button>
+      <button class="btn ghost" data-g="l4">4. Say it without the frame</button>
+      <button class="btn ghost" data-g="l5">5. Zoe's day. No, that's wrong!</button>
+    </div>`;
+  $("panel").querySelectorAll("[data-g]").forEach(b => b.onclick = () => ({learn:() => learn(0), l1:level1, l2:level2, l3:level3, l4:level4, l5:level5, speed:speedSort})[b.dataset.g]());
+}
+$("menuBtn").onclick = menu;
+
+/* LEARN */
+const CARDS = [
+  {t:"I, you, we, they", frames:[
+    {b:[["I","subj"],["play","verb"],["football","rest"]], cap:"Обычное предложение. Глагол play.", en:"I play football."},
+    {b:[["I","subj"],["don't","aux","помощник"],["play","verb"],["football","rest"]], cap:"Отрицание: встаёт помощник <b>don't</b>. Глагол не меняется.", en:"I don't play football."}
+  ]},
+  {t:"He, she, it", frames:[
+    {b:[["He","subj"],["play<span class='s'>s</span>","verb"],["football","rest"]], cap:"У he / she / it глагол с <b>-s</b>: plays.", en:"He plays football."},
+    {b:[["He","subj"],["do<span class='s jump'>s</span>","aux","помощник"],["play","verb"],["football","rest"]], cap:"Приходит помощник, и <b>-s прыгает к нему</b>: do + s = does.", en:""},
+    {b:[["He","subj"],["doesn't","aux","помощник"],["play","verb"],["football","rest"]], cap:"<b>doesn't + глагол без -s.</b> Двух -s в предложении не бывает!", en:"He doesn't play football."}
+  ]},
+  {t:"has → have", frames:[
+    {b:[["She","subj"],["ha<span class='s'>s</span>","verb"],["a dog","rest"]], cap:"<b>has</b> это have с -s.", en:"She has a dog."},
+    {b:[["She","subj"],["doesn't","aux","помощник"],["have","verb"],["a dog","rest"]], cap:"-s ушла к помощнику, глагол снова <b>have</b>.", en:"She doesn't have a dog."}
+  ]},
+  {t:"do = делать", frames:[
+    {b:[["I","subj"],["do","verb","делать"],["my homework","rest"]], cap:"Здесь <b>do</b> это настоящий глагол: делать.", en:"I do my homework."},
+    {b:[["I","subj"],["don't","aux","помощник"],["do","verb","делать"],["my homework","rest"]], cap:"Помощник don't + глагол do. Это два разных слова, <b>оба нужны!</b>", en:"I don't do my homework."},
+    {b:[["He","subj"],["doesn't","aux","помощник"],["do","verb","делать"],["his homework","rest"]], cap:"С he: doesn't + do. Помощник и глагол стоят рядом.", en:"He doesn't do his homework."}
+  ]},
+  {t:"Formula", frames:[
+    {b:[], formula:true, cap:"Запомни формулу.", en:""}
+  ]}
+];
+function learn(k){
+  if (k >= CARDS.length) return level1();
+  const c = CARDS[k]; let i = 0;
+  const draw = () => {
+    const f = c.frames[i];
+    $("frame").innerHTML = f.formula
+      ? `<div class="formula"><div>${blk("I / you / we / they","subj")}</div><div>${blk("don't","aux")} ${blk("play","verb")}</div>
+         <div>${blk("he / she / it","subj")}</div><div>${blk("doesn't","aux")} ${blk("play","verb")} <span style="font-size:16px">без -s!</span></div></div>`
+      : `<div class="blocks">${f.b.map(([t, cl, l]) => blk(t, cl, l ? `<span class="lab">${l}</span>` : "")).join("")}</div>`;
+    $("cap").innerHTML = f.cap;
+    $("nx").textContent = i < c.frames.length - 1 ? "▶ Next" : (k < CARDS.length - 1 ? "Next card ➜" : "Play ➜");
+    $("rep").style.visibility = f.en ? "visible" : "hidden";
+    if (f.en) say(f.en);
+  };
+  $("panel").innerHTML = `<div class="prog">Learn ${k + 1} / ${CARDS.length}</div><h2>${c.t}</h2>
+    <div class="frame" id="frame"></div><div class="cap ru" id="cap"></div>
+    <div class="row"><button class="btn ghost" id="bk">◀</button><button class="btn ghost" id="rep">🔊 Listen</button><button class="btn" id="nx">▶ Next</button></div>`;
+  $("bk").onclick = () => { if (i > 0){ i--; draw(); } else if (k > 0) learn(k - 1); };
+  $("rep").onclick = () => say(c.frames[i].en);
+  $("nx").onclick = () => { if (i < c.frames.length - 1){ i++; draw(); } else learn(k + 1); };
+  draw();
+}
+
+/* LEVEL 1: don't or doesn't */
+function level1(){ S.q = [...Array(12)].map((_, i) => make({p: i % 2 === 0, verb: i % 4 === 1 ? "do" : i % 4 === 3 ? "have" : undefined})); S.q = shuffle(S.q); S.i = 0; r1(); }
+const S = {};
+function r1(){
+  if (S.i >= S.q.length) return done("Level 1 done!", level2, "2. Build the negative");
+  const q = S.q[S.i];
+  $("panel").innerHTML = `<div class="prog">Level 1 · ${S.i + 1} / ${S.q.length}</div><h2>Don't or doesn't?</h2>${cards()}
+    <div class="big">${q.s.w} <span class="gap" id="gap">?</span> ${q.v[0]} ${q.rest}.</div>
+    <div class="row"><button class="btn" data-a="don't">don't</button><button class="btn" data-a="doesn't">doesn't</button></div>
+    <div class="fb" id="fb"></div>`;
+  let locked = false;
+  $("panel").querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+    if (locked) return;
+    if (b.dataset.a === q.aux){
+      locked = true; beep(true); addGem(); b.classList.add("ok"); $("gap").textContent = q.aux; say(q.negS); fb("Yes! 👍", "ok");
+      setTimeout(() => { S.i++; r1(); }, 2000);
+    } else {
+      pointCard();
+    }
+  });
+}
+
+/* LEVEL 2: build */
+function level2(){ S.q = shuffle([make({p:true, verb:"do"}), make({p:false, verb:"do"}), make({p:true, verb:"have"}), make({p:true}), make({p:true}), make({p:false}), make({p:true}), make({p:false})]); S.i = 0; r2(); }
+function r2(){
+  if (S.i >= S.q.length) return done("Level 2 done!", level3, "3. Say it with the frame");
+  const q = S.q[S.i];
+  const tiles = shuffle([{t:q.s.w, c:"subj"}, {t:"don't", c:"aux"}, {t:"doesn't", c:"aux"}, {t:q.v[0], c:"verb"}, {t:q.rest, c:"rest"}]).map((x, id) => ({...x, id}));
+  let chosen = [];
+  $("panel").innerHTML = `<div class="prog">Level 2 · ${S.i + 1} / ${S.q.length}</div><h2>Build the negative</h2>${cards()}
+    <p class="say blur" id="sayText">+ ${q.posS}</p>
+    <div class="row"><button class="btn ghost" id="again">🔊 Listen again</button><button class="btn ghost" id="show">Show text</button></div>
+    <div class="ru" style="margin-top:14px">Собери <b>отрицание (−)</b> из блоков. Для помощника в рамке <b>одно место</b>.</div>
+    <div class="build blocks" id="build"></div>
+    <div class="blocks" id="pool"></div>
+    <div class="row"><button class="btn" id="check">Check ✓</button></div><div class="fb" id="fb"></div>`;
+  $("again").onclick = () => say(q.posS);
+  $("show").onclick = () => { const h = $("sayText").classList.toggle("blur"); $("show").textContent = h ? "Show text" : "Hide text"; };
+  say(q.posS);
+  const draw = () => {
+    $("build").innerHTML = chosen.map(id => `<button class="blk ${tiles[id].c}" data-out="${id}">${tiles[id].t}</button>`).join("");
+    $("pool").innerHTML = tiles.map(x => `<button class="blk ${x.c}${chosen.includes(x.id) ? " used" : ""}" data-in="${x.id}">${x.t}</button>`).join("");
+    $("build").querySelectorAll("[data-out]").forEach(b => b.onclick = () => { chosen = chosen.filter(x => x !== +b.dataset.out); draw(); });
+    const hasAux = chosen.some(id => tiles[id].c === "aux");
+    $("pool").querySelectorAll("[data-in]").forEach(b => { const t = tiles[+b.dataset.in];
+      if (hasAux && t.c === "aux" && !chosen.includes(t.id)) b.classList.add("used");
+      b.onclick = () => { chosen.push(+b.dataset.in); draw(); }; });
+  };
+  draw();
+  let locked = false;
+  $("check").onclick = () => {
+    if (locked) return;
+    const words = chosen.map(id => tiles[id].t), got = words.join(" ") + ".";
+    if (got === q.negS){
+      locked = true; beep(true); addGem(); stat.built++; fb("Perfect! 💎 " + q.negS, "ok"); say(q.negS);
+      setTimeout(() => { S.i++; r2(); }, 2300); return;
+    }
+    pointCard();
+  };
+}
+
+/* LEVEL 3/4: say it, with frame then without */
+function sayList(){ return shuffle([make({p:true, verb:"do"}), make({p:false, verb:"do"}), make({p:true, verb:"have"}), make({p:true}), make({p:true}), make({p:false}), make({p:true}), make({p:true, verb:"go"})]); }
+function level3(){ S.frame = true; S.q = sayList(); S.i = 0; r4(); }
+function level4(){ S.frame = false; S.q = sayList(); S.i = 0; r4(); }
+function r4(){
+  if (S.i >= S.q.length) return S.frame ? done("Level 3 done!", level4, "4. Without the frame") : done("Level 4 done!", level5, "5. Zoe's day");
+  const q = S.q[S.i];
+  const frame = S.frame ? `<div class="slots"><div class="slot">${q.s.w}</div><div class="slot one">?</div><div class="slot">?</div><div class="slot">${q.rest}</div></div>` : "";
+  $("panel").innerHTML = `<div class="prog">Level ${S.frame ? 3 : 4} · ${S.i + 1} / ${S.q.length}</div><h2>Say it! ${S.frame ? "(frame)" : "(no frame)"}</h2>${cards()}
+    <p class="say blur" id="sayText">+ ${q.posS}</p>
+    <div class="row"><button class="btn ghost" id="again">🔊 Listen again</button><button class="btn ghost" id="show">Show text</button></div>
+    <div class="ru" style="margin-top:14px">Скажи вслух <b>отрицание</b>.</div>${frame}
+    <div class="answer" id="ans"></div>
+    <div class="row"><button class="btn ghost" id="card">👉 Card</button><button class="btn ghost" id="sa">Show answer</button><button class="btn" id="gem">✓ +1 💎</button><button class="btn ghost" id="nx">Next ➜</button></div>`;
+  $("again").onclick = () => say(q.posS);
+  $("show").onclick = () => { const h = $("sayText").classList.toggle("blur"); $("show").textContent = h ? "Show text" : "Hide text"; };
+  $("card").onclick = pointCard;
+  $("sa").onclick = () => { $("ans").textContent = "− " + q.negS; say(q.negS); };
+  let counted = false;
+  $("gem").onclick = () => { if (counted) return; counted = true; beep(true); addGem(); stat[S.frame ? "frame" : "free"]++; $("gem").classList.add("ok"); };
+  $("nx").onclick = () => { S.i++; r4(); };
+  say(q.posS);
+}
+
+
+/* ===== SPEED SORT: 20 pairs ===== */
+const SPEED = [
+  ["He","do","his homework",1],["She","have","breakfast",1],["I","do","sport",0],["They","have","a dog",0],
+  ["Masha","do","her homework",1],["We","have","lunch at school",0],["My mum","have","a car",1],["You","do","Maths",0],
+  ["Henry","go","to school",1],["Henry and Nadim","take","the bus",0],["The cat","live","in the garden",1],["Alison","get up","at seven",1],
+  ["I","have","a guitar lesson",0],["My friends","play","football",0],["She","watch","TV",1],["He","have","a sister",1],
+  ["They","do","their homework after dinner",0],["My dad","go","to work",1],["We","like","Maths",0],["You","have","a pet",0]
+];
+let bestTime = null; try { bestTime = +localStorage.getItem("hb-best") || null; } catch(e){}
+function speedSort(){
+  const q = shuffle(SPEED); let i = 0, t0 = 0, tick = null, locked = false;
+  $("panel").innerHTML = `<h2>Speed Sort ⏱️</h2>${cards()}
+    <div class="ru">20 карточек. Куда: <b>don't</b> или <b>doesn't</b>? Быстро, но точно!${bestTime ? `<br>Рекорд: <b>${bestTime} сек</b>` : ""}</div>
+    <div class="row"><button class="btn" id="start">Start ▶</button></div>`;
+  $("start").onclick = () => {
+    t0 = Date.now();
+    $("panel").innerHTML = `<div class="row" style="justify-content:space-between;margin:0 0 6px"><span class="prog" id="cnt">1 / 20</span><span class="timer" id="tm">0.0</span></div>
+      ${cards()}<div class="sort-card" id="sc"></div>
+      <div class="baskets"><button class="btn" data-a="0">don't</button><button class="btn" data-a="1">doesn't</button></div>
+      <div class="fb" id="fb"></div>`;
+    tick = setInterval(() => { const el = $("tm"); if (el) el.textContent = ((Date.now() - t0) / 1000).toFixed(1); else clearInterval(tick); }, 100);
+    const show = () => { const c = q[i]; $("sc").innerHTML = `${c[0]} <span class="plus">+</span> ${c[1]} ${c[2]}`; $("cnt").textContent = `${i + 1} / 20`; $("fb").textContent = ""; };
+    show();
+    $("panel").querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+      if (locked) return;
+      const c = q[i];
+      if (+b.dataset.a === c[3]){
+        locked = true; beep(true);
+        $("sc").innerHTML = `${c[0]} <b>${c[3] ? "doesn't" : "don't"}</b> ${c[1]} ${c[2]}.`;
+        setTimeout(() => { locked = false; i++; if (i < q.length) show(); else end(); }, 650);
+      } else pointCard();
+    });
+  };
+  function end(){
+    clearInterval(tick); const sec = Math.round((Date.now() - t0) / 100) / 10; stat.speed = sec; addGem();
+    const rec = !bestTime || sec < bestTime; if (rec){ bestTime = sec; try { localStorage.setItem("hb-best", sec); } catch(e){} }
+    $("panel").innerHTML = `<h2>${rec ? "New record! 🏆" : "Done!"}</h2><div class="ru">Время: <b>${sec} сек</b><br>Рекорд: <b>${bestTime} сек</b></div>
+      <div class="row"><button class="btn" id="again">Again ⏱️</button><button class="btn ghost" id="l1">1. Don't or doesn't? ➜</button><button class="btn ghost" id="mn">Menu</button></div>`;
+    $("again").onclick = speedSort; $("l1").onclick = level1; $("mn").onclick = menu; say(rec ? "New record!" : "Well done!");
+  }
+}
+
+/* ===== LEVEL 5: Zoe's day ===== */
+const ZOE_TEXT = [
+  "Zoe lives in a big flat on the ninth floor.",
+  "She gets up at seven o'clock and has breakfast with her brother Max.",
+  "Zoe takes the bus to school, but Max walks.",
+  "Zoe likes English, but she doesn't like Maths.",
+  "She has a dance lesson on Tuesdays.",
+  "Max plays football after school.",
+  "In the evening Zoe does her homework and Max plays computer games.",
+  "On Saturdays they go swimming with their dad."
+];
+const ZOE_Q = [
+  ["Zoe lives on the fifth floor.","she","doesn't live on the fifth floor","She lives on the ninth floor."],
+  ["Zoe gets up at eight o'clock.","she","doesn't get up at eight o'clock","She gets up at seven o'clock."],
+  ["Zoe has breakfast with her mum.","she","doesn't have breakfast with her mum","She has breakfast with her brother."],
+  ["Max takes the bus to school.","he","doesn't take the bus to school","He walks."],
+  ["Zoe likes Maths.","she","doesn't like Maths","She likes English."],
+  ["Zoe has a dance lesson on Fridays.","she","doesn't have a dance lesson on Fridays","She has a dance lesson on Tuesdays."],
+  ["Max plays tennis after school.","he","doesn't play tennis","He plays football."],
+  ["Zoe does her homework in the morning.","she","doesn't do her homework in the morning","She does her homework in the evening."],
+  ["Zoe and Max go swimming on Sundays.","they","don't go swimming on Sundays","They go swimming on Saturdays."],
+  ["Zoe and Max go swimming with their mum.","they","don't go swimming with their mum","They go swimming with their dad."]
+];
+function level5(){
+  let k = 0;
+  const textHTML = ZOE_TEXT.map((t, j) => `<span data-s="${j}">${t}</span>`).join(" ");
+  $("panel").innerHTML = `<div class="prog">Level 5 · Read</div><h2>Zoe's day</h2>
+    <div class="ru">Сначала читаем текст. Потом слушаем его по предложениям.</div>
+    <div class="text" id="txt">${textHTML}</div>
+    <div class="row"><button class="btn ghost" id="sent">🔊 Next sentence</button><button class="btn" id="go">Ready ➜</button></div>`;
+  $("sent").onclick = () => {
+    $("txt").querySelectorAll("span").forEach(x => x.style.background = "");
+    const el = $("txt").querySelector(`[data-s="${k}"]`); el.style.background = "rgba(242,194,48,.5)"; say(ZOE_TEXT[k]); k = (k + 1) % ZOE_TEXT.length;
+  };
+  $("go").onclick = () => { S.i = 0; r5(); };
+}
+function r5(){
+  if (S.i >= ZOE_Q.length) return finish();
+  const [wrong, pr, neg, right] = ZOE_Q[S.i], withFrame = S.i < 5;
+  const answer = `No, ${pr} ${neg}. ${right}`;
+  const P = pr[0].toUpperCase() + pr.slice(1);
+  const frame = withFrame ? `<div class="slots"><div class="slot">No,</div><div class="slot">${pr}</div><div class="slot one">?</div><div class="slot">?</div><div class="slot">…</div><div class="slot">${P}</div><div class="slot">?</div><div class="slot">…</div></div>` : "";
+  $("panel").innerHTML = `<div class="prog">Level 5 · ${S.i + 1} / ${ZOE_Q.length} ${withFrame ? "(frame)" : "(no frame)"}</div><h2>No, that's wrong!</h2>${cards()}
+    <p class="say blur" id="sayText">${wrong}</p>
+    <div class="row"><button class="btn ghost" id="again">🔊 Listen again</button><button class="btn ghost" id="show">Show text</button><button class="btn ghost" id="tx">📄 Zoe's text</button></div>
+    <div class="text hidden" id="txt">${ZOE_TEXT.join(" ")}</div>
+    <div class="ru" style="margin-top:14px">Скажи: <b>No, ${pr} ${pr === "they" ? "don't" : "doesn't"} …</b> и как на самом деле.</div>${frame}
+    <div class="answer" id="ans"></div>
+    <div class="row"><button class="btn ghost" id="card">👉 Card</button><button class="btn ghost" id="sa">Show answer</button><button class="btn" id="gem">✓ +1 💎</button><button class="btn ghost" id="nx">Next ➜</button></div>`;
+  $("again").onclick = () => say(wrong);
+  $("show").onclick = () => { const h = $("sayText").classList.toggle("blur"); $("show").textContent = h ? "Show text" : "Hide text"; };
+  $("tx").onclick = () => $("txt").classList.toggle("hidden");
+  $("card").onclick = pointCard;
+  $("sa").onclick = () => { $("ans").textContent = answer; say(answer); };
+  let counted = false;
+  $("gem").onclick = () => { if (counted) return; counted = true; beep(true); addGem(); stat.zoe++; $("gem").classList.add("ok"); };
+  $("nx").onclick = () => { S.i++; r5(); };
+  say(wrong);
+}
+
+function done(t, next, label){
+  $("panel").innerHTML = `<h2>${t}</h2><div class="ru">💎 ${gems}</div>
+    <div class="row"><button class="btn" id="go">${label} ➜</button><button class="btn ghost" id="again">Play again</button><button class="btn ghost" id="mn">Menu</button></div>`;
+  const cur = {"Level 1 done!":level1, "Level 2 done!":level2, "Level 3 done!":level3, "Level 4 done!":level4}[t];
+  $("go").onclick = next; $("again").onclick = cur; $("mn").onclick = menu; say(t);
+}
+function finish(){
+  $("panel").innerHTML = `<h2>Great job! 🏆</h2><div class="ru">💎 ${gems}<br>Собрано из блоков: <b>${stat.built}</b><br>Сказано по рамке: <b>${stat.frame}</b><br>Сказано без рамки: <b>${stat.free}</b><br>Zoe's day: <b>${stat.zoe}</b> из ${ZOE_Q.length}${stat.speed ? `<br>Speed Sort: <b>${stat.speed} сек</b>` : ""}</div>
+    <div class="row"><button class="btn" id="ag">Play again</button></div>`;
+  $("ag").onclick = () => { gems = 0; stat.built = stat.frame = stat.free = stat.zoe = 0; $("gems").textContent = "💎 0"; menu(); };
+  say("Great job!");
+}
+
+menu();
+</script>
+</body>
+</html>
+
+</body></html>
