@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What time is it?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#74c3ff;--sky2:#d9f0ff;--ink:#1b2232;--panel:#ffffff;--muted:#596276;--face:#fffdf6;
+  --accent:#ffbf1f;--accent-ink:#2a1d00;--ok:#25a552;--no:#e0434a;--past:#25a552;--to:#f07a12;--r:10px;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sky1:#162443;--sky2:#2a3d63;--ink:#eef2f8;--panel:#1d2433;--muted:#aab3c4}}
+:root[data-theme="dark"]{--sky1:#162443;--sky2:#2a3d63;--ink:#eef2f8;--panel:#1d2433;--muted:#aab3c4}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:linear-gradient(var(--sky1),var(--sky2));color:var(--ink);font-family:Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:600}
+header{display:flex;align-items:center;gap:12px;padding:12px 18px;max-width:1040px;margin:0 auto}
+h1{font-family:"Lilita One",Impact,"Arial Black",sans-serif;font-weight:400;font-size:clamp(26px,4vw,38px);margin:0;color:#fff;text-shadow:0 3px 0 #1b2232,2px 3px 0 #1b2232,-2px 3px 0 #1b2232}
+.spacer{flex:1}
+.stars{background:var(--panel);border:3px solid #1b2232;border-radius:var(--r);padding:6px 12px;font-weight:800;font-size:18px}
+.stars.bump{animation:bump .35s}@keyframes bump{50%{transform:scale(1.25)}}
+.wrap{display:grid;grid-template-columns:minmax(280px,440px) 1fr;gap:22px;max-width:1040px;margin:0 auto;padding:0 18px 24px;align-items:start}
+.clock-card{background:var(--panel);border:3px solid #1b2232;border-radius:14px;box-shadow:0 6px 0 #1b2232;padding:10px}
+#clock{width:100%;height:auto;display:block}
+.digital{font-family:"Lilita One",sans-serif;font-size:34px;text-align:center;margin:2px 0 4px;letter-spacing:1px}
+.digital.hidden{visibility:hidden}
+.face{fill:var(--face);stroke:#1b2232;stroke-width:5}
+.half{transition:opacity .3s;opacity:0}
+.half.past{fill:var(--past)}.half.to{fill:var(--to)}
+#clock.halves .half{opacity:.16}
+#clock.side-past .half.past,#clock.side-to .half.to{opacity:.38}
+#clock.side-both .half{opacity:.32}
+.lab{font-family:Nunito,sans-serif;font-weight:800;font-size:10.5px;opacity:0;transition:opacity .3s}
+#clock.labels .lab{opacity:1}
+.lab.past{fill:var(--past)}.lab.to{fill:var(--to)}.lab.oc{fill:#1b2232}
+:root[data-theme="dark"] .lab.oc{fill:#eef2f8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lab.oc{fill:#eef2f8}}
+.numtxt{font-family:"Lilita One",sans-serif;font-size:17px;fill:#1b2232;pointer-events:none}
+.hit{fill:transparent;cursor:default}
+#clock.free .hit{cursor:pointer}
+#clock.free .hit:hover{fill:rgba(255,191,31,.45)}
+.hand{transition:transform .6s cubic-bezier(.3,1.3,.5,1);transform-origin:100px 100px;transform-box:view-box}
+.panel{background:var(--panel);border:3px solid #1b2232;border-radius:14px;padding:20px;box-shadow:0 6px 0 #1b2232}
+.panel h2{font-family:"Lilita One",sans-serif;font-weight:400;font-size:28px;margin:0 0 6px}
+.prog{font-weight:800;color:var(--muted);margin-bottom:4px}
+.ru{background:rgba(255,191,31,.18);border-left:5px solid var(--accent);border-radius:6px;padding:10px 12px;margin:8px 0 12px;font-size:17px;line-height:1.4}
+.phrase{font-size:28px;font-weight:800;margin:10px 0}
+.phrase .p{color:var(--past)}.phrase .t{color:var(--to)}
+.btn{font:inherit;font-weight:800;font-size:17px;padding:11px 18px;border:3px solid #1b2232;border-radius:var(--r);background:var(--accent);color:var(--accent-ink);cursor:pointer;box-shadow:0 4px 0 #1b2232;transition:transform .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #1b2232}
+.btn:focus-visible{outline:3px solid #3d6fb5;outline-offset:2px}
+.btn.ghost{background:var(--panel);color:var(--ink)}
+.btn.small{font-size:15px;padding:7px 12px}
+.btn.past{background:var(--past);color:#fff}.btn.to{background:var(--to);color:#1b1000}
+.btn.ok{background:var(--ok);color:#fff}.btn.no{background:var(--no);color:#fff;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.opts .btn{font-family:"Lilita One",sans-serif;font-weight:400;font-size:30px;padding:14px}
+.say{font-size:24px;font-weight:800;margin:0;padding:12px 14px;border-radius:var(--r);background:rgba(36,70,122,.08);transition:filter .2s}
+.say.blur{filter:blur(8px);user-select:none}
+.fb{min-height:30px;font-weight:800;font-size:20px;margin-top:12px}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--no)}
+.menu{display:grid;gap:10px;margin-top:14px}.menu .btn{text-align:left}
+.answer{font-size:24px;font-weight:800;color:var(--ok);min-height:34px;margin-top:10px}
+@media (max-width:760px){.wrap{grid-template-columns:1fr}.phrase{font-size:24px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>What time is it?</h1>
+  <div class="spacer"></div>
+  <button class="btn ghost small" id="menuBtn">Menu</button>
+  <div class="stars" id="stars" aria-live="polite">⭐ 0</div>
+</header>
+<main class="wrap">
+  <section class="clock-card">
+    <svg id="clock" viewBox="-78 -26 356 252" role="img" aria-label="Clock"></svg>
+    <div class="digital" id="digital">6.00</div>
+  </section>
+  <section class="panel" id="panel"></section>
+</main>
+<script>
+/* ===== CONTENT ===== */
+const STEPS = [
+  {t:"O'clock", side:"", ru:"Длинная стрелка на <b>12</b> → <b>o'clock</b>, то есть ровно. Смотрим только на короткую стрелку.",
+    times:[[6,0],[8,0],[3,0],[12,0]]},
+  {t:"Past", side:"past", ru:"<b>Past = после.</b> Правая (зелёная) половина: сколько минут <b>прошло</b> после часа. Час называем <b>тот, что был</b>.",
+    times:[[6,5],[6,10],[6,20],[6,25]]},
+  {t:"Quarter and half", side:"both", ru:"<b>Quarter</b> = четверть, 15 минут. <b>Half</b> = половина, 30 минут. Слово <i>minutes</i> не говорим.",
+    times:[[6,15],[6,30],[6,45]]},
+  {t:"To", side:"to", ru:"<b>To = до.</b> Левая (оранжевая) половина: сколько минут <b>осталось</b> до следующего часа. Внимание: час берём <b>следующий</b>! 6.40 = twenty to <b>seven</b>.",
+    times:[[6,35],[6,40],[6,45],[6,50],[6,55]]}
+];
+const BOOK_TIMES = [[8,10],[8,30],[8,40],[8,45],[9,0],[3,30]]; /* textbook 6b */
+const ROUNDS = 8;
+/* =================== */
+
+const $ = id => document.getElementById(id);
+const rnd = n => Math.floor(Math.random() * n);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const HW = ["","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
+const hn = h => ((h - 1) % 12 + 12) % 12 + 1;
+const MW = {5:"five",10:"ten",15:"quarter",20:"twenty",25:"twenty-five",30:"half"};
+function phrase(h, m){
+  if (m === 0) return `It's ${HW[hn(h)]} o'clock.`;
+  if (m <= 30) return `It's ${MW[m]} past ${HW[hn(h)]}.`;
+  return `It's ${MW[60 - m]} to ${HW[hn(h + 1)]}.`;
+}
+function phraseHTML(h, m){
+  if (m === 0) return `It's ${HW[hn(h)]} o'clock.`;
+  if (m <= 30) return `It's ${MW[m]} <span class="p">past</span> ${HW[hn(h)]}.`;
+  return `It's ${MW[60 - m]} <span class="t">to</span> ${HW[hn(h + 1)]}.`;
+}
+const sideOf = m => m === 0 ? "oc" : m <= 30 ? "past" : "to";
+const digital = (h, m) => `${hn(h)}.${String(m).padStart(2, "0")}`;
+function randTime(){ return [1 + rnd(12), rnd(12) * 5]; }
+
+/* speech */
+let voice = null;
+function pickVoice(){ try { const v = speechSynthesis.getVoices(); voice = v.find(x => /en[-_]GB/i.test(x.lang)) || v.find(x => /^en/i.test(x.lang)) || null; } catch(e){} }
+if ("speechSynthesis" in window){ speechSynthesis.onvoiceschanged = pickVoice; pickVoice(); }
+function say(t){
+  try { speechSynthesis.cancel(); t = String(t).replace(/\blives\b/gi, "livz").replace(/\blive\b/gi, "liv");
+    const u = new SpeechSynthesisUtterance(t); if (voice) u.voice = voice; u.lang = voice ? voice.lang : "en-GB"; u.rate = .85; speechSynthesis.speak(u); } catch(e){}
+}
+let ac = null;
+function beep(ok){
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain();
+    o.type = ok ? "triangle" : "square"; o.frequency.setValueAtTime(ok ? 660 : 180, ac.currentTime);
+    if (ok) o.frequency.setValueAtTime(990, ac.currentTime + .09);
+    g.gain.setValueAtTime(.12, ac.currentTime); g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + .25);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .26); } catch(e){}
+}
+
+/* clock */
+const S = {h:6, m:0, minA:0, hrA:180, stars:0, free:false};
+function buildClock(){
+  const pt = (r, n) => [100 + r * Math.sin(n * Math.PI / 6), 100 - r * Math.cos(n * Math.PI / 6)];
+  let s = `<path class="half past" d="M100 100 L100 10 A90 90 0 0 1 100 190 Z"/><path class="half to" d="M100 100 L100 10 A90 90 0 0 0 100 190 Z"/>
+    <circle class="face" cx="100" cy="100" r="90" fill-opacity="0"/>`;
+  for (let i = 0; i < 60; i++){ const [x1, y1] = pt(84, i / 5), [x2, y2] = pt(i % 5 ? 80 : 76, i / 5);
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1b2232" stroke-width="${i % 5 ? 1 : 2.5}"/>`; }
+  const labs = {12:["o'clock","oc"],1:["five past","past"],2:["ten past","past"],3:["quarter past","past"],4:["twenty past","past"],5:["twenty-five past","past"],
+    6:["half past","past"],7:["twenty-five to","to"],8:["twenty to","to"],9:["quarter to","to"],10:["ten to","to"],11:["five to","to"]};
+  for (let n = 1; n <= 12; n++){
+    const [x, y] = pt(64, n), [lx, ly] = pt(n === 12 || n === 6 ? 106 : 104, n);
+    const anchor = (n === 12 || n === 6) ? "middle" : n < 6 ? "start" : "end";
+    s += `<circle class="hit" data-n="${n}" cx="${x}" cy="${y}" r="14"/><text class="numtxt" x="${x}" y="${y + 6}" text-anchor="middle">${n}</text>
+      <text class="lab ${labs[n][1]}" x="${lx}" y="${ly + (n === 12 ? -2 : n === 6 ? 10 : 4)}" text-anchor="${anchor}">${labs[n][0]}</text>`;
+  }
+  s += `<g class="hand" id="hrH"><line x1="100" y1="106" x2="100" y2="54" stroke="#1b2232" stroke-width="8" stroke-linecap="round"/></g>
+    <g class="hand" id="minH"><line x1="100" y1="108" x2="100" y2="22" stroke="#e0434a" stroke-width="5" stroke-linecap="round"/></g>
+    <circle cx="100" cy="100" r="7" fill="#1b2232"/><circle cx="100" cy="100" r="3" fill="#ffbf1f"/>`;
+  $("clock").innerHTML = s;
+  $("clock").addEventListener("click", e => {
+    const c = e.target.closest(".hit"); if (!c || !S.free) return;
+    setClock(S.h, (+c.dataset.n % 12) * 5); freeShow();
+  });
+}
+const near = (cur, target) => { let d = ((target - cur) % 360 + 540) % 360 - 180; return cur + d; };
+function setClock(h, m){
+  S.h = hn(h); S.m = m;
+  S.minA = near(S.minA, m * 6); S.hrA = near(S.hrA, ((S.h % 12) + m / 60) * 30);
+  $("minH").style.transform = `rotate(${S.minA}deg)`; $("hrH").style.transform = `rotate(${S.hrA}deg)`;
+  $("digital").textContent = digital(S.h, m);
+}
+function view({halves = false, labels = false, side = "", showDigital = true} = {}){
+  const c = $("clock"); c.setAttribute("class", "");
+  if (halves) c.classList.add("halves"); if (labels) c.classList.add("labels"); if (side) c.classList.add("side-" + side);
+  if (S.free) c.classList.add("free");
+  $("digital").classList.toggle("hidden", !showDigital);
+}
+function addStar(){ S.stars++; const el = $("stars"); el.textContent = "⭐ " + S.stars; el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+
+/* menu */
+function menu(){
+  S.free = false; view(); setClock(6, 0);
+  $("panel").innerHTML = `<h2>What time is it?</h2>
+    <div class="ru">Сначала разбираемся с часами, потом играем.</div>
+    <div class="menu">
+      <button class="btn" data-g="learn">📖 Learn. Как называть время</button>
+      <button class="btn ghost" data-g="free">🕹️ Your turn. Крути стрелку сама</button>
+      <button class="btn ghost" data-g="l1">1. Past or to?</button>
+      <button class="btn ghost" data-g="l2">2. Listen and choose</button>
+      <button class="btn ghost" data-g="l3">3. Say it! (8.10, 8.30, 8.40…)</button>
+    </div>`;
+  $("panel").querySelectorAll("[data-g]").forEach(b => b.onclick = () => ({learn:() => learn(0), free:freePlay, l1:level1, l2:level2, l3:level3})[b.dataset.g]());
+}
+$("menuBtn").onclick = menu;
+
+/* LEARN */
+function learn(k){
+  S.free = false;
+  if (k >= STEPS.length) return freePlay();
+  const st = STEPS[k]; let i = 0;
+  view({halves: !!st.side, labels: true, side: st.side});
+  const show = () => { const [h, m] = st.times[i]; setClock(h, m); $("ph").innerHTML = phraseHTML(h, m); say(phrase(h, m)); };
+  $("panel").innerHTML = `<div class="prog">Learn · ${k + 1} / ${STEPS.length}</div><h2>${st.t}</h2>
+    <div class="ru">${st.ru}</div><div class="phrase" id="ph"></div>
+    <div class="row"><button class="btn ghost" id="rep">🔊 Again</button><button class="btn ghost" id="nx">▶ Next time</button>
+    <button class="btn" id="step">${k === STEPS.length - 1 ? "Your turn ➜" : "Next ➜"}</button></div>`;
+  $("rep").onclick = () => say(phrase(S.h, S.m));
+  $("nx").onclick = () => { i = (i + 1) % st.times.length; show(); };
+  $("step").onclick = () => learn(k + 1);
+  show();
+}
+
+/* FREE PLAY */
+function freePlay(){
+  S.free = true; view({halves: true, labels: true, side: "both"});
+  $("panel").innerHTML = `<h2>Your turn</h2>
+    <div class="ru">Нажимай на цифры на часах: туда встанет длинная стрелка. Стрелками ◀ ▶ меняй час. Назови время, потом проверь звуком.</div>
+    <div class="phrase" id="ph"></div>
+    <div class="row"><button class="btn ghost" id="hm">◀ hour</button><button class="btn ghost" id="hp">hour ▶</button>
+    <button class="btn ghost" id="rep">🔊 Listen</button><button class="btn ghost" id="lab">Hide words</button></div>
+    <div class="row"><button class="btn" id="go">Play ➜</button></div>`;
+  $("hm").onclick = () => { setClock(S.h - 1, S.m); freeShow(); };
+  $("hp").onclick = () => { setClock(S.h + 1, S.m); freeShow(); };
+  $("rep").onclick = () => say(phrase(S.h, S.m));
+  $("lab").onclick = () => { const on = $("clock").classList.toggle("labels"); $("clock").classList.toggle("halves", on); $("clock").classList.toggle("side-both", on); $("lab").textContent = on ? "Hide words" : "Show words"; };
+  $("go").onclick = level1;
+  freeShow(false);
+}
+function freeShow(speak = true){ const el = $("ph"); if (el) el.innerHTML = phraseHTML(S.h, S.m); if (speak) say(phrase(S.h, S.m)); }
+
+/* LEVEL 1: past or to */
+function level1(){ S.free = false; S.q = [...Array(ROUNDS)].map(() => { let t; do { t = randTime(); } while (t[1] === 0 && Math.random() < .7); return t; }); S.i = 0; round1(); }
+function round1(){
+  if (S.i >= S.q.length) return done("Level 1 done!", level2, "2. Listen and choose");
+  const [h, m] = S.q[S.i]; view({showDigital: false}); setClock(h, m);
+  $("panel").innerHTML = `<div class="prog">Level 1 · ${S.i + 1} / ${S.q.length}</div><h2>Past or to?</h2>
+    <div class="ru">Посмотри на длинную стрелку: справа или слева?</div>
+    <div class="row"><button class="btn past" data-a="past">past</button><button class="btn to" data-a="to">to</button><button class="btn ghost" data-a="oc">o'clock</button></div>
+    <div class="phrase" id="ph"></div><div class="fb" id="fb"></div>`;
+  say("Past or to?");
+  let locked = false;
+  $("panel").querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+    if (locked) return;
+    if (b.dataset.a === sideOf(m)){
+      locked = true; beep(true); addStar(); b.classList.add("ok"); view({side: sideOf(m) === "oc" ? "" : sideOf(m), halves: true});
+      $("ph").innerHTML = phraseHTML(h, m); say(phrase(h, m));
+      setTimeout(() => { S.i++; round1(); }, 2300);
+    } else { beep(false); b.classList.remove("no"); void b.offsetWidth; b.classList.add("no"); $("fb").textContent = "Look at the long hand!"; $("fb").className = "fb no"; }
+  });
+}
+
+/* LEVEL 2: listen and choose */
+function distractors(h, m){
+  let c = m === 0 ? [[h + 1, 0], [h - 1, 0], [h, 30], [h + 1, 30]]
+        : m === 30 ? [[h + 1, 30], [h - 1, 30], [h, 0], [h + 1, 0]]
+        : [[h, 60 - m], [h + 1, m], [h + 1, 60 - m], [h - 1, m], [h - 1, 60 - m]];
+  const seen = new Set([digital(h, m)]), out = [];
+  for (const t of shuffle(c)){ const d = digital(t[0], t[1]); if (!seen.has(d)){ seen.add(d); out.push(t); } if (out.length === 3) break; }
+  return out;
+}
+function level2(){ S.free = false; S.q = [...Array(ROUNDS)].map(randTime); S.i = 0; round2(); }
+function round2(){
+  if (S.i >= S.q.length) return done("Level 2 done!", level3, "3. Say it!");
+  const [h, m] = S.q[S.i], text = phrase(h, m);
+  view({showDigital: false}); setClock(12, 0);
+  const opts = shuffle([[h, m], ...distractors(h, m)]);
+  $("panel").innerHTML = `<div class="prog">Level 2 · ${S.i + 1} / ${S.q.length}</div><h2>Listen and choose</h2>
+    <p class="say blur" id="sayText">${text}</p>
+    <div class="row"><button class="btn" id="again">🔊 Listen again</button><button class="btn ghost" id="show">Show text</button></div>
+    <div class="opts">${opts.map(t => `<button class="btn ghost" data-d="${digital(t[0], t[1])}">${digital(t[0], t[1])}</button>`).join("")}</div>
+    <div class="fb" id="fb"></div>`;
+  $("again").onclick = () => say(text);
+  $("show").onclick = () => { const hid = $("sayText").classList.toggle("blur"); $("show").textContent = hid ? "Show text" : "Hide text"; };
+  say(text);
+  let locked = false;
+  $("panel").querySelectorAll("[data-d]").forEach(b => b.onclick = () => {
+    if (locked) return;
+    if (b.dataset.d === digital(h, m)){
+      locked = true; beep(true); addStar(); b.classList.add("ok"); setClock(h, m); view({halves: true, side: sideOf(m) === "oc" ? "" : sideOf(m)});
+      $("sayText").classList.remove("blur"); say(text);
+      setTimeout(() => { S.i++; round2(); }, 2400);
+    } else {
+      beep(false); b.classList.remove("no"); void b.offsetWidth; b.classList.add("no");
+      const [bh, bm] = b.dataset.d.split(".").map(Number);
+      $("fb").textContent = `No, ${b.dataset.d} is ${phrase(bh, bm).replace("It's ", "")}`; $("fb").className = "fb no";
+    }
+  });
+}
+
+/* LEVEL 3: say it */
+function level3(){ S.free = false; S.q = BOOK_TIMES.concat(shuffle([...Array(4)].map(randTime))); S.i = 0; round3(); }
+function round3(){
+  if (S.i >= S.q.length) return finish();
+  const [h, m] = S.q[S.i]; view({showDigital: true}); setClock(h, m);
+  $("panel").innerHTML = `<div class="prog">Level 3 · ${S.i + 1} / ${S.q.length}</div><h2>Say it!</h2>
+    <div class="ru">Скажи время вслух полным предложением: <b>It's …</b></div>
+    <div class="answer" id="ans"></div>
+    <div class="row"><button class="btn ghost" id="sa">Show answer</button><button class="btn ghost" id="st">+1 ⭐</button><button class="btn" id="nx">Next ➜</button></div>`;
+  say("What time is it?");
+  $("sa").onclick = () => { $("ans").innerHTML = phraseHTML(h, m); say(phrase(h, m)); };
+  $("st").onclick = () => { beep(true); addStar(); };
+  $("nx").onclick = () => { S.i++; round3(); };
+}
+
+function done(title, next, label){
+  $("panel").innerHTML = `<h2>${title}</h2><div class="ru">⭐ ${S.stars}</div>
+    <div class="row"><button class="btn" id="go">${label} ➜</button><button class="btn ghost" id="mn">Menu</button></div>`;
+  $("go").onclick = next; $("mn").onclick = menu; say(title);
+}
+function finish(){
+  $("panel").innerHTML = `<h2>Great job! 🏆</h2><div class="ru">⭐ ${S.stars}</div>
+    <div class="row"><button class="btn" id="again2">Play again</button></div>`;
+  $("again2").onclick = () => { S.stars = 0; $("stars").textContent = "⭐ 0"; menu(); };
+  say("Great job!");
+}
+
+buildClock(); menu();
+</script>
+</body>
+</html>
