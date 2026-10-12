@@ -1,0 +1,492 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Урок рекордов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Unbounded:wght@500;700;800&display=swap">
+<style>
+/* Layout: школьная тетрадь в клетку; сверху полоса уровней, ниже одна большая рабочая зона уровня */
+:root{
+  --paper:#F3F6FA; --grid:#DCE5F0; --card:#FFFFFF; --ink:#18223A; --muted:#5B6782;
+  --pen:#2B47C9; --pen-soft:#E3E8FB; --red:#D2402F; --red-soft:#FBE4E0;
+  --ok:#1E8A55; --ok-soft:#DDF3E7; --dg:#C2410C; --dg-soft:#FFE7D6;
+  --vowel:#7A3FB8; --vowel-soft:#EFE5FA; --line:#C9D4E3;
+  --f-word:"Andika","Comic Sans MS",system-ui,sans-serif;
+  --f-head:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Andika",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#131A2B; --grid:#1D2740; --card:#1B2438; --ink:#EEF2FA; --muted:#9AA6C2;
+  --pen:#8EA2FF; --pen-soft:#25305A; --red:#FF7B6B; --red-soft:#4A2221;
+  --ok:#5BD69A; --ok-soft:#173A2B; --dg:#FF9F5A; --dg-soft:#47290F;
+  --vowel:#C79BFF; --vowel-soft:#33224D; --line:#2C3956; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#131A2B; --grid:#1D2740; --card:#1B2438; --ink:#EEF2FA; --muted:#9AA6C2;
+  --pen:#8EA2FF; --pen-soft:#25305A; --red:#FF7B6B; --red-soft:#4A2221;
+  --ok:#5BD69A; --ok-soft:#173A2B; --dg:#FF9F5A; --dg-soft:#47290F;
+  --vowel:#C79BFF; --vowel-soft:#33224D; --line:#2C3956; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.45;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;padding-inline:16px;padding-block:0 40px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);
+  margin-inline:-16px;padding:10px 16px;border-bottom:2px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.brand{font-family:var(--f-head);font-weight:800;font-size:15px;letter-spacing:.02em;margin-right:6px;white-space:nowrap}
+.brand b{color:var(--red)}
+.pills{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.pill{width:36px;height:36px;border-radius:50%;border:2px solid var(--line);background:var(--card);font-family:var(--f-head);font-size:13px;font-weight:700}
+.pill.on{background:var(--pen);border-color:var(--pen);color:var(--card)}
+.pill.done{border-color:var(--ok);color:var(--ok)}
+.tool{padding:7px 12px;border-radius:999px;border:2px solid var(--line);background:var(--card);font-size:14px;white-space:nowrap}
+.tool.on{border-color:var(--pen);color:var(--pen)}
+
+main{max-width:1100px;margin:0 auto;padding-top:22px}
+.lvlhead{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.lvlnum{font-family:var(--f-head);font-weight:800;font-size:56px;line-height:.9;color:var(--pen)}
+.lvlttl{font-family:var(--f-head);font-weight:700;font-size:clamp(20px,3vw,30px);line-height:1.1;text-wrap:balance}
+.lvlsub{color:var(--muted);font-size:16px}
+.teacher{background:var(--card);border:2px dashed var(--line);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:15px;color:var(--muted)}
+.teacher i{color:var(--ink)}
+.teacher[hidden]{display:none!important}
+
+.panel{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:clamp(14px,3vw,26px)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.gap{height:16px}
+.btn{padding:12px 20px;border-radius:12px;background:var(--pen);color:var(--card);font-weight:700;font-size:17px}
+.btn.ghost{background:var(--pen-soft);color:var(--pen)}
+.btn.red{background:var(--red);color:var(--card)}
+.btn.big{font-size:20px;padding:14px 26px}
+.navbar{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}
+
+.word{font-family:var(--f-word);font-weight:700;letter-spacing:.02em}
+.dg{color:var(--dg);background:var(--dg-soft);border-radius:6px;padding:0 2px}
+.chg{color:var(--red);text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:6px}
+.vw{color:var(--vowel)}
+
+/* speed column */
+.speedgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sw{font-family:var(--f-word);font-weight:700;font-size:clamp(28px,4vw,40px);padding:10px 8px;border-radius:12px;border:2px solid transparent;text-align:center;background:var(--paper)}
+.sw.e1{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.sw.e2{border-color:var(--vowel);background:var(--vowel-soft);color:var(--vowel)}
+.timer{font-family:var(--f-head);font-weight:800;font-size:44px;font-variant-numeric:tabular-nums;min-width:4.2ch}
+.stat{display:inline-flex;flex-direction:column;padding:8px 14px;border-radius:12px;background:var(--paper);border:2px solid var(--line)}
+.stat small{font-size:13px;color:var(--muted)}
+.stat b{font-family:var(--f-head);font-size:22px;font-variant-numeric:tabular-nums}
+.legend{font-size:14px;color:var(--muted)}
+
+/* choice cards */
+.choices{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.choice{font-family:var(--f-word);font-weight:700;font-size:clamp(30px,5vw,48px);padding:18px 10px;border-radius:16px;border:3px solid var(--line);background:var(--card);text-align:center}
+.choice.good{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.choice.bad{border-color:var(--red);background:var(--red-soft);color:var(--red);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.progress{font-family:var(--f-head);font-weight:700;color:var(--muted)}
+
+/* mouths */
+.mouths{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.mouth{border:3px solid var(--line);border-radius:18px;padding:16px;background:var(--card);text-align:left;display:flex;flex-direction:column;gap:6px}
+.mouth .L{font-family:var(--f-word);font-weight:700;font-size:72px;line-height:1;color:var(--pen)}
+.mouth .d{font-size:16px}
+.mouth .ex{font-family:var(--f-word);font-size:20px;color:var(--muted)}
+.mouth.good{border-color:var(--ok);background:var(--ok-soft)}
+.mouth.bad{border-color:var(--red);background:var(--red-soft)}
+.warn{color:var(--red);font-weight:700}
+
+/* sort */
+.current{font-family:var(--f-word);font-weight:700;font-size:clamp(54px,9vw,90px);text-align:center;padding:10px 0 18px}
+.cols{display:grid;gap:10px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:560px){.cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.col{border:3px solid var(--line);border-radius:16px;min-height:200px;display:flex;flex-direction:column;background:var(--paper)}
+.col>button{font-family:var(--f-word);font-weight:700;font-size:34px;padding:10px;border-bottom:3px solid var(--line);color:var(--dg)}
+.col.bad{border-color:var(--red);animation:shake .35s}
+.col ul{list-style:none;margin:0;padding:8px;display:flex;flex-direction:column;gap:4px}
+.col li{font-family:var(--f-word);font-weight:700;font-size:24px;text-align:center}
+
+/* ladder */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:8px 14px;border-radius:999px;border:2px solid var(--line);background:var(--card);font-weight:700}
+.tab.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.ladder{display:flex;flex-direction:column;gap:6px}
+.step{display:flex;align-items:center;gap:14px;font-family:var(--f-word);font-weight:700;font-size:clamp(30px,5vw,46px)}
+.step .ch{font-family:var(--f-body);font-size:18px;color:var(--muted);font-weight:400}
+.step.hid{opacity:.15}
+.ladderwrap{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}
+
+/* vowels */
+.anchors{display:grid;gap:12px;grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:620px){.anchors{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.anchor{border:3px solid var(--line);border-radius:18px;padding:12px 6px;background:var(--card);display:flex;flex-direction:column;align-items:center;gap:2px}
+.anchor .e{font-size:46px;line-height:1.1}
+.anchor .v{font-family:var(--f-word);font-weight:700;font-size:48px;line-height:1;color:var(--vowel)}
+.anchor .w{font-family:var(--f-word);font-size:20px}
+.anchor.good{border-color:var(--ok);background:var(--ok-soft)}
+.anchor.bad{border-color:var(--red);background:var(--red-soft);animation:shake .35s}
+.frame{font-family:var(--f-word);font-weight:700;font-size:clamp(60px,11vw,110px);text-align:center;line-height:1.1;padding:8px 0}
+.slot{display:inline-block;min-width:.8em;border-bottom:6px solid var(--vowel);color:var(--vowel)}
+.vbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.vbtn{width:68px;height:68px;border-radius:16px;border:3px solid var(--vowel);color:var(--vowel);background:var(--vowel-soft);font-family:var(--f-word);font-weight:700;font-size:38px}
+.vbtn.used{background:var(--vowel);color:var(--card)}
+.vbtn.no{border-color:var(--line);color:var(--muted);background:var(--paper);text-decoration:line-through}
+.found{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;min-height:52px;margin-top:12px}
+.found span{font-family:var(--f-word);font-weight:700;font-size:32px;padding:2px 12px;border-radius:10px;background:var(--paper)}
+.note{text-align:center;color:var(--muted);min-height:26px}
+.pic{font-size:clamp(70px,12vw,120px);text-align:center;line-height:1.1}
+
+/* dictation */
+.dict{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.ditem{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:14px;padding:10px;background:var(--paper)}
+.ditem .n{font-family:var(--f-head);font-weight:700;color:var(--muted);width:1.6em}
+.ditem .ans{font-family:var(--f-word);font-weight:700;font-size:28px;flex:1;text-align:right;min-width:0}
+.ico{width:44px;height:44px;border-radius:12px;background:var(--pen-soft);color:var(--pen);font-size:20px;flex:none}
+
+/* catch */
+.catch{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.citem{border:3px solid var(--line);border-radius:16px;padding:12px;background:var(--card);display:flex;flex-direction:column;gap:10px;align-items:center}
+.citem .word{font-size:44px}
+.citem.good{border-color:var(--ok);background:var(--ok-soft)}
+.citem.bad{border-color:var(--red);background:var(--red-soft)}
+.citem .row{justify-content:center}
+.small{font-size:14px;color:var(--muted);text-align:center}
+
+/* text */
+.textlines{display:flex;flex-direction:column;gap:6px}
+.tl{display:flex;gap:16px;align-items:center;padding:6px 10px;border-radius:14px}
+.tl .p{font-size:clamp(34px,5vw,48px);width:2.6em;text-align:center;flex:none}
+.tl .t{font-family:var(--f-word);font-weight:700;font-size:clamp(26px,4.2vw,42px);line-height:1.25;min-width:0}
+.tl.cur{background:var(--pen-soft)}
+.tl.hid .t{visibility:hidden}
+.tl .q{font-size:15px;color:var(--pen);margin-top:2px;font-family:var(--f-body);font-weight:400}
+.qa{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.qa div{padding:12px;border-radius:12px;background:var(--paper);font-family:var(--f-word);font-size:24px;font-weight:700}
+
+/* results */
+.results{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.res{border:2px solid var(--line);border-radius:16px;padding:14px;background:var(--paper)}
+.res small{color:var(--muted);font-size:14px;display:block}
+.res b{font-family:var(--f-head);font-size:30px;font-variant-numeric:tabular-nums;display:block;line-height:1.2}
+.res span{font-size:15px}
+.bars{display:flex;gap:14px;align-items:flex-end;height:180px;margin-top:10px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%}
+.bar i{display:block;width:100%;max-width:90px;border-radius:10px 10px 0 0;background:var(--pen-soft);border:2px solid var(--pen)}
+.bar.now i{background:var(--pen)}
+.bar b{font-family:var(--f-head);font-size:20px}
+.bar small{color:var(--muted);font-size:13px}
+
+/* home */
+.map{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.mcard{border:2px solid var(--line);border-radius:16px;padding:14px;background:var(--card);text-align:left;display:flex;gap:12px;align-items:flex-start}
+.mcard .n{font-family:var(--f-head);font-weight:800;font-size:30px;color:var(--pen);line-height:1;min-width:1.4em}
+.mcard b{display:block;font-size:17px}
+.mcard small{color:var(--muted);font-size:14px}
+.mcard.done{border-color:var(--ok)}
+.mcard.done .n{color:var(--ok)}
+.hero{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.hero h1{font-family:var(--f-head);font-weight:800;font-size:clamp(30px,6vw,56px);line-height:1;margin:0;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+</style>
+
+<div class="top">
+  <div class="brand">Урок <b>рекордов</b></div>
+  <nav class="pills" id="pills"></nav>
+  <button class="tool" id="tts" title="Озвучка слов">🔊 голос</button>
+  <button class="tool" id="tch" title="Подсказки для учителя">учитель</button>
+</div>
+<main id="app"></main>
+
+<script>
+(()=>{
+const $=(s,r=document)=>r.querySelector(s);
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const[k,v]of Object.entries(attrs||{})){if(k==='class')e.className=v;else if(k==='html')e.innerHTML=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(v!==false&&v!=null)e.setAttribute(k,v)}for(const c of kids.flat()){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(c))}return e};
+const store={get(k,d){try{const v=localStorage.getItem('rekordy_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('rekordy_'+k,JSON.stringify(v))}catch(e){}}};
+const R=store.get('results',{});
+const saveR=()=>store.set('results',R);
+let teacherOn=store.get('teacher',true), ttsOn=store.get('tts',true);
+
+/* ---------- голос ---------- */
+let voice=null;
+function pickVoice(){if(!('speechSynthesis'in window))return;const vs=speechSynthesis.getVoices();voice=vs.find(v=>/en[-_]GB/i.test(v.lang)&&/female|Google UK|Serena|Kate|Libby|Sonia/i.test(v.name))||vs.find(v=>/en[-_]GB/i.test(v.lang))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}
+if('speechSynthesis'in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function say(t,rate=.8){if(!ttsOn||!('speechSynthesis'in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.lang=voice?voice.lang:'en-GB';u.rate=rate;speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- разметка слов ---------- */
+const DG=/(th|sh|ch|ck)/g;
+const markDg=w=>w.replace(DG,'<span class="dg">$1</span>');
+const VOW=/[aeiou]/g;
+const markV=w=>w.replace(/(th|sh|ch|ck)|([aeiou])/g,(m,d,v)=>d?m:`<span class="vw">${v}</span>`);
+const tok=w=>{const out=[];for(let i=0;i<w.length;){const two=w.slice(i,i+2);if(/^(th|sh|ch|ck|ss)$/.test(two)){out.push(two);i+=2}else{out.push(w[i]);i++}}return out};
+function diffWords(a,b){const A=tok(a),B=tok(b);if(A.length!==B.length)return{html:b,from:'',to:''};let from='',to='';const html=B.map((t,i)=>{if(t!==A[i]){from=A[i];to=t;return`<span class="chg">${t}</span>`}return t}).join('');return{html,from,to}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- таймер ---------- */
+function makeTimer(onStop){let t0=0,acc=0,raf=0,run=false;const el=h('div',{class:'timer'},'0.0');
+  const draw=()=>{el.textContent=((acc+(run?performance.now()-t0:0))/1000).toFixed(1);if(run)raf=requestAnimationFrame(draw)};
+  return{el,start(){if(run)return;run=true;t0=performance.now();draw()},stop(){if(!run)return;acc+=performance.now()-t0;run=false;cancelAnimationFrame(raf);draw();onStop&&onStop(+(acc/1000).toFixed(1))},reset(){run=false;acc=0;cancelAnimationFrame(raf);draw()},get running(){return run},get value(){return +((acc+(run?performance.now()-t0:0))/1000).toFixed(1)}}}
+
+/* ---------- данные урока ---------- */
+const L1=['cat','duck','pen','fly','ship','sock','chip','nest','yes','hot','fish','bed','jump','much','sun','my','lock','bus','dish','hill'];
+const L10=['thin','wet','sit','tin','with','bath','set','win','ten','that','sock','them','wish','tap','moth','web','sick','path','tub','then'];
+const TEXT=[
+ {p:'🐱',t:'Seth has a thin cat.',q:'Is the cat thin or big?'},
+ {p:'🐱👧',t:'The cat is with Beth.',q:'Who is the cat with?'},
+ {p:'🛁',t:'Beth sits in the bath.',q:'Where is Beth?'},
+ {p:'🐈🧺',t:'The cat is on the bath mat.',q:'Where is the cat?'},
+ {p:'💦',t:'Then the cat gets wet!',q:'Is the cat wet?'},
+ {p:'😿',t:'It is sad. It is not fun.',q:'Is the cat sad?'},
+ {p:'🐟🍽️',t:'Beth has fish in a dish.',q:'What has Beth got?'},
+ {p:'🐱🐟',t:'The wet cat sits with Beth and has the fish.',q:'Has the cat got the fish?'}];
+const TEXTWORDS=TEXT.reduce((n,l)=>n+l.t.split(/\s+/).length,0);
+
+const LEVELS=[
+ {n:1,t:'Столбик на скорость',s:'20 старых слов против рекорда',min:4},
+ {n:2,t:'Что слышишь?',s:'thin · tin · sin · win',min:4},
+ {n:3,t:'Четыре рта',s:'th · t · s · w',min:4},
+ {n:4,t:'Две буквы — один звук',s:'th sh ch ck в цвете и без',min:5},
+ {n:5,t:'Разложи по колонкам',s:'th · t · s · w',min:6},
+ {n:6,t:'Лесенки: согласные',s:'меняем один звук',min:6},
+ {n:7,t:'Пять гласных',s:'якоря, сетка, лесенки, пропуски',min:10},
+ {n:8,t:'Диктант',s:'пишу только звук',min:4},
+ {n:9,t:'Поймай ошибку',s:'учитель ошибается',min:2},
+ {n:10,t:'Смешанный столбик',s:'20 слов, две цифры ошибок',min:4},
+ {n:11,t:'Текст',s:`8 строк · ${TEXTWORDS} слов`,min:12},
+ {n:12,t:'Цифра дня',s:'все рекорды урока',min:3},
+ {n:13,t:'Бонус',s:'скороговорки и резерв',min:0}];
+
+/* ---------- каркас ---------- */
+let cur=store.get('cur',0);
+const app=$('#app');
+function renderPills(){const p=$('#pills');p.innerHTML='';p.append(h('button',{class:'pill'+(cur===0?' on':''),title:'Карта уровней',onclick:()=>go(0)},'⌂'));LEVELS.forEach(l=>p.append(h('button',{class:'pill'+(cur===l.n?' on':'')+(R['done'+l.n]?' done':''),title:l.t,onclick:()=>go(l.n)},l.n===13?'★':String(l.n))))}
+function teacher(html){return h('div',{class:'teacher',hidden:!teacherOn,html})}
+function head(l){return h('div',{class:'lvlhead'},h('div',{class:'lvlnum'},l.n===13?'★':String(l.n).padStart(2,'0')),h('div',{},h('div',{class:'lvlttl'},l.t),h('div',{class:'lvlsub'},l.s+(l.min?` · ${l.min} мин`:''))))}
+function nav(n){const done=()=>{R['done'+n]=true;saveR()};return h('div',{class:'navbar'},
+  h('button',{class:'btn ghost',onclick:()=>go(n-1)},n===1?'← Карта':'← Назад'),
+  n<13?h('button',{class:'btn big',onclick:()=>{done();go(n+1)}},'Уровень пройден →'):h('button',{class:'btn ghost',onclick:()=>go(0)},'Карта'))}
+function go(n){if('speechSynthesis'in window)speechSynthesis.cancel();cur=Math.max(0,Math.min(13,n));store.set('cur',cur);renderPills();app.innerHTML='';
+  if(cur===0)return home();const l=LEVELS[cur-1];app.append(head(l));BUILD[cur](l);app.append(nav(cur));scrollTo({top:0})}
+
+function home(){
+  app.append(h('div',{class:'hero'},h('div',{},h('h1',{html:'Урок <em>рекордов</em>'}),h('p',{},'Двенадцать уровней. В каждом своя цифра. В конце считаем всё вместе и сравниваем с прошлыми уроками.'))));
+  const m=h('div',{class:'map'});LEVELS.forEach(l=>m.append(h('button',{class:'mcard'+(R['done'+l.n]?' done':''),onclick:()=>go(l.n)},h('div',{class:'n'},l.n===13?'★':String(l.n)),h('div',{},h('b',{},l.t),h('small',{},l.s)))));
+  app.append(m,h('div',{class:'gap'}),h('div',{class:'row'},h('button',{class:'btn big',onclick:()=>go(1)},'Начать с уровня 1'),
+    h('button',{class:'btn ghost',onclick:e=>{const b=e.currentTarget;if(b.dataset.c){for(const k in R)delete R[k];saveR();go(0)}else{b.dataset.c=1;b.textContent='Точно стереть результаты? Нажми ещё раз'}}},'Новый урок: стереть результаты')));
+  app.append(teacher('Ученик открывает ссылку и показывает экран. Озвучка слов звучит у него. Эти серые рамки видны, пока включена кнопка «учитель» сверху: перед демонстрацией экрана её можно выключить.'));
+}
+
+/* ---------- 1 и 10: столбик ---------- */
+function speedColumn(words,key,two){
+  const p=h('div',{class:'panel'});const grid=h('div',{class:'speedgrid'});const st={};
+  const s1=h('b',{},'0'),s2=h('b',{},'0');
+  const count=()=>{const v=Object.values(st);s1.textContent=v.filter(x=>x===1).length;s2.textContent=v.filter(x=>x===2).length};
+  words.forEach((w,i)=>{const b=h('button',{class:'sw',html:markDg(w)});b.onclick=()=>{st[i]=((st[i]||0)+1)%(two?3:2);b.className='sw'+(st[i]?' e'+st[i]:'');count();save()};grid.append(b)});
+  const rec=store.get('rec_'+key,null);const recEl=h('b',{},rec?rec+' с':'—');
+  const T=makeTimer(t=>{save(t);const r=store.get('rec_'+key,null);if(!r||t<r){store.set('rec_'+key,t);recEl.textContent=t+' с · новый!'}});
+  function save(t){const v=Object.values(st);R[key]=Object.assign(R[key]||{},{e1:v.filter(x=>x===1).length,e2:v.filter(x=>x===2).length},t!=null?{time:t}:{});saveR()}
+  const bar=h('div',{class:'row'},T.el,
+    h('button',{class:'btn big',onclick:()=>T.running?T.stop():(T.reset(),T.start()),},'Старт / стоп'),
+    h('button',{class:'btn ghost',onclick:()=>T.reset()},'Сброс'),
+    h('div',{class:'stat'},h('small',{},'рекорд'),recEl),
+    h('div',{class:'stat'},h('small',{},two?'ошибки th/w/s/t':'ошибки'),s1),
+    two?h('div',{class:'stat'},h('small',{},'ошибки в гласной'),s2):null);
+  p.append(bar,h('div',{class:'gap'}),grid,h('p',{class:'legend'},two?'Нажми на слово: один раз — ошибка в согласной (красный), два — в гласной (фиолетовый), три — снять.':'Нажми на слово с ошибкой — оно станет красным. Ещё раз — снять.'));
+  return p}
+
+const BUILD={};
+BUILD[1]=()=>{app.append(teacher('<i>Twenty words. Finger. Go.</i> Один заход. Это напоминание, что она уже много умеет.'),speedColumn(L1,'l1',false))};
+BUILD[10]=()=>{app.append(teacher('<i>Twenty words. Finger. Go.</i> Ошибки по th/w/s/t и по гласным считаются отдельно, обе цифры уйдут в уровень 12.'),speedColumn(L10,'l10',true))};
+
+/* ---------- 2: на слух ---------- */
+function listenGame(rows,seq,key,intro){
+  const p=h('div',{class:'panel'});const prog=h('span',{class:'progress'});const cards=h('div');let i=0,ok=0,locked=false;
+  const rowEls=rows.map(r=>{const c=h('div',{class:'choices'});r.forEach(w=>c.append(h('button',{class:'choice',html:markDg(w),'data-w':w,onclick:e=>pick(e.currentTarget,w)})));return c});
+  function show(){prog.textContent=i<seq.length?`Слово ${i+1} из ${seq.length} · верно ${ok}`:`Готово: ${ok} из ${seq.length}`;cards.innerHTML='';
+    if(i>=seq.length){R[key]={ok,total:seq.length};saveR();cards.append(h('div',{class:'current'},`${ok} / ${seq.length}`));return}
+    const target=seq[i];const ri=rows.findIndex(r=>r.includes(target));rowEls[ri].querySelectorAll('.choice').forEach(b=>b.className='choice');cards.append(rowEls[ri]);locked=false;setTimeout(()=>say(target),250)}
+  function pick(b,w){if(locked)return;locked=true;const t=seq[i];if(w===t){ok++;b.classList.add('good')}else{b.classList.add('bad');cards.querySelector(`[data-w="${t}"]`).classList.add('good')}say(t);setTimeout(()=>{i++;show()},1100)}
+  p.append(h('div',{class:'row'},h('button',{class:'btn big',onclick:()=>i<seq.length&&say(seq[i])},'🔊 Ещё раз'),h('button',{class:'btn ghost',onclick:()=>{i=0;ok=0;show()}},'Сначала'),prog),intro?h('p',{class:'legend'},intro):null,h('div',{class:'gap'}),cards);show();return p}
+BUILD[2]=()=>{
+  const rows=[['thin','tin','sin','win'],['thick','tick','sick','wick'],['bath','bat','bass']];
+  const seq=['thin','win','tin','sin','sick','thick','wick','tick','bath','bass','bat','bath'];
+  app.append(teacher('<i>Listen. Point.</i> Слово звучит само, кнопка «Ещё раз» повторяет. Можно выключить голос сверху и говорить самой.<br>0–1 ошибка — слышит, упор на уровни 4–6. Путает th/s — больше времени на уровне 3. Путает w — в голове w = «в», тоже уровень 3. Цифру ей вслух не называть.'),
+    listenGame(rows,seq,'l2','Слушай слово и нажми на него.'))};
+
+/* ---------- 3: четыре рта ---------- */
+const MOUTHS=[
+ {l:'th',d:'Язык между зубами. Кончик видно.',ex:'thin · that · bath'},
+ {l:'t',d:'Язык за зубами. Хлопок.',ex:'tin · ten · tap'},
+ {l:'s',d:'Зубы вместе. Свист.',ex:'sin · set · sat'},
+ {l:'w',d:'Губы трубочкой, как на свечу.',ex:'win · wet · wag',warn:'Зубы на губу не ставим. Не «в»!'}];
+BUILD[3]=()=>{
+  app.append(teacher('Камера крупно. <i>Look. Tongue out — th. Tongue in — t. Teeth together — s. Lips round — w. Now you. Look at you.</i><br>Игра ниже: звучит слово, она тыкает в рот первого звука. Потом ты показываешь рот беззвучно — она тыкает. С этого момента на ошибку не поправляешь голосом, а показываешь на рамку рта.'));
+  const p=h('div',{class:'panel'});const grid=h('div',{class:'mouths'});
+  const els=MOUTHS.map(m=>{const b=h('button',{class:'mouth'},h('div',{class:'L'},m.l),h('div',{class:'d'},m.d),m.warn?h('div',{class:'d warn'},m.warn):null,h('div',{class:'ex'},m.ex));b.onclick=()=>tap(m.l,b);grid.append(b);return b});
+  const pool=['thin','tin','sin','win','them','ten','set','wet','that','tap','sat','wag','thick','tick','sick','well'];
+  let q=null,ok=0,n=0;const info=h('span',{class:'progress'},'Нажми «Слово», потом на рот');
+  const first=w=>w.startsWith('th')?'th':w[0];
+  function tap(l,b){if(!q){say(MOUTHS.find(m=>m.l===l).ex.split(' · ')[0]);return}n++;if(first(q)===l){ok++;b.classList.add('good')}else{b.classList.add('bad');els[MOUTHS.findIndex(m=>m.l===first(q))].classList.add('good')}info.textContent=`${q} — верно ${ok} из ${n}`;q=null;setTimeout(()=>els.forEach(e=>e.className='mouth'),900)}
+  p.append(h('div',{class:'row'},h('button',{class:'btn big',onclick:()=>{q=pool[Math.random()*pool.length|0];say(q)}},'🔊 Слово'),h('button',{class:'btn ghost',onclick:()=>q&&say(q)},'Ещё раз'),info),h('div',{class:'gap'}),grid,h('p',{class:'legend'},'Без игры: нажатие на рот проигрывает пример.'));
+  app.append(p)};
+
+/* ---------- 4: цветной диграф ---------- */
+BUILD[4]=()=>{
+  const W=['ship','chip','thin','duck','fish','much','with','back','shop','chop','that','neck','dish','rich','bath','sock'];
+  app.append(teacher('<i>Two letters — one finger.</i> Палец под цветной парой ставится один раз.<br>После каждой четвёрки CCQ: <i>Thin — how many letters? Four. How many sounds? Three.</i><br>Потом «без цвета»: <i>No colour now. Find the two letters. Then read.</i> Она нажимает на слово — пара подсвечивается, проверяем.'));
+  const p=h('div',{class:'panel'});let colour=true;const grid=h('div',{class:'speedgrid'});
+  const cnt=h('div',{class:'legend'});
+  function draw(){grid.innerHTML='';W.forEach(w=>{const b=h('button',{class:'sw',html:colour?markDg(w):w});b.onclick=()=>{b.innerHTML=markDg(w);say(w);const L=w.length,S=tok(w).length;cnt.textContent=`${w}: букв ${L}, звуков ${S}`};grid.append(b)})}
+  const t1=h('button',{class:'tab on',onclick:()=>{colour=true;t1.className='tab on';t2.className='tab';draw()}},'В цвете');
+  const t2=h('button',{class:'tab',onclick:()=>{colour=false;t2.className='tab on';t1.className='tab';draw()}},'Без цвета');
+  p.append(h('div',{class:'tabs'},t1,t2),grid,h('div',{class:'gap'}),cnt);draw();app.append(p)};
+
+/* ---------- 5: сортировка ---------- */
+function sorter(words,cols,classify,key){
+  const p=h('div',{class:'panel'});let q=words.slice(),err=0;const curEl=h('div',{class:'current'});const errEl=h('span',{class:'progress'});
+  const colEls=cols.map(c=>{const ul=h('ul');const box=h('div',{class:'col'},h('button',{onclick:()=>drop(c,box,ul)},c),ul);box._ul=ul;return box});
+  function drop(c,box,ul){if(!q.length){say(Array.from(ul.children).map(li=>li.textContent).join(', '),.7);return}const w=q[0];if(classify(w)===c){ul.append(h('li',{html:markDg(w)}));q.shift();say(w);show()}else{err++;box.classList.remove('bad');void box.offsetWidth;box.classList.add('bad');show()}}
+  function show(){errEl.textContent=`Осталось ${q.length} · ошибок ${err}`;curEl.innerHTML=q.length?q[0]:'✓';if(!q.length){R[key]={err};saveR();errEl.textContent=`Готово · ошибок ${err}. Теперь читаем каждую колонку сверху вниз.`}}
+  p.append(h('div',{class:'row'},h('button',{class:'btn ghost',onclick:()=>q.length&&say(q[0])},'🔊 Подсказка'),h('button',{class:'btn ghost',onclick:()=>{q=words.slice();err=0;colEls.forEach(c=>c._ul.innerHTML='');show()}},'Сначала'),errEl),curEl,h('div',{class:'cols'},colEls));show();return p}
+BUILD[5]=()=>{
+  app.append(teacher('Она читает слово вслух и нажимает колонку. <i>Thin — which column? Th. Ten? T.</i><br>Когда всё разложено: нажатие на заголовок колонки читает её целиком. Она читает колонку сама на скорость — в каждой один звук, ошибку услышит сама.<br>Вторая сортировка (по концу слова) — первая, что режем, если время поехало.'));
+  const A=['thin','ten','wag','sat','them','tick','well','sin','that','tap','wet','sick','thick','tin','set','win'];
+  const B=['bath','bat','bass','path','pat','pass','with','wit','wish'];
+  const box=h('div');const t1=h('button',{class:'tab on'},'Начало слова'),t2=h('button',{class:'tab'},'Конец слова');
+  const a=()=>{t1.className='tab on';t2.className='tab';box.innerHTML='';box.append(sorter(A,['th','t','s','w'],w=>w.startsWith('th')?'th':w[0],'l5'))};
+  const b=()=>{t2.className='tab on';t1.className='tab';box.innerHTML='';box.append(sorter(B,['…th','…t','…ss','…sh'],w=>w.endsWith('th')?'…th':w.endsWith('ss')?'…ss':w.endsWith('sh')?'…sh':'…t','l5b'))};
+  t1.onclick=a;t2.onclick=b;app.append(h('div',{class:'tabs'},t1,t2),box);a()};
+
+/* ---------- лесенки ---------- */
+function ladders(list,key){
+  const wrap=h('div');const tabs=h('div',{class:'tabs'});const body=h('div',{class:'panel'});
+  list.forEach((L,i)=>tabs.append(h('button',{class:'tab'+(i?'':' on'),onclick:e=>{tabs.querySelectorAll('.tab').forEach(t=>t.className='tab');e.currentTarget.className='tab on';open(i)}},`Лесенка ${i+1}`)));
+  function open(i){const W=list[i];body.innerHTML='';let k=0,fast=false;const lad=h('div',{class:'ladder'});
+    const T=makeTimer(t=>{R[key+'_'+i]=t;saveR()});
+    function draw(){lad.innerHTML='';W.forEach((w,j)=>{let html=w,ch='';if(!fast&&j>0){const d=diffWords(W[j-1],w);html=d.html;ch=d.from?`${d.from} → ${d.to}`:''}
+      const st=h('div',{class:'step'+(!fast&&j>k?' hid':'')},h('button',{class:'word',html,onclick:()=>say(w)}),h('span',{class:'ch'},!fast&&j<=k&&j>0?ch:''));st.style.paddingLeft=`${Math.min(j,10)*14}px`;lad.append(st)})}
+    const nextB=h('button',{class:'btn big',onclick:()=>{if(k<W.length-1){k++;draw()}}},'Следующая ступенька');
+    const modeB=h('button',{class:'btn ghost',onclick:()=>{fast=!fast;modeB.textContent=fast?'Режим «что поменялось»':'Режим скорости';nextB.hidden=fast;T.reset();timerRow.hidden=!fast;draw()}},'Режим скорости');
+    const timerRow=h('div',{class:'row',hidden:true},T.el,h('button',{class:'btn',onclick:()=>T.running?T.stop():(T.reset(),T.start())},'Старт / стоп'));
+    body.append(h('div',{class:'row'},nextB,modeB,h('button',{class:'btn ghost',onclick:()=>{k=0;draw()}},'Сначала')),timerRow,h('div',{class:'gap'}),lad);draw()}
+  wrap.append(tabs,body);open(0);return wrap}
+BUILD[6]=()=>{
+  app.append(teacher('<i>Read and tell me what changed.</i> Она читает новую ступеньку и говорит, какой звук поменялся. Справа подсказка, что именно поменялось.<br>Второй заход — «Режим скорости»: все слова сразу, без подсказок, на время. <i>Now fast, no stops.</i><br>Можно читать лесенку вслух самой с одной ошибкой — она ловит, где ты свернула не туда. Лесенку 3 режем, если время поехало.'));
+  app.append(ladders([
+   ['tin','thin','win','wit','with','wish'],
+   ['sick','thick','tick','tack','back','bath','math','mat','hat','that'],
+   ['sock','sick','tick','tin','ten','then','them']],'l6'))};
+
+/* ---------- 7: гласные ---------- */
+const ANCH=[{v:'a',w:'cat',e:'🐱'},{v:'e',w:'egg',e:'🥚'},{v:'i',w:'pig',e:'🐷'},{v:'o',w:'dog',e:'🐶'},{v:'u',w:'bus',e:'🚌'}];
+BUILD[7]=()=>{
+  app.append(teacher('Якоря висят весь уровень. С этого момента ошибка в гласной = показать на якорь, правильный вариант не говорить.<br>Порядок: якоря → на слух → сетка → лесенки → пропуски. Пропуски режем, если время поехало.'));
+  const tabs=h('div',{class:'tabs'});const box=h('div');
+  const parts=[['Якоря',anchorsPart],['На слух',vListen],['Сетка',vGrid],['Лесенки',vLadders],['Пропуски',vMissing]];
+  parts.forEach(([t,f],i)=>tabs.append(h('button',{class:'tab'+(i?'':' on'),onclick:e=>{tabs.querySelectorAll('.tab').forEach(x=>x.className='tab');e.currentTarget.className='tab on';box.innerHTML='';f(box)}},t)));
+  app.append(tabs,box);anchorsPart(box)};
+function anchorRow(onTap){const r=h('div',{class:'anchors'});const els=ANCH.map(a=>{const b=h('button',{class:'anchor'},h('div',{class:'e'},a.e),h('div',{class:'v'},a.v),h('div',{class:'w',html:markV(a.w)}));b.onclick=()=>onTap(a,b,els);r.append(b);return b});return r}
+function anchorsPart(box){box.append(teacher('<i>A? — Cat. Egg? — E.</i> Ты называешь букву — она слово-якорь, и наоборот. Нажатие на карточку произносит слово.'),h('div',{class:'panel'},anchorRow(a=>say(a.w))))}
+function vListen(box){
+  const seq=['bag','bug','big','beg','bog','hut','hat','hot','hit','pen','pin','pan','pun','sit','set','sat','cup','cap','cop'];
+  let i=0,ok=0,lock=false;const prog=h('span',{class:'progress'});const word=h('div',{class:'current'},'?');
+  const row=anchorRow((a,b,els)=>{if(lock||i>=seq.length)return;lock=true;const w=seq[i];const v=w.match(VOW)[0];if(a.v===v){ok++;b.classList.add('good')}else{b.classList.add('bad');els[ANCH.findIndex(x=>x.v===v)].classList.add('good')}word.innerHTML=markV(w);setTimeout(()=>{els.forEach(e=>e.className='anchor');i++;next()},1200)});
+  function next(){lock=false;if(i>=seq.length){R.l7listen={ok,total:seq.length};saveR();prog.textContent=`Готово: ${ok} из ${seq.length}`;word.textContent='✓';return}prog.textContent=`${i+1} из ${seq.length} · верно ${ok}`;word.textContent='?';setTimeout(()=>say(seq[i]),200)}
+  box.append(teacher('Звучит слово — она нажимает якорь с той же гласной. После ответа слово появляется на экране.'),h('div',{class:'panel'},h('div',{class:'row'},h('button',{class:'btn big',onclick:()=>i<seq.length&&say(seq[i])},'🔊 Ещё раз'),prog),word,row));next()}
+function vGrid(box){
+  const F=[['b','g','aeiou'],['b','t','aeiou'],['h','t','aiou'],['p','n','aeiu'],['b','d','aeiu'],['h','m','aeiu'],['p','ck','aeiu'],['c','p','aou']];
+  let fi=0;const p=h('div',{class:'panel'});const tabs=h('div',{class:'tabs'});const area=h('div');
+  F.forEach((f,i)=>tabs.append(h('button',{class:'tab'+(i?'':' on'),onclick:e=>{tabs.querySelectorAll('.tab').forEach(x=>x.className='tab');e.currentTarget.className='tab on';fi=i;draw()}},`${f[0]}_${f[1]}`)));
+  function draw(){const[a,z,ok]=F[fi];area.innerHTML='';const slot=h('span',{class:'slot'},' ');const frame=h('div',{class:'frame'},a,slot,z);const found=h('div',{class:'found'});const note=h('div',{class:'note'},`Слов в этой рамке: ${ok.length}`);const got=new Set();
+    const btns=h('div',{class:'vbtns'});'aeiou'.split('').forEach(v=>{const b=h('button',{class:'vbtn'},v);b.onclick=()=>{slot.textContent=v;if(ok.includes(v)){b.classList.add('used');const w=a+v+z;say(w);if(!got.has(v)){got.add(v);found.append(h('span',{html:markV(w)}))}note.textContent=got.size===ok.length?`Все ${ok.length}! Следующая рамка.`:`Найдено ${got.size} из ${ok.length}`}else{b.classList.add('no');note.textContent=`${a}${v}${z} — такого слова нет`}};btns.append(b)});
+    area.append(frame,btns,found,note)}
+  box.append(teacher('<i>B_g. Put a — bag. Put e — beg. Now you, all five.</i> Ты вставляешь гласную, она читает. Потом она сама прогоняет рамку через все гласные, которые дают слово.'),p);p.append(tabs,area);draw()}
+function vLadders(box){box.append(teacher('Тот же формат, что на уровне 6, только меняются гласные. Третья лесенка смешанная и выходит на with — мостик к тексту.'),ladders([
+  ['bag','beg','big','bog','bug','bun','ban','bin','pin','pen','pan','pat','pet','pit','pot'],
+  ['hat','hit','hot','hut','hum','him','ham','hem'],
+  ['cup','cap','cat','cot','cut','hut','hit','sit','set','wet','wit','with']],'l7lad'))}
+function vMissing(box){
+  const M=[['🛏️','b_d','bed'],['🐷','p_g','pig'],['🐶','d_g','dog'],['🐱','c_t','cat'],['🚌','b_s','bus'],['🐔','h_n','hen'],['☕','c_p','cup'],['🐟','f_sh','fish'],['🦆','d_ck','duck'],['🦵','l_g','leg']];
+  let i=0,err=0;const p=h('div',{class:'panel'});const area=h('div');const prog=h('span',{class:'progress'});
+  function draw(){area.innerHTML='';if(i>=M.length){R.l7miss={err};saveR();prog.textContent=`Готово · ошибок ${err}`;area.append(h('div',{class:'current'},'✓'));return}prog.textContent=`${i+1} из ${M.length} · ошибок ${err}`;const[e,f,w]=M[i];const[a,z]=f.split('_');const slot=h('span',{class:'slot'},' ');
+    const note=h('div',{class:'note'});const btns=h('div',{class:'vbtns'});'aeiou'.split('').forEach(v=>btns.append(h('button',{class:'vbtn',onclick:ev=>{slot.textContent=v;if(a+v+z===w){ev.currentTarget.classList.add('used');say(w);note.textContent='Читаем слово целиком';setTimeout(()=>{i++;draw()},1300)}else{err++;ev.currentTarget.classList.add('no');note.textContent='Посмотри на якорь';prog.textContent=`${i+1} из ${M.length} · ошибок ${err}`}}},v)));
+    area.append(h('div',{class:'pic'},e),h('div',{class:'frame',html:''},a.replace(DG,'$1'),slot,z),btns,note,h('div',{class:'gap'}),anchorRow(x=>say(x.w)))}
+  box.append(teacher('<i>What is it? Bed. Which vowel? E. Read the word.</i>'),p);p.append(h('div',{class:'row'},prog,h('button',{class:'btn ghost',onclick:()=>{i=0;err=0;draw()}},'Сначала')),area);draw()}
+
+/* ---------- 8: диктант ---------- */
+BUILD[8]=()=>{
+  app.append(teacher('Она пишет в чат или на листке и показывает в камеру. <i>I say, you write — only the first sound. Thin.</i> … <i>Now only the vowel. Big.</i><br>🔊 — проиграть слово (можно говорить самой). 👁 — открыть ответ после того, как она написала.'));
+  const parts=[['Начало слова — пиши только th, t, s или w',[['thin','th'],['win','w'],['sick','s'],['ten','t'],['that','th'],['wet','w'],['sat','s'],['them','th']]],
+    ['Конец слова — пиши только последний звук',[['bath','th'],['bat','t'],['with','th'],['mass','ss']]],
+    ['Гласная — пиши одну букву',[['big','i'],['bug','u'],['hot','o'],['hat','a'],['pen','e'],['pin','i'],['cup','u'],['bed','e']]]];
+  parts.forEach(([t,list])=>{const g=h('div',{class:'dict'});list.forEach(([w,a],i)=>{const ans=h('div',{class:'ans'},'');g.append(h('div',{class:'ditem'},h('span',{class:'n'},i+1),h('button',{class:'ico',title:'Проиграть',onclick:()=>say(w)},'🔊'),h('button',{class:'ico',title:'Ответ',onclick:()=>{ans.innerHTML=ans.innerHTML?'':`<span class="${/[aeiou]/.test(a)&&a.length===1?'vw':'dg'}">${a}</span> <small style="color:var(--muted);font-size:18px">${w}</small>`}},'👁'),ans))});
+    app.append(h('div',{class:'panel'},h('div',{class:'lvlsub',style:'margin-bottom:10px;font-weight:700'},t),g),h('div',{class:'gap'}))})};
+
+/* ---------- 9: поймай ошибку ---------- */
+BUILD[9]=()=>{
+  app.append(teacher('Голос читает слово: иногда верно, иногда с ошибкой (4 ошибки из 8). Она решает «верно» или «ошибка», показывает на рамку рта или якорь и читает правильно.<br>Можешь выключить голос и читать сама: thin → «tin», with → «wis», wet → «вэт», bug → «bag».'));
+  const C=[['thin','tin'],['with','wiss'],['wet','vet'],['sit',null],['bath',null],['win',null],['bug','bag'],['pen',null]];
+  const p=h('div',{class:'panel'});const g=h('div',{class:'catch'});let score=0,done=0;const prog=h('span',{class:'progress'},'Поймано 0 из 8');
+  C.forEach(([w,wrong])=>{const card=h('div',{class:'citem'});const res=h('div',{class:'small'},'');let answered=false;
+    const ans=isErr=>{if(answered)return;answered=true;done++;const right=isErr===!!wrong;if(right)score++;card.classList.add(right?'good':'bad');res.textContent=wrong?`Учитель сказал «${wrong}». Правильно: ${w}`:`Учитель сказал верно: ${w}`;prog.textContent=`Поймано ${score} из ${done}`;if(done===C.length){R.l9={ok:score,total:C.length};saveR()}};
+    card.append(h('div',{class:'word',html:markDg(w)}),h('div',{class:'row'},h('button',{class:'ico',onclick:()=>say(wrong||w)},'🔊'),h('button',{class:'btn ghost',onclick:()=>ans(false)},'Верно'),h('button',{class:'btn red',onclick:()=>ans(true)},'Ошибка')),res);g.append(card)});
+  p.append(prog,h('div',{class:'gap'}),g);app.append(p)};
+
+/* ---------- 11: текст ---------- */
+BUILD[11]=()=>{
+  app.append(teacher(`<i>Eight lines. Line one, finger.</i> Порядок: строка пальцем → вопрос по картинке (синим под строкой) → следующая → весь текст на время → второй заход → строки по памяти.<br>Seth и Beth — имена, с большой буквы, th в конце, как в bath. Споткнулась на th — рамка рта (уровень 3), на гласной — якорь. Голосом не поправлять.`));
+  const p=h('div',{class:'panel'});const tabs=h('div',{class:'tabs'});const area=h('div');
+  const modes=[['По строке',lineMode],['На время',timeMode],['По памяти',memMode],['Вопросы',qMode]];
+  modes.forEach(([t,f],i)=>tabs.append(h('button',{class:'tab'+(i?'':' on'),onclick:e=>{tabs.querySelectorAll('.tab').forEach(x=>x.className='tab');e.currentTarget.className='tab on';area.innerHTML='';f()}},t)));
+  const lineEl=(l,cls,showQ)=>h('div',{class:'tl '+cls},h('div',{class:'p'},l.p),h('div',{style:'min-width:0'},h('div',{class:'t',html:markDg(l.t)}),showQ?h('div',{class:'q'},l.q):null));
+  function lineMode(){let k=0;const list=h('div',{class:'textlines'});const draw=()=>{list.innerHTML='';TEXT.forEach((l,i)=>{if(i<=k)list.append(lineEl(l,i===k?'cur':'',i===k&&teacherOn))})};
+    area.append(h('div',{class:'row'},h('button',{class:'btn big',onclick:()=>{if(k<TEXT.length-1){k++;draw()}}},'Следующая строка'),h('button',{class:'btn ghost',onclick:()=>{k=0;draw()}},'Сначала')),h('div',{class:'gap'}),list);draw()}
+  function timeMode(){const list=h('div',{class:'textlines'});TEXT.forEach(l=>list.append(lineEl(l,'',false)));
+    const res=h('div',{class:'row'});const draw=()=>{res.innerHTML='';const a=R.l11||{};[['1-й заход',a.t1],['2-й заход',a.t2]].forEach(([n,v])=>res.append(h('div',{class:'stat'},h('small',{},n),h('b',{},v?v+' с':'—'))))};
+    let which=(R.l11&&R.l11.t1)?2:1;const lab=h('span',{class:'progress'});const setLab=()=>lab.textContent=`Сейчас: ${which}-й заход · ${TEXTWORDS} слов`;
+    const T=makeTimer(t=>{R.l11=R.l11||{};R.l11['t'+which]=t;saveR();draw();which=which===1?2:1;setLab()});
+    area.append(h('div',{class:'row'},T.el,h('button',{class:'btn big',onclick:()=>T.running?T.stop():(T.reset(),T.start())},'Старт / стоп'),h('button',{class:'btn ghost',onclick:()=>{which=1;setLab()}},'Это 1-й заход'),h('button',{class:'btn ghost',onclick:()=>{which=2;setLab()}},'Это 2-й заход'),lab),res,h('div',{class:'gap'}),list);setLab();draw()}
+  function memMode(){const list=h('div',{class:'textlines'});TEXT.forEach(l=>{const el=lineEl(l,'hid',false);el.style.cursor='pointer';el.onclick=()=>el.classList.toggle('hid');list.append(el)});
+    area.append(teacher('Текст закрыт. Ты показываешь на картинку — она говорит строку. Нажатие на строку открывает её для проверки. Потом наоборот: она говорит строку — ты показываешь картинку.'),list)}
+  function qMode(){const Q=[['Is the cat thin?','Yes'],['Is Seth in the bath?','No'],['Is the cat sad?','Yes'],['Has the cat got the fish?','Yes']];const g=h('div',{class:'qa'});
+    Q.forEach(([q,a])=>{const ans=h('span',{style:'color:var(--ok);margin-left:8px'});g.append(h('div',{},h('button',{onclick:()=>{say(q);ans.textContent=ans.textContent?'':a}},q),ans))});
+    area.append(teacher('После второго захода. Нажатие на вопрос — голос и ответ. Потом она задаёт тебе два вопроса.'),g)}
+  p.append(tabs,area);app.append(p);lineMode()};
+
+/* ---------- 12: цифра дня ---------- */
+BUILD[12]=()=>{
+  app.append(teacher(`<i>Fifty words. The longest text. … That's today.</i> Говоришь цифры, а не похвалу.`));
+  const g=h('div',{class:'results'});const card=(lab,val,sub)=>g.append(h('div',{class:'res'},h('small',{},lab),h('b',{},val),sub?h('span',{},sub):null));
+  const l1=R.l1||{},rec1=store.get('rec_l1',null);card('Столбик старых слов',l1.time!=null?l1.time+' с':'—',rec1?`рекорд ${rec1} с`:'');
+  card('На слух',R.l2?`${R.l2.ok} / ${R.l2.total}`:'—','thin · tin · sin · win');
+  card('Сортировка',R.l5?`${R.l5.err} ош.`:'—','th · t · s · w');
+  card('Гласные на слух',R.l7listen?`${R.l7listen.ok} / ${R.l7listen.total}`:'—','');
+  card('Поймала ошибку',R.l9?`${R.l9.ok} / ${R.l9.total}`:'—','');
+  const l10=R.l10||{};card('Смешанный столбик',l10.time!=null?l10.time+' с':'—',`th/w/s/t: ${l10.e1??'—'} ош. · гласные: ${l10.e2??'—'} ош.`);
+  const t=R.l11||{};const best=Math.min(...[t.t1,t.t2].filter(Boolean));
+  card('Текст',`${TEXTWORDS} слов`,`${t.t1?t.t1+' с':'—'} → ${t.t2?t.t2+' с':'—'}${isFinite(best)?` · ${Math.round(TEXTWORDS/best*60)} слов в минуту`:''}`);
+  const hist=[['урок 6',24],['урок 7',34],['урок 8',38],['сегодня',TEXTWORDS]];const mx=TEXTWORDS;
+  const bars=h('div',{class:'bars'});hist.forEach(([n,v],i)=>{const b=h('div',{class:'bar'+(i===hist.length-1?' now':'')},h('b',{},v),h('i',{style:`height:${Math.round(v/mx*120)}px`}),h('small',{},n));bars.append(b)});
+  app.append(h('div',{class:'panel'},g),h('div',{class:'gap'}),h('div',{class:'panel'},h('div',{class:'lvlsub',style:'font-weight:700'},'Слов в тексте'),bars))};
+
+/* ---------- 13: бонус ---------- */
+BUILD[13]=()=>{
+  app.append(teacher('Резерв, если осталось время. Скороговорки: медленно, потом быстро. Девятая строка: она сама дописывает из слов на доске, ты записываешь, она читает.'));
+  const F=['Tim and Sam sit with ten thin cats.','Beth sets the wet dish on the mat.','Seth has a thick sock and a thin sock.','Is it a bag, a bug or a big bog?'];
+  const list=h('div',{class:'textlines'});F.forEach(f=>list.append(h('div',{class:'tl'},h('button',{class:'ico',onclick:()=>say(f,.75)},'🔊'),h('div',{class:'t',html:markDg(f)}))));
+  const ninth=h('div',{class:'textlines'},h('div',{class:'tl'},h('div',{class:'p'},'✏️'),h('div',{class:'t'},'The cat is ___.')),h('div',{class:'tl'},h('div',{class:'p'},'✏️'),h('div',{class:'t'},'Beth has a ___.')));
+  const fours=h('div',{class:'speedgrid'});['pat','pet','pit','pot','bad','bed','bid','bud'].forEach(w=>fours.append(h('button',{class:'sw',html:markV(w),onclick:()=>say(w)})));
+  app.append(h('div',{class:'panel'},h('div',{class:'lvlsub',style:'font-weight:700'},'Скороговорки'),list),h('div',{class:'gap'}),
+    h('div',{class:'panel'},h('div',{class:'lvlsub',style:'font-weight:700'},'Девятая строка — сама'),ninth),h('div',{class:'gap'}),
+    h('div',{class:'panel'},h('div',{class:'lvlsub',style:'font-weight:700'},'Четвёрки на скорость'),fours,h('p',{class:'legend'},'Обратная лесенка: назови tin и wish — она сама строит шаги между ними.')))};
+
+/* ---------- кнопки сверху ---------- */
+const tb=$('#tts'),tc=$('#tch');
+const syncTools=()=>{tb.className='tool'+(ttsOn?' on':'');tb.textContent=ttsOn?'🔊 голос':'🔇 голос';tc.className='tool'+(teacherOn?' on':'');document.querySelectorAll('.teacher').forEach(t=>t.hidden=!teacherOn)};
+tb.onclick=()=>{ttsOn=!ttsOn;store.set('tts',ttsOn);syncTools()};
+tc.onclick=()=>{teacherOn=!teacherOn;store.set('teacher',teacherOn);syncTools()};
+document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea'))return;if(e.key==='ArrowRight'&&e.altKey)go(cur+1);if(e.key==='ArrowLeft'&&e.altKey)go(cur-1)});
+syncTools();go(cur);
+})();
+</script>
+
+</body></html>
