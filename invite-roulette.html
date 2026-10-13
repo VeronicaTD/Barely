@@ -569,7 +569,7 @@ function teacherOK(){
 
 /* ================= AI (Gemini) ================= */
 // ▼▼▼ Адрес функции в Supabase (вставить свой). Пусто = ключ вводится вручную в браузере.
-const AI_PROXY = "";   // пример: "https://abcdefgh.supabase.co/functions/v1/gemini"
+const AI_PROXY = "https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";   // пример: "https://abcdefgh.supabase.co/functions/v1/gemini"
 const AI = { model:"gemini-2.5-flash-lite", key:"", on:false, hist:[], fails:0 };
 AI.on=true; try{ AI.key = localStorage.getItem("ir_gemini_key")||""; AI.on = localStorage.getItem("ir_ai_on")!=="0"; }catch(e){}
 (function(){ const m=location.hash.match(/key=([\w-]+)/); if(m){ AI.key=m[1]; AI.on=true;
