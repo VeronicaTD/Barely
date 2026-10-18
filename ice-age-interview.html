@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ice Age Interview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#13222e; --ice:#dff1fb; --ice2:#b9def2; --paper:#f7fbfe; --ink:#1b2a36; --mute:#5f7383;
+  --tv:#d6452f; --ochre:#d9822b; --ok:#2f8a4c; --gold:#f2b632; --line:#d3e4ee;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:Rubik,system-ui,sans-serif;color:var(--ink);min-height:100vh;padding:12px 12px 40px;
+  background:radial-gradient(ellipse at 20% 0%,#2a4a60,transparent 60%),radial-gradient(ellipse at 100% 100%,#1d3a4c,transparent 55%),var(--bg)}
+.wrap{max-width:720px;margin:0 auto}
+header{display:flex;align-items:center;gap:12px;color:#fff;margin-bottom:10px}
+header .logo{background:var(--tv);border-radius:10px;padding:6px 9px;font-weight:800;font-size:13px;letter-spacing:.08em;flex:none}
+header .logo i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;margin-right:5px;animation:bl 1.2s infinite}
+@keyframes bl{50%{opacity:.2}}
+header h1{margin:0;font-family:Caveat,cursive;font-size:32px;line-height:1}
+header p{margin:2px 0 0;font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.12em}
+.card{background:var(--paper);border-radius:18px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+h2{margin:0 0 4px;font-size:20px}
+.lead{margin:0 0 10px;color:var(--mute);font-size:14px;line-height:1.4}
+.btn{font:inherit;font-weight:800;border:0;border-radius:12px;padding:12px 18px;cursor:pointer;background:var(--tv);color:#fff;box-shadow:0 4px 0 #94301f;font-size:16px}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #94301f}
+.btn.alt{background:#fff;color:var(--ink);box-shadow:0 4px 0 var(--line);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.center{justify-content:center;text-align:center}
+.hidden{display:none!important}
+.role{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.role div{background:var(--ice);border-radius:14px;padding:10px;text-align:center;font-weight:700;font-size:14px}
+.role b{display:block;font-size:34px;margin-bottom:4px}
+.phr{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.phr span{border:2px dashed var(--line);border-radius:999px;padding:4px 10px;font-weight:800;font-size:13px;color:var(--mute);transition:.3s}
+.phr span.ai{border-style:solid;border-color:var(--ice2);color:var(--ink);background:var(--ice)}
+.phr span.me{border-style:solid;border-color:var(--gold);background:#fff4cf;color:#6b4b00}
+.phr .lab{border:0;padding:4px 0}
+.cards{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.cards span{background:#fff4cf;border:1px solid #edd283;border-radius:10px;padding:5px 9px;font-weight:700;font-size:14px}
+.chat{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px;max-height:46vh;overflow-y:auto;padding-right:2px}
+.b{padding:9px 12px;border-radius:14px;max-width:88%;font-size:15px;line-height:1.4}
+.b.rep{align-self:flex-start;background:var(--ice);border-bottom-left-radius:4px}
+.b.rep .who{display:block;font-size:11px;font-weight:800;color:var(--tv);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.b.rep .better{display:block;margin-top:6px;font-weight:800;color:var(--ok)}
+.b.rep .tip{display:block;font-size:13px;color:var(--mute);margin-top:2px}
+.b.rep .qq{display:block;margin-top:6px;font-weight:800}
+.b.me{align-self:flex-end;background:#3b6e8f;color:#fff;border-bottom-right-radius:4px}
+.b.wait{color:var(--mute);font-style:italic}
+textarea{width:100%;font:inherit;font-size:16px;border:2px solid var(--line);border-radius:12px;padding:10px;min-height:64px;resize:vertical;background:#fff}
+textarea:focus{outline:none;border-color:#3b6e8f}
+.mic{width:52px;height:52px;border-radius:50%;padding:0;font-size:22px;flex:none;background:#3b6e8f;box-shadow:0 4px 0 #25495f}
+.mic.rec{background:var(--tv);box-shadow:0 4px 0 #94301f;animation:pu 1s infinite}
+@keyframes pu{50%{transform:scale(1.07)}}
+.qcount{font-weight:800;font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+.icons{font-size:40px;text-align:center;letter-spacing:6px;margin:10px 0}
+.mine{list-style:none;padding:0;margin:10px 0}
+.mine li{display:flex;gap:10px;align-items:center;background:var(--ice);border-radius:12px;padding:9px 12px;margin-bottom:6px;font-weight:700;font-size:15px}
+.mine li b{font-size:24px;flex:none;width:30px;text-align:center}
+.mine.hide li span{visibility:hidden}
+.stars{text-align:center;font-weight:800;color:#6b4b00;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="logo"><i></i>LIVE</div><div><h1>Ice Age Interview</h1><p>Europe · 35,000 years ago</p></div></header>
+
+  <!-- START -->
+  <section class="card" id="start">
+    <h2>A reporter from 2026 is here!</h2>
+    <p class="lead">Ты один из первых людей, кто пришёл в Европу 35 000 лет назад. Репортёр из будущего задаст тебе 6 вопросов. Отвечай одним предложением, слова-подсказки будут под каждым вопросом.</p>
+    <div class="role"><div><b>🎤</b>Reporter<br>from 2026</div><div><b>🧔‍♀️</b>You: one of the first<br>people in Europe</div></div>
+    <div class="row center"><button class="btn" onclick="begin()">Start the interview ▶</button></div>
+  </section>
+
+  <!-- INTERVIEW -->
+  <section class="card hidden" id="iv">
+    <div class="phr" id="phr"></div>
+    <div class="cards" id="cards"></div>
+    <div class="qcount" id="qcount"></div>
+    <div class="chat" id="chat"></div>
+    <textarea id="ans" placeholder="Answer the reporter…"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn mic" id="micBtn" title="Speak">🎤</button>
+      <button class="btn" id="sendBtn" onclick="send()">Send</button>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section class="card hidden" id="fin">
+    <h2 class="center" style="display:block">Describe your new home!</h2>
+    <p class="lead center" id="finLead">Вот твои ответы. Прочитай их вслух один раз.</p>
+    <ul class="mine" id="mine"></ul>
+    <div class="row center" id="hideRow"><button class="btn" onclick="hideMine()">Hide the sentences 🙈</button></div>
+    <div class="stars" id="stars"></div>
+    <div class="row center hidden" id="againRow"><button class="btn alt" onclick="toggleMine()">Peek 👀</button><button class="btn alt" onclick="location.reload()">Play again ↺</button></div>
+  </section>
+</div>
+
+<script>
+const AI_PROXY="https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";
+const $=s=>document.querySelector(s);
+const PHRASES=["To be honest","The thing is","I'd say"];
+const QS=[
+ {q:"Hello and welcome to Europe! Where did you come from?",k:["Africa","Asia","walk"],i:"👣",m:"I came from Africa. I walked through Asia."},
+ {q:"What's the weather like here?",k:["cold","ice","the Ice Age"],i:"❄️",m:"It's very cold here. It's the Ice Age."},
+ {q:"What do you eat?",k:["mammoths","woolly rhinoceroses","plenty of food"],i:"🦣",m:"We eat mammoths and woolly rhinoceroses. There is plenty of food."},
+ {q:"How do you get your food?",k:["hunt","together"],i:"🏹",m:"We hunt huge animals together."},
+ {q:"Who are your neighbours?",k:["Neanderthals","bigger","stronger"],i:"👥",m:"Our neighbours are the Neanderthals. They are bigger and stronger than us."},
+ {q:"Do you like your new home? Why?",k:["cold","but","food"],i:"🏠",m:"Yes, I do. It's cold, but there is plenty of food."}
+];
+let qi=0,mine=[],aiUsed=new Set(),meUsed=new Set(),busy=false,aiOk=true;
+
+const SYS=`You are a friendly TV reporter from the year 2026 who travelled back in time 35,000 years to Europe in the Ice Age.
+You interview a student who plays one of the first modern humans to arrive in Europe. The student is a Russian teenager, English level A2.
+You will get your question and the student's answer. You do NOT ask new questions.
+Reply ONLY with JSON:
+{"reaction": "a short friendly reaction to the answer (max 12 words, easy A2 words). In about every second reply start with 'To be honest,' or 'The thing is,' or 'I'd say'",
+ "better": "the student's answer as ONE correct, simple English sentence that keeps her meaning (present tense about her life now; past tense only for the journey); empty string if it was already correct",
+ "tip_ru": "empty, or a very short note in Russian about the main mistake (max 8 words)"}`;
+
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.92;
+  const v=speechSynthesis.getVoices().find(v=>/en-GB/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}}
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function bubble(cls,html){const b=document.createElement("div");b.className="b "+cls;b.innerHTML=html;const c=$("#chat");c.appendChild(b);c.scrollTop=c.scrollHeight;return b;}
+function renderPhr(){$("#phr").innerHTML=`<span class="lab">⭐ Phrases:</span>`+PHRASES.map(p=>`<span class="${meUsed.has(p)?"me":aiUsed.has(p)?"ai":""}">${p}…</span>`).join("");}
+function markPhr(text,set){const t=(text||"").toLowerCase().replace(/[’']/g,"'");PHRASES.forEach(p=>{if(t.includes(p.toLowerCase()))set.add(p);});renderPhr();}
+
+function begin(){
+  $("#start").classList.add("hidden");$("#iv").classList.remove("hidden");renderPhr();qi=0;ask();
+}
+function ask(){
+  const Q=QS[qi];
+  $("#qcount").textContent=`Question ${qi+1} of ${QS.length}`;
+  $("#cards").innerHTML=`<span style="background:none;border:0">${Q.i}</span>`+Q.k.map(k=>`<span>${k}</span>`).join("");
+  bubble("rep",`<span class="who">🎤 Reporter</span><span class="qq">${esc(Q.q)}</span>`);speak(Q.q);
+  busy=false;$("#sendBtn").disabled=false;$("#ans").focus({preventScroll:true});
+}
+async function callAI(q,a){
+  const r=await fetch(AI_PROXY+"?forceFunctionRegion=us-east-1",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({systemInstruction:{parts:[{text:SYS}]},contents:[{role:"user",parts:[{text:`Reporter's question: ${q}\nStudent's answer: ${a}`}]}],
+      generationConfig:{responseMimeType:"application/json",temperature:.7}})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);
+  return JSON.parse(j.candidates[0].content.parts[0].text);
+}
+async function send(){
+  const t=$("#ans").value.trim();if(!t||busy)return;busy=true;$("#sendBtn").disabled=true;
+  const Q=QS[qi];bubble("me",esc(t));$("#ans").value="";markPhr(t,meUsed);
+  const w=bubble("rep wait","🎤 …");
+  let res;
+  try{if(!aiOk)throw 0;res=await callAI(Q.q,t);}
+  catch(e){aiOk=false;res={reaction:["I see!","Interesting!","Wow!","Really?"][qi%4],better:"",tip_ru:""};}
+  markPhr(res.reaction,aiUsed);
+  w.className="b rep";
+  w.innerHTML=`<span class="who">🎤 Reporter</span>${esc(res.reaction)}`+
+    (res.better?`<span class="better">✔ ${esc(res.better)}</span>`:"")+(res.tip_ru?`<span class="tip">${esc(res.tip_ru)}</span>`:"")+
+    (!aiOk?`<span class="tip">Example: ${esc(Q.m)}</span>`:"");
+  $("#chat").scrollTop=$("#chat").scrollHeight;
+  mine.push({i:Q.i,s:res.better||(aiOk?t:Q.m)});
+  speak(res.reaction);
+  qi++;
+  if(qi<QS.length)setTimeout(ask,1800);
+  else setTimeout(finish,2600);
+}
+function finish(){
+  $("#iv").classList.add("hidden");$("#fin").classList.remove("hidden");
+  $("#mine").innerHTML=mine.map(m=>`<li><b>${m.i}</b><span>${esc(m.s)}</span></li>`).join("");
+}
+function hideMine(){
+  $("#mine").classList.add("hide");$("#hideRow").classList.add("hidden");$("#againRow").classList.remove("hidden");
+  $("#finLead").textContent="А теперь расскажи учителю про свой новый дом по иконкам. Начни: I'm one of the first people in Europe…";
+  $("#stars").textContent=meUsed.size?`⭐ You used: ${[...meUsed].join(", ")}`:"⭐ Try to use: The thing is… / To be honest… / I'd say…";
+}
+function toggleMine(){$("#mine").classList.toggle("hide");}
+
+(function(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const b=$("#micBtn");
+  if(!SR){b.classList.add("hidden");return;}
+  let rec=null;
+  b.onclick=()=>{
+    if(rec){rec.stop();return;}
+    rec=new SR();rec.lang="en-GB";rec.interimResults=false;rec.maxAlternatives=1;b.classList.add("rec");
+    rec.onresult=e=>{const t=e.results[0][0].transcript;const a=$("#ans");a.value=(a.value?a.value+" ":"")+t;};
+    rec.onerror=()=>{};rec.onend=()=>{b.classList.remove("rec");rec=null;};
+    try{rec.start();}catch(e){b.classList.remove("rec");rec=null;}
+  };
+})();
+speechSynthesis&&speechSynthesis.getVoices();
+</script>
+</body>
+</html>
