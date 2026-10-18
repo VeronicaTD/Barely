@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Families: Britain vs Russia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#2f7fd1; --sky2:#5aa7ef; --brick:#a4553a; --brick2:#c9714f; --cream:#fdf8ec; --paper:#fffdf6;
+  --ink:#24323f; --mute:#6b7785; --ok:#2e9d62; --bad:#d6493b; --gold:#f2b632; --line:#e6dcc4;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:Nunito,system-ui,sans-serif;color:var(--ink);background:
+  repeating-linear-gradient(0deg,transparent 0 22px,rgba(0,0,0,.05) 22px 24px),
+  repeating-linear-gradient(90deg,transparent 0 46px,rgba(0,0,0,.04) 46px 48px),
+  linear-gradient(160deg,#b8613f,#8f4630);min-height:100vh;padding:14px 12px 40px}
+.wrap{max-width:720px;margin:0 auto}
+header{background:linear-gradient(90deg,var(--sky),var(--sky2));color:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 0 #1d5a99}
+header .num{background:#174f8a;font-family:Fraunces,serif;font-weight:800;font-size:30px;width:46px;height:46px;border-radius:10px;display:grid;place-items:center;flex:none}
+header h1{margin:0;font-family:Fraunces,serif;font-size:24px;line-height:1.1}
+header p{margin:2px 0 0;font-size:13px;opacity:.9}
+.steps{display:flex;gap:6px;margin:14px 0}
+.steps span{flex:1;height:8px;border-radius:9px;background:rgba(255,255,255,.3)}
+.steps span.on{background:var(--gold)}
+.card{background:var(--paper);border-radius:18px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+h2{font-family:Fraunces,serif;margin:0 0 4px;font-size:22px}
+.lead{color:var(--mute);margin:0 0 12px;font-size:14px}
+.btn{font:inherit;font-weight:800;border:0;border-radius:12px;padding:12px 18px;cursor:pointer;background:var(--sky);color:#fff;box-shadow:0 4px 0 #1d5a99;font-size:16px}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #1d5a99}
+.btn.alt{background:#fff;color:var(--ink);box-shadow:0 4px 0 var(--line);border:2px solid var(--line)}
+.btn.gold{background:var(--gold);color:#3b2a00;box-shadow:0 4px 0 #b9851a}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hidden{display:none!important}
+
+/* ROUND 2 */
+.qnum{font-weight:800;color:var(--sky);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.q{font-family:Fraunces,serif;font-size:21px;margin:4px 0 10px;line-height:1.25}
+.uk{background:#e7f2fd;border-left:5px solid var(--sky);border-radius:10px;padding:10px 12px;font-size:15px;margin-bottom:10px}
+.uk small{display:block;font-weight:800;color:var(--sky);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.keys{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.keys span{background:#fff3d6;border:1px solid #f0d58a;border-radius:8px;padding:4px 9px;font-weight:700;font-size:14px}
+.keys .lab{background:none;border:0;padding:4px 0;color:var(--mute);font-weight:800}
+textarea{width:100%;font:inherit;font-size:16px;border:2px solid var(--line);border-radius:12px;padding:10px;min-height:70px;resize:vertical;background:#fff}
+textarea:focus{outline:none;border-color:var(--sky)}
+.mic{width:52px;height:52px;border-radius:50%;padding:0;font-size:22px;flex:none}
+.mic.rec{background:var(--bad);box-shadow:0 4px 0 #9c2e24;animation:pu 1s infinite}
+@keyframes pu{50%{transform:scale(1.07)}}
+.chat{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.b{padding:9px 12px;border-radius:14px;max-width:90%;font-size:15px;line-height:1.35}
+.b.me{align-self:flex-end;background:var(--sky);color:#fff;border-bottom-right-radius:4px}
+.b.ai{align-self:flex-start;background:var(--cream);border:1px solid var(--line);border-bottom-left-radius:4px}
+.b.ai .better{display:block;margin-top:6px;font-weight:800;color:var(--ok)}
+.b.ai .fu{display:block;margin-top:6px;font-weight:800;color:var(--sky)}
+.b.wait{color:var(--mute);font-style:italic}
+.model{margin-top:6px;font-size:14px;color:var(--mute)}
+.model b{color:var(--ink)}
+
+/* FINAL */
+.fcard{background:#e7f2fd;border-left:6px solid var(--sky);border-radius:14px;padding:18px 16px;font-size:19px;font-weight:800;line-height:1.35;min-height:110px;display:flex;align-items:center;margin:12px 0}
+.fstart{font-family:Fraunces,serif;font-size:22px;text-align:center;margin:8px 0 2px}
+.fstart span{color:var(--bad)}
+.fcount{color:var(--mute);font-weight:800;font-size:13px;text-align:center}
+.big{font-size:44px;text-align:center;margin:4px 0}
+.center{text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="num">1</div>
+    <div><h1>Families</h1><p>Culture · Britain vs Russia</p></div>
+  </header>
+  <div class="steps"><span id="s1"></span><span id="s2"></span></div>
+
+  <!-- START -->
+  <section id="start" class="card">
+    <div class="big">🏡🇬🇧🇷🇺</div>
+    <h2 class="center">Britain vs Russia</h2>
+    <p class="lead center">Read the text about John's family first.<br>Then play!</p>
+    <ol style="font-size:15px;line-height:1.5">
+      <li><b>In your country.</b> Answer the questions about families in Russia.</li>
+      <li><b>Britain vs Russia.</b> Compare John's family and a Russian family. No key words!</li>
+    </ol>
+    <div class="row" style="justify-content:center"><button class="btn gold" onclick="startR2()">Start ▶</button></div>
+  </section>
+
+  <!-- ROUND 2 -->
+  <section id="r2" class="card hidden">
+    <div class="qnum" id="qnum"></div>
+    <div class="q" id="q"></div>
+    <div class="uk"><small>🇬🇧 John's family</small><span id="uk"></span></div>
+    <div class="keys" id="keys"></div>
+    <div class="chat" id="chat"></div>
+    <div id="answerBox">
+      <textarea id="ans" placeholder="In Russia…"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn mic" id="micBtn" title="Speak">🎤</button>
+        <button class="btn" id="sendBtn" onclick="send()">Send</button>
+        <button class="btn alt" id="nextBtn" onclick="nextQ()">Next →</button>
+      </div>
+      <div class="model hidden" id="model"></div>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section id="fin" class="card hidden">
+    <h2 class="center">Britain vs Russia</h2>
+    <p class="lead center">Прочитай факт про семью Джона и скажи учителю, как в России. Без подсказок!</p>
+    <div class="fstart">In Britain… <span>but</span> in Russia…</div>
+    <div class="fcount" id="fcount"></div>
+    <div class="fcard" id="fcard"></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn alt" id="fprev" onclick="fmove(-1)">← Back</button>
+      <button class="btn gold" id="fnext" onclick="fmove(1)">Next →</button>
+    </div>
+  </section>
+</div>
+
+<script>
+const AI_PROXY="https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";
+const $=s=>document.querySelector(s);
+
+/* ---------- speech ---------- */
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.92;
+  const v=speechSynthesis.getVoices().find(v=>/en-GB/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}}
+function steps(n){for(let i=1;i<=2;i++)$("#s"+i).classList.toggle("on",i<=n)}
+
+/* ---------- ROUND 2 data ---------- */
+const R2=[
+ {q:"Do people usually live in a house or a flat? Does it have a garden?",uk:"John lives in a house with a garden in a suburb of London.",
+  k:["usually live in a flat / a house","has got / hasn't got a garden","a balcony"],m:"In Russia people usually live in a flat. It hasn't got a garden, but it has got a balcony."},
+ {q:"How many rooms has a typical home got?",uk:"John's house has got three rooms downstairs and three bedrooms and a bathroom upstairs.",
+  k:["has got … rooms","a kitchen","a living room","a bedroom","a bathroom"],m:"A typical flat has got two or three rooms, a kitchen and a bathroom."},
+ {q:"How many children are there in the typical family?",uk:"There are three children: John, his older brother and his older sister.",
+  k:["one / two / three children","there is / there are"],m:"There are usually one or two children in a typical Russian family."},
+ {q:"Have they usually got a pet? What are typical pets?",uk:"John's family has got a cat.",
+  k:["have got a pet","cats","dogs","hamsters","parrots"],m:"Yes, a lot of families have got a pet. Typical pets are cats and dogs."},
+ {q:"When do young people usually leave home?",uk:"John's sister left home when she was twenty-one.",
+  k:["leave home","at 18 / at 22","after school / after university","when they get married"],m:"Young people usually leave home after university or when they get married."},
+ {q:"Do people often move away from their home town?",uk:"John's parents moved to London after university to get jobs.",
+  k:["move to Moscow / St Petersburg","to study","to get a job","often / not often"],m:"Yes, a lot of young people move to big cities to study or to get a job."},
+ {q:"Do wider families (aunts and uncles, grandparents) live near each other?",uk:"John's aunts and uncles live a long way from London. They don't see them very often.",
+  k:["live near / a long way from","in the same town","see them often / at weekends"],m:"Sometimes they live in the same town, and we often see them at weekends."},
+ {q:"Where do old people usually live?",uk:"Nana and Granddad live by the sea. Grandma lives in an old people's home.",
+  k:["at home","with their children","at the dacha in summer","old people's home (not often)"],m:"Old people usually live at home or with their children. In summer they often live at the dacha."}
+];
+let qi=0,turns=0,history=[];
+
+function startR2(){$("#start").classList.add("hidden");$("#r2").classList.remove("hidden");steps(1);qi=0;showQ();}
+function showQ(){
+  const c=R2[qi];turns=0;history=[];
+  $("#qnum").textContent=`Question ${qi+1} of ${R2.length} · In your country`;
+  $("#q").textContent=c.q;$("#uk").textContent=c.uk;
+  $("#keys").innerHTML=`<span class="lab">Key words:</span>`+c.k.map(x=>`<span>${x}</span>`).join("");
+  $("#chat").innerHTML="";$("#ans").value="";$("#ans").placeholder="In Russia…";
+  $("#model").classList.add("hidden");$("#sendBtn").disabled=false;$("#ans").disabled=false;
+  $("#nextBtn").textContent=qi===R2.length-1?"Finish ✓":"Next →";
+}
+function bubble(cls,html){const b=document.createElement("div");b.className="b "+cls;b.innerHTML=html;$("#chat").appendChild(b);b.scrollIntoView({behavior:"smooth",block:"nearest"});return b;}
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const SYS=`You are a kind English teacher for a Russian teenager (level A2). The lesson is about families in Britain and Russia (John's British family from the textbook).
+The student answers a question about families in Russia (or her own family). Reply ONLY with JSON:
+{"ok": true/false (is the answer understandable and on topic),
+ "feedback_ru": "ONE short encouraging sentence in Russian; if there is a mistake, name it simply (e.g. 'Не забудь окончание -s: lives')",
+ "better": "the student's idea as ONE correct, simple English sentence (A2), keep her meaning",
+ "follow_up": "ONE very short, simple follow-up question in English about her answer, or empty string if told no follow-up"}
+Never write long explanations. Never use difficult words.`;
+
+async function callAI(user){
+  const r=await fetch(AI_PROXY+"?forceFunctionRegion=us-east-1",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({systemInstruction:{parts:[{text:SYS}]},contents:[{role:"user",parts:[{text:user}]}],
+      generationConfig:{responseMimeType:"application/json",temperature:.6}})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error?.message||r.status);
+  return JSON.parse(j.candidates[0].content.parts[0].text);
+}
+async function send(){
+  const t=$("#ans").value.trim();if(!t)return;
+  const c=R2[qi];bubble("me",esc(t));history.push("Student: "+t);$("#ans").value="";
+  $("#sendBtn").disabled=true;const w=bubble("ai wait","✍️ …");turns++;
+  const last=turns>=2;
+  try{
+    const res=await callAI(`Question: ${c.q}\nJohn's family (Britain): ${c.uk}\nConversation so far:\n${history.join("\n")}\n${last?"Do NOT ask a follow-up question (follow_up must be empty).":"Ask one follow-up question."}`);
+    w.className="b ai";
+    w.innerHTML=`${esc(res.feedback_ru)}${res.better?`<span class="better">✔ ${esc(res.better)}</span>`:""}${res.follow_up&&!last?`<span class="fu">❓ ${esc(res.follow_up)}</span>`:""}`;
+    if(res.better)speak(res.better);
+    if(res.follow_up&&!last){history.push("Teacher: "+res.follow_up);$("#ans").placeholder="Answer the question…";$("#sendBtn").disabled=false;}
+    else endQ();
+  }catch(e){
+    w.className="b ai";w.innerHTML="Сравни свой ответ с образцом 👇";
+    endQ();
+  }
+}
+function endQ(){
+  const c=R2[qi];$("#sendBtn").disabled=true;
+  const m=$("#model");m.innerHTML=`Example: <b>${esc(c.m)}</b>`;m.classList.remove("hidden");
+}
+function nextQ(){
+  if(qi<R2.length-1){qi++;showQ();}else finish();
+}
+const JOHN=[
+ "John's family lives in a house with a garden in a suburb of London.",
+ "John's house has got three rooms downstairs and three bedrooms and a bathroom upstairs.",
+ "There are three children in John's family.",
+ "John's family has got a cat.",
+ "John's sister left home when she was twenty-one. She shares a flat with two friends.",
+ "John's parents moved to London after university to get jobs.",
+ "John's aunts and uncles live a long way from London. They don't see them very often.",
+ "John's grandparents live by the sea in Cornwall. His grandma lives in an old people's home."
+];
+let fi=0;
+function finish(){
+  $("#r2").classList.add("hidden");$("#fin").classList.remove("hidden");steps(2);fi=0;fshow();
+}
+function fshow(){
+  $("#fcard").textContent="🇬🇧 "+JOHN[fi];$("#fcount").textContent=`${fi+1} / ${JOHN.length}`;
+  $("#fprev").disabled=fi===0;$("#fnext").textContent=fi===JOHN.length-1?"Finish 🎉":"Next →";
+}
+function fmove(d){
+  if(d>0&&fi===JOHN.length-1){$("#fcard").textContent="🎉 Well done!";$("#fcount").textContent="";$("#fnext").classList.add("hidden");$("#fprev").classList.add("hidden");return;}
+  fi=Math.max(0,fi+d);fshow();
+}
+
+/* ---------- mic ---------- */
+(function(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const b=$("#micBtn");
+  if(!SR){b.classList.add("hidden");return;}
+  let rec=null;
+  b.onclick=()=>{
+    if(rec){rec.stop();return;}
+    rec=new SR();rec.lang="en-GB";rec.interimResults=false;rec.maxAlternatives=1;
+    b.classList.add("rec");
+    rec.onresult=e=>{const t=e.results[0][0].transcript;const a=$("#ans");a.value=(a.value?a.value+" ":"")+t;};
+    rec.onerror=()=>{};rec.onend=()=>{b.classList.remove("rec");rec=null;};
+    try{rec.start();}catch(e){b.classList.remove("rec");rec=null;}
+  };
+})();
+speechSynthesis&&speechSynthesis.getVoices();
+</script>
+</body>
+</html>
