@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Do or Does? Obby</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#22180f;--card:#f6efe2;--gold:#ffd23f;--grass:#5fae3a;--grass-d:#3f7d24;--dirt:#8a5a35;--dirt-d:#6b4325;
+  --lava:#ff6a1a;--lava2:#ffb21a;--blue:#3b82f6;--green:#3fb950;--purple:#8b5cf6;--pink:#ec4899}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;color:var(--ink);min-height:100vh;overflow-x:hidden;
+  background:linear-gradient(#6ec6ff,#b6e3ff 60%,#ffe2b8)}
+.hidden{display:none!important}
+.pixel{font-family:'Press Start 2P',monospace}
+.wrap{max-width:900px;margin:0 auto;padding:14px 16px 30px}
+h1{font-family:'Press Start 2P';text-align:center;color:#fff;font-size:clamp(18px,4.4vw,32px);
+  text-shadow:3px 3px 0 var(--ink),6px 6px 0 rgba(0,0,0,.2);margin:6px 0 12px}
+.btn{font-family:'Nunito';font-weight:900;font-size:17px;cursor:pointer;border:3px solid var(--ink);border-radius:4px;
+  padding:11px 16px;background:#ece5d6;color:var(--ink);box-shadow:0 5px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.green{background:var(--grass);color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.3)}
+.btn.blue{background:var(--blue);color:#fff}
+.panel{background:var(--card);border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.3);border-radius:4px;padding:16px}
+
+/* helper cards */
+.helpers{display:flex;gap:10px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.hcard{background:#fff;border:3px solid var(--ink);border-radius:6px;padding:8px 14px;font-family:'Press Start 2P';font-size:12px;
+  box-shadow:0 4px 0 var(--ink);text-align:center;min-width:120px;transition:transform .2s}
+.hcard.h1{border-top:8px solid var(--purple)}.hcard.h2{border-top:8px solid var(--blue)}.hcard.h3{border-top:8px solid var(--pink)}
+.hcard .rule{display:none;font-family:'Nunito';font-size:15px;font-weight:900;margin-top:8px;line-height:1.45;text-align:left}
+.hcard.glow{transform:scale(1.12);background:#fff7cc;box-shadow:0 0 0 5px var(--gold),0 0 26px var(--gold),0 4px 0 var(--ink);z-index:5}
+.hcard.glow .rule{display:block}
+
+/* obby course */
+.course{position:relative;height:210px;overflow:hidden;border:4px solid var(--ink);border-radius:4px;margin-bottom:12px;
+  background:linear-gradient(#8fd3ff,#cdeeff)}
+.cloud{position:absolute;background:#fff;width:70px;height:20px;opacity:.85;box-shadow:20px -14px 0 #fff,40px 0 0 #fff}
+.lava{position:absolute;left:0;right:0;bottom:0;height:34px;background:repeating-linear-gradient(90deg,var(--lava) 0 22px,var(--lava2) 22px 44px);
+  animation:lava 1.6s linear infinite;border-top:4px solid #b33a00}
+@keyframes lava{to{background-position:44px 0}}
+.track{position:absolute;left:0;top:0;height:100%;transition:transform .7s cubic-bezier(.4,1.4,.5,1)}
+.blk{position:absolute;bottom:62px;width:64px;height:30px;border:3px solid var(--ink);
+  background:linear-gradient(var(--grass) 0 9px,var(--grass-d) 9px 12px,var(--dirt) 12px);display:flex;align-items:flex-end;justify-content:center}
+.blk span{font-family:'Press Start 2P';font-size:9px;color:#fff;text-shadow:1px 1px 0 #000;margin-bottom:3px}
+.blk.done{background:linear-gradient(#8be06a 0 9px,#5fae3a 9px 12px,#a8774f 12px)}
+.blk.goal{background:linear-gradient(var(--gold) 0 30px)}
+.flag{position:absolute;bottom:30px;left:28px;width:4px;height:44px;background:var(--ink)}
+.flag::after{content:"";position:absolute;left:4px;top:0;width:26px;height:16px;background:#e5484d;border:2px solid var(--ink)}
+.blk.wobble{animation:wob .4s}
+@keyframes wob{25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+.avatar{position:absolute;width:36px;height:56px;bottom:92px;transition:left .7s cubic-bezier(.4,1.4,.5,1)}
+.avatar.jump{animation:jump .7s}
+@keyframes jump{40%{transform:translateY(-70px)}100%{transform:translateY(0)}}
+.counter{position:absolute;right:10px;top:8px;background:rgba(0,0,0,.6);color:#fff;font-family:'Press Start 2P';font-size:11px;padding:7px 9px;border-radius:3px}
+.timer{position:absolute;left:10px;top:8px;background:rgba(0,0,0,.6);color:var(--gold);font-family:'Press Start 2P';font-size:11px;padding:7px 9px;border-radius:3px}
+
+/* question */
+.qtop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.step{font-family:'Press Start 2P';font-size:11px;color:var(--dirt)}
+.q{font-size:clamp(21px,3.8vw,29px);font-weight:900;line-height:1.35;margin:10px 0 14px;transition:filter .3s}
+.blur .q,.blur .ans .t{filter:blur(8px);user-select:none}
+.gap{display:inline-block;min-width:78px;border-bottom:4px dashed var(--ink);text-align:center;color:var(--blue)}
+.gap.filled{border-bottom-color:transparent;color:var(--green)}
+.dd{display:flex;gap:16px;justify-content:center;margin:6px 0}
+.dd .btn{font-family:'Press Start 2P';font-size:22px;padding:18px 30px;min-width:150px}
+.dd .btn.do{background:#dbeafe}.dd .btn.does{background:#fde7f3}
+.clue{font-size:30px;text-align:center;margin:4px 0 10px;letter-spacing:4px}
+.ansgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.ansgrid{grid-template-columns:1fr}}
+.ans{font-size:19px;padding:13px}
+.ok{background:var(--green)!important;color:#fff!important}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.who{display:none;margin:4px auto 10px;max-width:420px;background:#fff7cc;border:3px dashed var(--ink);padding:8px 12px;font-weight:900;font-size:18px;text-align:center}
+.who.show{display:block;animation:pop .3s}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.say{display:none;margin-top:12px;padding:10px 12px;background:#e8f7e0;border:3px solid var(--ink);font-weight:900;font-size:18px;align-items:center;gap:10px;flex-wrap:wrap}
+.say.show{display:flex}
+/* start / modal */
+.intro{text-align:center;line-height:1.55;font-weight:800;font-size:17px}
+.intro p{margin:8px 0}
+.modal{position:fixed;inset:0;background:rgba(10,15,30,.72);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal .panel{max-width:440px;width:100%;text-align:center}
+.modal h2{font-family:'Press Start 2P';font-size:17px;color:#b3541e;line-height:1.6;margin-bottom:12px}
+.stat{display:flex;justify-content:space-between;border-bottom:2px dashed #c9b99a;padding:8px 2px;font-weight:900;font-size:17px}
+.mb{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.cf{position:fixed;width:13px;height:13px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>DO or DOES? OBBY</h1>
+
+  <div class="helpers">
+    <div class="hcard h1" id="hc1">AM / IS / ARE<div class="rule">I → am<br>he, she, it → is<br>you, we, they → are</div></div>
+    <div class="hcard h2" id="hc2">DO / DOES<div class="rule">I, you, we, they → <b>DO</b><br>he, she, it → <b>DOES</b></div></div>
+    <div class="hcard h3" id="hc3">CAN<div class="rule">everyone → can</div></div>
+  </div>
+
+  <div class="course" id="course">
+    <div class="cloud" style="left:8%;top:30px"></div><div class="cloud" style="left:55%;top:52px"></div><div class="cloud" style="left:80%;top:22px"></div>
+    <div class="track" id="track"></div>
+    <div class="lava"></div>
+    <div class="timer" id="timer">0:00</div>
+    <div class="counter" id="counter">0 / 0</div>
+  </div>
+
+  <!-- START -->
+  <section class="panel" id="start">
+    <div class="intro">
+      <p>🧱 Jump from block to block — don't fall into the lava!</p>
+      <p>🔊 Listen to the question. Choose <b>DO</b> or <b>DOES</b>.</p>
+      <p>💬 Then choose the short answer: <i>Yes, it does. / No, they don't.</i></p>
+      <p>💡 Not sure? Look at the helper card and try again.</p>
+      <button class="btn green" id="go" style="font-size:20px;padding:14px 30px;margin-top:10px">▶ START</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section class="panel blur hidden" id="game">
+    <div class="qtop">
+      <span class="step" id="step">STEP 1 · DO or DOES?</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn blue" id="listen">🔊 Listen</button>
+        <button class="btn" id="show">👁 Show text</button>
+      </div>
+    </div>
+    <div class="q" id="q"></div>
+
+    <div class="dd" id="dd">
+      <button class="btn do" data-v="Do">DO</button>
+      <button class="btn does" data-v="Does">DOES</button>
+    </div>
+
+    <div id="part2" class="hidden">
+      <div class="clue" id="clue"></div>
+      <div class="who" id="who"></div>
+      <div class="ansgrid" id="ansgrid"></div>
+    </div>
+
+    <div class="say" id="say">
+      <span>🗣 Say it!</span><span id="sayText"></span>
+      <button class="btn blue" id="sayListen" style="padding:6px 10px;font-size:15px">🔊</button>
+      <button class="btn green" id="next" style="margin-left:auto">Jump ▶</button>
+    </div>
+  </section>
+</div>
+
+<div class="modal hidden" id="modal">
+  <div class="panel">
+    <h2>🏁 YOU DID IT!</h2>
+    <div class="stat"><span>❓ Questions</span><span id="sQ"></span></div>
+    <div class="stat"><span>⭐ First try (DO/DOES)</span><span id="sD"></span></div>
+    <div class="stat"><span>⭐ First try (short answer)</span><span id="sA"></span></div>
+    <div class="stat"><span>💡 Helper card used</span><span id="sH"></span></div>
+    <div class="stat"><span>⏱ Time</span><span id="sT"></span></div>
+    <div class="mb">
+      <button class="btn green" id="again">🔁 Play again</button>
+      <button class="btn" id="close">✖ Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* s = subject as written, h = Do/Does, p = pronoun for the answer, yes = true/false/null (null = personal, both OK) */
+const ITEMS=[
+ {pre:"",s:"penguins",rest:"live in the Arctic?",h:"Do",p:"they",yes:false,clue:"🐧 ❌ ❄️ Arctic"},
+ {pre:"",s:"rubber",rest:"come from trees?",h:"Does",p:"it",yes:true,clue:"🌳 ➡️ ✅"},
+ {pre:"",s:"Millie",rest:"read the questions?",h:"Does",p:"she",yes:true,clue:"👧 📖 ✅"},
+ {pre:"",s:"Mickey and Millie",rest:"get all the answers right?",h:"Do",p:"they",yes:true,clue:"👦👧 ✅✅✅✅"},
+ {pre:"",s:"the cat",rest:"jump into the garden?",h:"Does",p:"it",yes:true,clue:"🐱 🌿 ✅"},
+ {pre:"",s:"Mut",rest:"like the cat?",h:"Does",p:"he",yes:false,clue:"🐶 ❌❤️ 🐱"},
+ {pre:"",s:"polar bears",rest:"live in the Arctic?",h:"Do",p:"they",yes:true,clue:"🐻‍❄️ ✅ ❄️ Arctic"},
+ {pre:"",s:"summer",rest:"start in June in Australia?",h:"Does",p:"it",yes:false,clue:"☀️ 🇦🇺 ❌ June"},
+ {pre:"",s:"creepers",rest:"explode?",h:"Do",p:"they",yes:true,clue:"💥 ✅"},
+ {pre:"",s:"a pig",rest:"fly in Minecraft?",h:"Does",p:"it",yes:false,clue:"🐷 ❌ ✈️"},
+ {pre:"",s:"zombies",rest:"burn in the sun?",h:"Do",p:"they",yes:true,clue:"🧟 ☀️ 🔥 ✅"},
+ {pre:"",s:"Steve",rest:"use a pickaxe?",h:"Does",p:"he",yes:true,clue:"⛏️ ✅"},
+ {pre:"",s:"you",rest:"play Roblox?",h:"Do",p:"I",yes:null,clue:"🎮 ❓ — about YOU!"},
+ {pre:"",s:"your teacher",rest:"like dogs?",h:"Does",p:"she",yes:null,clue:"👩‍🏫 🐶 ❓ — guess!"}
+];
+const DO_P=["I","you","we","they"];
+const fam=p=>DO_P.includes(p)?"do":"does";
+const short=(p,y)=>{const f=fam(p);return y?`Yes, ${p} ${f}.`:`No, ${p} ${f==="do"?"don't":"doesn't"}.`;};
+const other=p=>DO_P.includes(p)?(p==="I"?"she":"it"):"they";
+
+/* speech */
+let voice=null;
+function pickVoice(){const v=speechSynthesis.getVoices();
+  voice=v.find(x=>/en-GB/i.test(x.lang)&&/female|Libby|Sonia|Kate|Serena|Google UK English Female/i.test(x.name))||v.find(x=>/en-GB/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang))||null;}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+const fixSay=t=>t.replace(/\blives\b/gi,"livs").replace(/\blive\b/gi,"liv");
+function speak(parts,rate=.85){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();
+  (Array.isArray(parts)?parts:[parts]).forEach(p=>{const u=new SpeechSynthesisUtterance(fixSay(p));if(voice)u.voice=voice;u.lang=voice?voice.lang:"en-GB";u.rate=rate;speechSynthesis.speak(u);});}
+
+/* sfx */
+let ac=null;
+function tone(f,d,type="square",w=0,v=.07){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(ac.destination);const t=ac.currentTime+w;o.start(t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.stop(t+d);}catch(e){}}
+const sOk=()=>{tone(660,.1);tone(880,.15,"square",.08)};
+const sJump=()=>{tone(300,.08,"square");tone(600,.15,"square",.06)};
+const sHelp=()=>{tone(520,.12,"triangle");tone(520,.12,"triangle",.18)};
+
+/* avatar (original blocky kid) */
+const AV=`<svg viewBox="0 0 9 14" width="36" height="56" shape-rendering="crispEdges">
+<rect x="2" y="0" width="5" height="2" fill="#4a2c17"/><rect x="2" y="2" width="5" height="3" fill="#f2c79a"/>
+<rect x="3" y="3" width="1" height="1" fill="#222"/><rect x="5" y="3" width="1" height="1" fill="#222"/>
+<rect x="1" y="5" width="7" height="4" fill="#14b8a6"/><rect x="0" y="5" width="1" height="4" fill="#f2c79a"/><rect x="8" y="5" width="1" height="4" fill="#f2c79a"/>
+<rect x="2" y="9" width="2" height="4" fill="#1e3a8a"/><rect x="5" y="9" width="2" height="4" fill="#1e3a8a"/>
+<rect x="2" y="13" width="2" height="1" fill="#222"/><rect x="5" y="13" width="2" height="1" fill="#222"/></svg>`;
+
+/* state */
+const $=id=>document.getElementById(id);
+let queue=[],idx=0,stage=1,showText=false,stats={},t0=0,timerId=null,pos=0;
+const GAP=96, START_X=30;
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function buildTrack(){
+  const tr=$('track');tr.innerHTML="";
+  for(let i=0;i<=queue.length;i++){
+    const b=document.createElement('div');b.className='blk'+(i===queue.length?' goal':'');b.id='blk'+i;
+    b.style.left=(START_X+i*GAP)+'px';
+    b.innerHTML=i===queue.length?'<div class="flag"></div>':`<span>${i===0?'GO':i}</span>`;
+    tr.appendChild(b);
+  }
+  const a=document.createElement('div');a.className='avatar';a.id='avatar';a.innerHTML=AV;tr.appendChild(a);
+  tr.style.width=(START_X+(queue.length+2)*GAP)+'px';
+  placeAvatar(false);
+}
+function placeAvatar(anim){
+  const a=$('avatar');a.style.left=(START_X+pos*GAP+14)+'px';
+  if(anim){a.classList.remove('jump');void a.offsetWidth;a.classList.add('jump');}
+  const vw=$('course').clientWidth;
+  const target=Math.max(0,START_X+pos*GAP-vw*0.3);
+  $('track').style.transform=`translateX(${-target}px)`;
+  $('counter').textContent=`${pos} / ${queue.length}`;
+}
+
+$('go').onclick=start;
+function start(){
+  queue=shuffle(ITEMS);idx=0;pos=0;stats={d1:0,a1:0,help:0};
+  $('start').classList.add('hidden');$('game').classList.remove('hidden');$('modal').classList.add('hidden');
+  buildTrack();
+  t0=Date.now();clearInterval(timerId);timerId=setInterval(tick,500);tick();
+  showItem();
+}
+function tick(){const s=Math.floor((Date.now()-t0)/1000);$('timer').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+
+let cur,missD,missA,helped;
+function showItem(){
+  cur=queue[idx];stage=1;missD=false;missA=false;helped=false;
+  setBlur(true);
+  $('step').textContent="STEP 1 · DO or DOES?";
+  $('q').innerHTML=`<span class="gap" id="gap">?</span> ${esc(cur.s)} ${esc(cur.rest)}`;
+  [...$('dd').children].forEach(b=>{b.disabled=false;b.classList.remove('ok','shake')});
+  $('dd').classList.remove('hidden');
+  $('part2').classList.add('hidden');$('who').classList.remove('show');
+  $('say').classList.remove('show');
+  glow(null);
+  setTimeout(readQ,300);
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function fullQ(){return `${cur.h} ${cur.s} ${cur.rest}`}
+function readQ(){
+  if(stage===1)speak(`Blank... ${cur.s} ${cur.rest}`);
+  else speak(fullQ());
+}
+$('listen').onclick=readQ;
+function setBlur(b){showText=!b;$('game').classList.toggle('blur',b);$('show').textContent=b?"👁 Show text":"🙈 Hide text";}
+$('show').onclick=()=>setBlur(showText);
+
+function glow(id){['hc1','hc2','hc3'].forEach(h=>$(h).classList.toggle('glow',h===id));}
+
+$('dd').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b||b.disabled||stage!==1)return;
+  if(b.dataset.v===cur.h){
+    b.classList.add('ok');[...$('dd').children].forEach(x=>x.disabled=true);
+    if(!missD)stats.d1++;
+    glow(null);sOk();
+    const g=$('gap');g.textContent=cur.h;g.classList.add('filled');
+    speak(fullQ());
+    setTimeout(toStage2,700);
+  }else{
+    // no "wrong" — show the helper card and wait
+    missD=true;if(!helped){helped=true;stats.help++;}
+    b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
+    glow('hc2');sHelp();
+    $('blk'+pos).classList.remove('wobble');void $('blk'+pos).offsetWidth;$('blk'+pos).classList.add('wobble');
+  }
+});
+
+function toStage2(){
+  stage=2;
+  $('step').textContent="STEP 2 · SHORT ANSWER";
+  $('dd').classList.add('hidden');$('part2').classList.remove('hidden');
+  $('clue').textContent=cur.clue;
+  const p=cur.p,o=other(p);
+  const opts=shuffle([
+    {t:short(p,true),ok:cur.yes!==false},
+    {t:short(p,false),ok:cur.yes!==true},
+    {t:short(o,true),ok:false},
+    {t:short(o,false),ok:false}
+  ]);
+  const g=$('ansgrid');g.innerHTML="";
+  opts.forEach(op=>{
+    const b=document.createElement('button');b.className='btn ans';b.innerHTML=`<span class="t">${op.t}</span>`;
+    b.onclick=()=>pickAns(b,op);g.appendChild(b);
+  });
+  glow(null);
+}
+function pickAns(b,op){
+  if(stage!==2||b.disabled)return;
+  if(op.ok){
+    stage=3;b.classList.add('ok');[...$('ansgrid').children].forEach(x=>x.disabled=true);
+    if(!missA)stats.a1++;
+    glow(null);sOk();setBlur(false);
+    const full=`${fullQ()} — ${op.t}`;
+    $('sayText').textContent=full;$('say').classList.add('show');
+    speak([fullQ(),op.t]);
+  }else{
+    missA=true;if(!helped){helped=true;stats.help++;}
+    b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');
+    glow('hc2');sHelp();
+    $('who').innerHTML=`👉 <b>${esc(cap(cur.s))}</b> = <b>${cur.p}</b> → <b>${cur.p} ${fam(cur.p)}</b>`;
+    $('who').classList.add('show');
+  }
+}
+$('sayListen').onclick=()=>{const a=$('sayText').textContent.split(' — ');speak(a);};
+
+$('next').onclick=()=>{
+  if(stage!==3)return;
+  stage=4;
+  $('blk'+pos).classList.add('done');
+  pos++;sJump();placeAvatar(true);
+  idx++;
+  setTimeout(()=>{ if(idx>=queue.length)finish(); else showItem(); },800);
+};
+
+function finish(){
+  clearInterval(timerId);speechSynthesis&&speechSynthesis.cancel();
+  const s=Math.floor((Date.now()-t0)/1000);
+  $('sQ').textContent=queue.length;$('sD').textContent=`${stats.d1} / ${queue.length}`;
+  $('sA').textContent=`${stats.a1} / ${queue.length}`;$('sH').textContent=stats.help;
+  $('sT').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  $('modal').classList.remove('hidden');confetti();
+  speak("You did it! Well done!");
+}
+$('again').onclick=()=>{$('modal').classList.add('hidden');start();};
+$('close').onclick=()=>{$('modal').classList.add('hidden');$('game').classList.add('hidden');$('start').classList.remove('hidden');};
+
+function confetti(){const c=["#5fae3a","#8a5a35","#ffd23f","#3b82f6","#ec4899","#14b8a6"];
+  for(let i=0;i<45;i++){const d=document.createElement('div');d.className='cf';d.style.left=Math.random()*100+'vw';d.style.top=(-20-Math.random()*60)+'px';
+  d.style.background=c[i%c.length];d.style.animationDuration=(1.4+Math.random()*1.4)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),3000);}}
+window.addEventListener('resize',()=>{if($('avatar'))placeAvatar(false)});
+</script>
+</body>
+</html>
