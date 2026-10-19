@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Night</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#0b1440; --sky2:#1d2f7a; --grass:#5fae3a; --grass-d:#3f7d24;
+  --dirt:#8a5a35; --dirt-d:#6b4325; --stone:#7d7d7d; --gold:#ffd23f;
+  --card:#f6efe2; --ink:#2a1d12; --red:#e5484d; --green:#3fb950; --blue:#3b82f6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Nunito',sans-serif;color:var(--ink);min-height:100vh;
+  background:linear-gradient(var(--sky1),var(--sky2) 70%);overflow-x:hidden;
+}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;width:4px;height:4px;background:#fff;opacity:.8;animation:tw 2.5s infinite}
+@keyframes tw{50%{opacity:.2}}
+.ground{position:fixed;left:0;right:0;bottom:0;height:56px;z-index:0;
+  background:
+   linear-gradient(var(--grass) 0 14px, var(--grass-d) 14px 18px, var(--dirt) 18px),
+   var(--dirt);
+  background-size:100% 100%;
+  box-shadow:inset 0 -6px 0 var(--dirt-d);
+}
+.ground::after{content:"";position:absolute;inset:18px 0 0;background-image:
+  linear-gradient(90deg,rgba(0,0,0,.12) 2px,transparent 2px),
+  linear-gradient(rgba(0,0,0,.1) 2px,transparent 2px);background-size:28px 28px}
+.wrap{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:18px 16px 90px}
+h1,.pixel{font-family:'Press Start 2P',monospace}
+h1{color:var(--gold);text-align:center;font-size:clamp(22px,5vw,40px);
+  text-shadow:4px 4px 0 #b3541e, 8px 8px 0 rgba(0,0,0,.35);margin:10px 0 6px;letter-spacing:2px}
+.sub{color:#cfe0ff;text-align:center;font-weight:800;margin-bottom:16px}
+.panel{background:var(--card);border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45);
+  padding:18px;border-radius:4px}
+.hidden{display:none!important}
+.btn{font-family:'Nunito',sans-serif;font-weight:900;font-size:17px;cursor:pointer;
+  border:3px solid var(--ink);border-radius:4px;padding:12px 16px;background:#e9e2d2;color:var(--ink);
+  box-shadow:0 5px 0 var(--ink);transition:transform .08s, box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn.green{background:var(--grass);color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.3)}
+.btn.gold{background:var(--gold)}
+.btn.blue{background:var(--blue);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+/* start */
+.rounds{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:14px 0}
+.round{padding:16px 10px;text-align:center;font-size:16px}
+.round .ic{font-size:34px;display:block;margin-bottom:6px}
+.round.sel{background:var(--gold);outline:4px dashed var(--ink);outline-offset:3px}
+.players{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.players input{font:800 16px 'Nunito';padding:9px;border:3px solid var(--ink);border-radius:4px;width:150px}
+.rule{background:#fff8e1;border:3px dashed var(--dirt);padding:10px 12px;margin-top:12px;font-weight:700;line-height:1.5}
+.dogrow{display:flex;align-items:center;gap:14px;justify-content:center;margin:6px 0 4px}
+/* game */
+.score{display:flex;gap:10px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
+.pl{background:#13204f;color:#fff;border:3px solid #000;padding:8px 14px;min-width:150px;text-align:center;border-radius:4px}
+.pl .n{font-weight:900;font-size:15px}
+.pl .s{font-family:'Press Start 2P';font-size:20px;color:var(--gold);margin-top:6px}
+.pl.turn{border-color:var(--gold);box-shadow:0 0 0 4px var(--gold), 0 0 22px var(--gold)}
+.qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.qnum{font-family:'Press Start 2P';font-size:12px;color:var(--dirt)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.qtext{font-size:clamp(20px,3.6vw,27px);font-weight:900;margin:8px 0 16px;line-height:1.3;transition:filter .3s}
+.blur .qtext,.blur .opt .t{filter:blur(9px);user-select:none}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;font-size:19px;padding:12px}
+.opt .l{font-family:'Press Start 2P';font-size:16px;background:var(--ink);color:#fff;padding:8px 10px;border-radius:3px;flex:none}
+.opt.ok{background:var(--green);color:#fff}
+.opt.bad{background:var(--red);color:#fff;animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.bottom{display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap}
+.bubble{background:#fff;border:3px solid var(--ink);border-radius:14px;padding:8px 12px;font-weight:900;font-size:18px;position:relative;min-height:44px;display:flex;align-items:center}
+.bubble::before{content:"";position:absolute;left:-12px;top:14px;border:6px solid transparent;border-right-color:var(--ink);border-width:7px 12px 7px 0}
+.woof{display:inline-block;animation:pop .3s}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.dog{width:84px;height:84px;flex:none}
+.dog.bark{animation:bark .25s 3}
+@keyframes bark{50%{transform:translateY(-6px) rotate(-4deg)}}
+.feedback{margin-top:16px;padding:14px;border:3px solid var(--ink);border-radius:4px;background:#e8f7e0}
+.feedback.wrong{background:#fde7e7}
+.feedback .big{font-weight:900;font-size:20px;margin-bottom:6px}
+.feedback .say{font-size:19px;font-weight:800;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 10px}
+.tip{font-size:14px;color:#6b4325;font-weight:700}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(5,10,30,.75);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal .panel{max-width:460px;width:100%;text-align:center}
+.modal h2{font-family:'Press Start 2P';font-size:18px;color:#b3541e;margin-bottom:14px;line-height:1.5}
+.stat{display:flex;justify-content:space-between;border-bottom:2px dashed #c9b99a;padding:7px 2px;font-weight:800}
+.mstars{font-size:34px;margin:10px 0}
+.mbtns{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.block{position:fixed;width:14px;height:14px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="ground"></div>
+
+<div class="wrap">
+  <h1>QUIZ NIGHT</h1>
+  <p class="sub">Listen. Think. Answer. Ask the dog if you need help!</p>
+
+  <!-- START -->
+  <section id="start" class="panel">
+    <div class="dogrow">
+      <svg class="dog" id="dogStart" viewBox="0 0 16 16" shape-rendering="crispEdges"></svg>
+      <div class="bubble">Hi! I'm Bones. I know all the answers! 🐾</div>
+    </div>
+    <p class="pixel" style="font-size:12px;margin-top:10px">1. Choose a round</p>
+    <div class="rounds" id="rounds"></div>
+    <p class="pixel" style="font-size:12px">2. Players</p>
+    <div class="players">
+      <button class="btn sel-mode gold" data-mode="1">👤 1 player</button>
+      <button class="btn sel-mode" data-mode="2">👥 2 players</button>
+      <input id="p1" value="Masha" maxlength="12">
+      <input id="p2" value="Teacher" maxlength="12" class="hidden">
+    </div>
+    <div class="rule">
+      🔊 Listen to the question. The text is hidden — press 👁 if you need it.<br>
+      🐶 Bones barks the answer: <b>1 woof = A, 2 woofs = B, 3 woofs = C</b>.<br>
+      ⭐ Correct answer = <b>2 points</b>. With Bones' help = <b>1 point</b>.
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn green" id="go" style="font-size:20px;padding:14px 30px">▶ START</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="hidden">
+    <div class="score" id="score"></div>
+    <div class="panel blur" id="qcard">
+      <div class="qhead">
+        <span class="qnum" id="qnum"></span>
+        <div class="tools">
+          <button class="btn blue" id="listen">🔊 Listen</button>
+          <button class="btn" id="show">👁 Show text</button>
+        </div>
+      </div>
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <div class="bottom">
+        <svg class="dog" id="dog" viewBox="0 0 16 16" shape-rendering="crispEdges"></svg>
+        <button class="btn gold" id="hint">🐶 Ask Bones</button>
+        <div class="bubble hidden" id="bubble"></div>
+      </div>
+      <div class="feedback hidden" id="fb">
+        <div class="big" id="fbBig"></div>
+        <div class="say"><span id="fbSay"></span><button class="btn blue" id="fbListen" style="padding:6px 10px;font-size:15px">🔊</button></div>
+        <div class="tip">🗣 Say the answer out loud!</div>
+        <div style="text-align:right;margin-top:10px"><button class="btn green" id="next">Next ▶</button></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- END MODAL -->
+<div class="modal hidden" id="modal">
+  <div class="panel">
+    <h2>QUIZ OVER!</h2>
+    <div class="mstars" id="mstars"></div>
+    <div id="mres"></div>
+    <div class="mbtns">
+      <button class="btn green" id="again">🔁 Play again</button>
+      <button class="btn" id="menu">🏠 Menu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- QUESTIONS ---------- */
+const ROUNDS = {
+  animals:{name:"Animals",ic:"🐧",qs:[
+    {q:"Where do penguins live?",o:["in the Arctic","in the Antarctic","in Africa"],a:1,say:"Penguins live in the Antarctic."},
+    {q:"Do polar bears live in the Antarctic?",o:["Yes, they do.","No, they don't.","Yes, it does."],a:1,say:"No, they don't. Polar bears live in the Arctic."},
+    {q:"What do pandas eat?",o:["fish","bamboo","apples"],a:1,say:"Pandas eat bamboo."},
+    {q:"Does a cat like water?",o:["Yes, it does.","No, they don't.","No, it doesn't."],a:2,say:"No, it doesn't. Cats don't like water."},
+    {q:"How many legs does a spider have?",o:["six","eight","ten"],a:1,say:"A spider has eight legs."},
+    {q:"Where do kangaroos live?",o:["in Africa","in the USA","in Australia"],a:2,say:"Kangaroos live in Australia."}
+  ]},
+  world:{name:"The World",ic:"🌍",qs:[
+    {q:"When does summer start in Australia?",o:["in April","in June","in December"],a:2,say:"Summer starts in December in Australia."},
+    {q:"When is Christmas in Britain?",o:["on the twenty-fifth of December","on the seventh of January","on the first of May"],a:0,say:"Christmas in Britain is on the twenty-fifth of December."},
+    {q:"What do bees make?",o:["milk","honey","rubber"],a:1,say:"Bees make honey."},
+    {q:"Does chocolate come from trees?",o:["Yes, it does.","No, it doesn't.","Yes, they do."],a:0,say:"Yes, it does. Chocolate comes from cocoa trees."},
+    {q:"Where does Santa Claus live?",o:["in Australia","at the North Pole","in London"],a:1,say:"Santa Claus lives at the North Pole."},
+    {q:"What is the capital of the UK?",o:["Paris","Manchester","London"],a:2,say:"The capital of the UK is London."}
+  ]},
+  games:{name:"Minecraft & Roblox",ic:"⛏️",qs:[
+    {q:"What do creepers do?",o:["They fly.","They explode.","They sing."],a:1,say:"Creepers explode."},
+    {q:"Do zombies burn in the sun?",o:["Yes, they do.","No, they don't.","Yes, it does."],a:0,say:"Yes, they do. Zombies burn in the sun."},
+    {q:"Where does the Ender Dragon live?",o:["in the Nether","in the sea","in the End"],a:2,say:"The Ender Dragon lives in the End."},
+    {q:"Does a pig fly in Minecraft?",o:["Yes, it does.","No, it doesn't.","No, they don't."],a:1,say:"No, it doesn't. Pigs don't fly."},
+    {q:"What do you use to mine stone?",o:["a pickaxe","a sword","a bucket"],a:0,say:"You use a pickaxe to mine stone."},
+    {q:"What do players buy things with in Roblox?",o:["emeralds","Robux","dollars"],a:1,say:"Players buy things with Robux."}
+  ]},
+  mix:{name:"Mix it all!",ic:"🎲",qs:null}
+};
+
+/* ---------- SPEECH ---------- */
+let voice=null;
+function pickVoice(){
+  const v=speechSynthesis.getVoices();
+  voice=v.find(x=>/en-GB/i.test(x.lang)&&/female|Libby|Sonia|Kate|Serena|Google UK English Female/i.test(x.name))
+     ||v.find(x=>/en-GB/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang))||null;
+}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function fixSay(t){ // "live" always as /lɪv/
+  return t.replace(/\blives\b/gi,"livs").replace(/\blive\b/gi,"liv");
+}
+function speak(parts,rate=0.85){
+  if(!('speechSynthesis' in window))return;
+  speechSynthesis.cancel();
+  (Array.isArray(parts)?parts:[parts]).forEach(p=>{
+    const u=new SpeechSynthesisUtterance(fixSay(p));
+    if(voice)u.voice=voice; u.lang=voice?voice.lang:"en-GB"; u.rate=rate;
+    speechSynthesis.speak(u);
+  });
+}
+
+/* ---------- SFX ---------- */
+let actx=null;
+function tone(f,d,type="square",when=0,vol=.08){
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type=type;o.frequency.value=f;g.gain.value=vol;
+    o.connect(g);g.connect(actx.destination);
+    const t=actx.currentTime+when;o.start(t);
+    g.gain.exponentialRampToValueAtTime(.0001,t+d);o.stop(t+d);
+  }catch(e){}
+}
+const sfxOk=()=>{tone(660,.12,"square",0);tone(990,.2,"square",.1)};
+const sfxBad=()=>{tone(160,.3,"sawtooth",0,.07)};
+
+/* ---------- DOG (original pixel dog) ---------- */
+function drawDog(svg){
+  const P={B:"#8a5a35",D:"#5c3a1e",L:"#d9a066",K:"#1a1a1a",W:"#ffffff",R:"#e5484d"};
+  const map=[
+    "................",
+    "..DD........DD..",
+    ".DDDD......DDDD.",
+    ".DDBBBBBBBBBBDD.",
+    ".DDBBBBBBBBBBDD.",
+    "..DBKWBBBBKWBD..",
+    "...BKKBBBBKKB...",
+    "...BBBLLLLBBB...",
+    "...BBLLKKLLBB...",
+    "....BLLLLLLB....",
+    "....BBLRRLBB....",
+    "...BBBBRRBBBB...",
+    "..BBBBBBBBBBBB..",
+    "..BBLLBBBBLLBB..",
+    "..BBLLBBBBLLBB..",
+    "..DD..DD.DD..DD."];
+  let s="";
+  map.forEach((row,y)=>[...row].forEach((c,x)=>{if(P[c])s+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${P[c]}"/>`}));
+  svg.innerHTML=s;
+}
+drawDog(document.getElementById('dog'));drawDog(document.getElementById('dogStart'));
+
+/* ---------- STARS ---------- */
+(function(){const s=document.getElementById('stars');for(let i=0;i<60;i++){const d=document.createElement('div');d.className='star';d.style.left=Math.random()*100+'%';d.style.top=Math.random()*70+'%';d.style.animationDelay=Math.random()*2.5+'s';s.appendChild(d);}})();
+
+/* ---------- STATE ---------- */
+const $=id=>document.getElementById(id);
+let roundKey="animals",mode=1,queue=[],idx=0,turn=0,answered=false,usedHint=false,showText=false;
+let players=[];
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+/* round buttons */
+const rb=$('rounds');
+Object.entries(ROUNDS).forEach(([k,r])=>{
+  const b=document.createElement('button');b.className='btn round'+(k===roundKey?' sel':'');
+  b.innerHTML=`<span class="ic">${r.ic}</span>${r.name}`;
+  b.onclick=()=>{roundKey=k;[...rb.children].forEach(c=>c.classList.remove('sel'));b.classList.add('sel')};
+  rb.appendChild(b);
+});
+document.querySelectorAll('.sel-mode').forEach(b=>b.onclick=()=>{
+  mode=+b.dataset.mode;
+  document.querySelectorAll('.sel-mode').forEach(x=>x.classList.toggle('gold',x===b));
+  $('p2').classList.toggle('hidden',mode===1);
+});
+
+$('go').onclick=startGame;
+function startGame(){
+  if(roundKey==="mix"){
+    const all=[...ROUNDS.animals.qs,...ROUNDS.world.qs,...ROUNDS.games.qs];
+    queue=shuffle(all).slice(0,10);
+  } else queue=shuffle(ROUNDS[roundKey].qs);
+  const names=[$('p1').value.trim()||"Player 1",$('p2').value.trim()||"Player 2"];
+  players=names.slice(0,mode).map(n=>({name:n,score:0,correct:0,hinted:0,wrong:0}));
+  idx=0;turn=0;
+  $('start').classList.add('hidden');$('game').classList.remove('hidden');
+  $('modal').classList.add('hidden');
+  renderScore();showQ();
+}
+
+function renderScore(){
+  $('score').innerHTML=players.map((p,i)=>`<div class="pl ${players.length>1&&i===turn?'turn':''}"><div class="n">${players.length>1&&i===turn?'▶ ':''}${esc(p.name)}</div><div class="s">${p.score}</div></div>`).join('');
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+function showQ(){
+  const q=queue[idx];answered=false;usedHint=false;showText=false;
+  $('qcard').classList.add('blur');$('show').textContent="👁 Show text";
+  $('qnum').textContent=`QUESTION ${idx+1} / ${queue.length}`;
+  $('qtext').textContent=q.q;
+  $('opts').innerHTML="";
+  q.o.forEach((t,i)=>{
+    const b=document.createElement('button');b.className='btn opt';
+    b.innerHTML=`<span class="l">${"ABC"[i]}</span><span class="t">${esc(t)}</span>`;
+    b.onclick=()=>choose(i,b);$('opts').appendChild(b);
+  });
+  $('fb').classList.add('hidden');$('bubble').classList.add('hidden');$('bubble').innerHTML="";
+  $('hint').disabled=false;
+  renderScore();
+  setTimeout(readQ,350);
+}
+function readQ(){
+  const q=queue[idx];
+  const prefix=players.length>1?[`${players[turn].name}, your question.`]:[];
+  speak([...prefix,q.q,...q.o.map((t,i)=>`${"ABC"[i]}. ${t}`)]);
+}
+$('listen').onclick=readQ;
+$('show').onclick=()=>{
+  showText=!showText;$('qcard').classList.toggle('blur',!showText);
+  $('show').textContent=showText?"🙈 Hide text":"👁 Show text";
+};
+
+$('hint').onclick=()=>{
+  if(answered)return;
+  usedHint=true;$('hint').disabled=true;
+  const n=queue[idx].a+1;const bub=$('bubble');
+  bub.classList.remove('hidden');bub.innerHTML="";
+  const dog=$('dog');dog.classList.remove('bark');void dog.offsetWidth;dog.classList.add('bark');
+  speak(Array(n).fill("Woof!"),1);
+  for(let i=0;i<n;i++)setTimeout(()=>{const w=document.createElement('span');w.className='woof';w.textContent=(i?' ':'')+'Woof!';bub.appendChild(w)},i*450);
+};
+
+function choose(i,btn){
+  if(answered)return;
+  const q=queue[idx],p=players[turn],ok=i===q.a;
+  if(!ok){
+    btn.classList.add('bad');sfxBad();
+    // second chance: just mark and let them try again, but no points after a mistake
+    btn.disabled=true;
+    if(!p._miss){p._miss=true;speak("Try again!");return;}
+  }
+  answered=true;
+  const btns=[...$('opts').children];btns.forEach(b=>b.disabled=true);
+  btns[q.a].classList.add('ok');btns[q.a].disabled=false;
+  $('qcard').classList.remove('blur');showText=true;$('show').textContent="🙈 Hide text";
+  let pts=0,title;
+  if(ok&&!p._miss){pts=usedHint?1:2;if(usedHint)p.hinted++;else p.correct++;title=usedHint?"🐶 Good! Bones helped you. +1":"⭐ Correct! +2";sfxOk();burst(12);}
+  else if(ok){p.wrong++;title="👍 Yes, that's it! (0 points this time)";sfxOk();}
+  else{p.wrong++;title="❌ Not this time.";}
+  p._miss=false;p.score+=pts;
+  $('fb').classList.remove('hidden');$('fb').classList.toggle('wrong',pts===0);
+  $('fbBig').textContent=title;$('fbSay').textContent=q.say;
+  renderScore();
+  setTimeout(()=>speak(q.say),400);
+}
+$('fbListen').onclick=()=>speak(queue[idx].say);
+$('next').onclick=()=>{
+  idx++;
+  if(players.length>1)turn=(turn+1)%players.length;
+  if(idx>=queue.length)endGame();else showQ();
+};
+
+function endGame(){
+  speechSynthesis&&speechSynthesis.cancel();
+  const max=Math.max(...players.map(p=>p.score));
+  let html="";
+  players.forEach(p=>{
+    html+=`<div style="margin:8px 0 4px;font-weight:900;font-size:18px">${esc(p.name)} — ${p.score} points ${players.length>1&&p.score===max?'🏆':''}</div>
+    <div class="stat"><span>⭐ Correct</span><span>${p.correct}</span></div>
+    <div class="stat"><span>🐶 With Bones' help</span><span>${p.hinted}</span></div>
+    <div class="stat"><span>❌ Not this time</span><span>${p.wrong}</span></div>`;
+  });
+  $('mres').innerHTML=html;
+  const best=players.reduce((a,b)=>a.score>=b.score?a:b);
+  const perQ=queue.length/players.length;const ratio=best.score/(perQ*2);
+  $('mstars').textContent=ratio>.85?"⭐⭐⭐":ratio>.55?"⭐⭐":"⭐";
+  $('modal').classList.remove('hidden');burst(40);
+  const win=players.filter(p=>p.score===max);
+  speak(players.length>1&&win.length===1?`${win[0].name} wins! Well done!`:"Well done! Great quiz!");
+}
+$('again').onclick=()=>{$('modal').classList.add('hidden');startGame();};
+$('menu').onclick=()=>{$('modal').classList.add('hidden');$('game').classList.add('hidden');$('start').classList.remove('hidden');speechSynthesis&&speechSynthesis.cancel();};
+
+function burst(n){
+  const cols=["#5fae3a","#8a5a35","#ffd23f","#3b82f6","#7d7d7d","#e5484d"];
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');b.className='block';
+    b.style.left=Math.random()*100+'vw';b.style.top=(-20-Math.random()*60)+'px';
+    b.style.background=cols[i%cols.length];b.style.animationDuration=(1.4+Math.random()*1.4)+'s';
+    document.body.appendChild(b);setTimeout(()=>b.remove(),3000);
+  }
+}
+</script>
+</body>
+</html>
