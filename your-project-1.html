@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Project 1 · so & because</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbf7f0;--card:#fff;--ink:#22304a;--mute:#6b778c;--blue:#2f6fde;--blue-l:#e6efff;--green:#1f9d63;--green-l:#e3f6ec;--red:#d6455d;--red-l:#fde8ec;--amber:#f2a516;--amber-l:#fff4dc;--line:#e6e1d8;--so:#2f6fde;--bc:#e0782b;--bc-l:#fdeedf}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-size:18px;line-height:1.45}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;max-width:980px;margin:0 auto}
+.top h1{font-size:19px;margin:0;font-weight:900}
+.top h1 span{color:var(--blue)}
+nav{display:flex;gap:6px;overflow-x:auto;max-width:980px;margin:8px auto 0;padding-bottom:2px;scrollbar-width:none}
+nav button{flex:0 0 auto;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;font-weight:800;color:var(--mute);cursor:pointer}
+nav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+nav button.done{border-color:var(--green);color:var(--green)}
+main{max-width:980px;margin:0 auto;padding:16px 16px 110px}
+.stage{display:none;animation:in .3s ease}
+.stage.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h2{font-size:26px;margin:4px 0 4px;font-weight:900}
+.sub{color:var(--mute);margin:0 0 14px;font-size:16px}
+.tnote{background:var(--amber-l);border-left:4px solid var(--amber);border-radius:10px;padding:8px 12px;font-size:15px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:0 0 14px;box-shadow:0 2px 0 rgba(0,0,0,.03)}
+.grid2{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:720px){.grid2{grid-template-columns:1fr 1fr}}
+.rule{border-radius:18px;padding:16px;cursor:pointer;position:relative;min-height:150px}
+.rule.so{background:var(--blue-l);border:2px solid var(--so)}
+.rule.bc{background:var(--bc-l);border:2px solid var(--bc)}
+.rule .w{font-size:34px;font-weight:900}
+.rule.so .w{color:var(--so)} .rule.bc .w{color:var(--bc)}
+.rule .hid{opacity:0;transition:.3s}
+.rule.open .hid{opacity:1}
+.rule .tap{position:absolute;right:12px;top:12px;font-size:13px;color:var(--mute)}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:800;margin:8px 0}
+.pill{padding:4px 10px;border-radius:10px;background:#fff;border:1px solid var(--line);font-size:15px}
+.ex{font-size:17px;margin-top:8px}
+.ex b.so{color:var(--so)} .ex b.bc{color:var(--bc)}
+.q{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:12px 0;border-bottom:1px dashed var(--line);font-size:19px}
+.q:last-child{border-bottom:0}
+.num{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:inline-grid;place-items:center;font-size:14px;font-weight:900;flex:0 0 auto}
+.gap{display:inline-block;min-width:96px;border-bottom:2.5px solid var(--ink);text-align:center;font-weight:900;padding:0 6px}
+.gap.ok{color:var(--green);border-color:var(--green)}
+.choices{display:inline-flex;gap:6px}
+.btn{border:0;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;cursor:pointer;background:var(--ink);color:#fff;transition:transform .1s}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.so{background:var(--so)} .btn.bc{background:var(--bc)}
+.btn.sm{padding:6px 12px;font-size:15px}
+.btn:disabled{opacity:.4;cursor:default}
+.shake{animation:sh .35s}
+@keyframes sh{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.fb{font-size:15px;font-weight:700;min-height:20px;margin-top:6px}
+.fb.ok{color:var(--green)} .fb.bad{color:var(--red)}
+.pair{font-size:21px;line-height:1.5}
+.pair .s{display:block;padding:10px 14px;background:#f6f3ed;border-radius:12px;margin:6px 0}
+.say{background:var(--green-l);border-radius:14px;padding:12px 14px;margin-top:10px;display:none}
+.say.on{display:block}
+.say .full{font-weight:800;font-size:20px;margin-top:6px;display:none}
+.say .full.on{display:block}
+.timeline{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.tl{flex:1 1 140px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px;text-align:center;opacity:.3;transition:.3s}
+.tl.on{opacity:1;border-color:var(--green)}
+.tl .ic{font-size:30px}
+.tl .kw{font-size:14px;font-weight:800;color:var(--mute)}
+.tl .tx{font-size:14px;margin-top:4px}
+.hide-text .tl .tx{display:none}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.match{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.mi{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px;font-weight:800;cursor:pointer;text-align:left;font:inherit;font-weight:800}
+.mi.sel{border-color:var(--blue);background:var(--blue-l)}
+.mi.ok{border-color:var(--green);background:var(--green-l);cursor:default}
+.mi.def{font-weight:600;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font:inherit;font-weight:800;cursor:pointer}
+.chip.used{opacity:.25;pointer-events:none}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+@media(min-width:720px){.slots{grid-template-columns:repeat(6,1fr)}}
+.slot{border:2px dashed var(--line);border-radius:12px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;cursor:pointer;background:#fff}
+.slot small{font-size:12px;color:var(--mute);font-weight:800}
+.slot.ok{border:2px solid var(--green);background:var(--green-l)}
+.slot.bad{border:2px solid var(--red);background:var(--red-l)}
+.people{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:720px){.people{grid-template-columns:repeat(5,1fr)}}
+.pc{background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;text-align:center;cursor:pointer}
+.pc.on{border-color:var(--blue);background:var(--blue-l)}
+.pc .ic{font-size:40px}
+.pc .nm{font-weight:900}
+.pdet{margin-top:12px;display:none}
+.pdet.on{display:block}
+.kws{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.kw{background:var(--amber-l);border:1.5px solid var(--amber);border-radius:10px;padding:4px 10px;font-weight:800;font-size:16px}
+.model{display:none;margin-top:8px;font-weight:800;color:var(--green)}
+.model.on{display:block}
+label{font-size:14px;font-weight:800;color:var(--mute);display:block;margin-bottom:4px}
+input,select,textarea{width:100%;font:inherit;font-size:17px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+textarea{min-height:70px;resize:vertical}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:720px){.form{grid-template-columns:1.3fr 1.2fr .6fr 1.3fr auto;align-items:end}}
+.tree{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.gen{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;position:relative}
+.gen:not(:empty)+.gen:not(:empty)::before{content:"";position:absolute;top:-12px;left:50%;height:10px;border-left:2px solid var(--line)}
+.genlab{font-size:12px;font-weight:900;color:var(--mute);text-align:center;letter-spacing:.06em;text-transform:uppercase}
+.person{background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px 12px;min-width:140px;text-align:center;position:relative}
+.person .ic{font-size:30px}
+.person .n{font-weight:900}
+.person .r{font-size:14px;color:var(--mute);font-weight:700}
+.person .x{position:absolute;top:4px;right:8px;border:0;background:none;color:var(--mute);cursor:pointer;font-size:16px}
+.person.star{border-color:var(--amber);background:var(--amber-l)}
+.scaf{background:#f6f3ed;border-radius:12px;padding:10px 12px;font-size:16px;margin-top:10px}
+.prompt{font-size:20px;font-weight:900;margin:0 0 6px}
+.need{display:inline-block;background:var(--bc-l);color:var(--bc);border-radius:8px;padding:2px 8px;font-size:14px;font-weight:900;margin-left:6px}
+.need.so{background:var(--blue-l);color:var(--so)}
+.ai{background:var(--blue-l);border-radius:12px;padding:10px 12px;margin-top:10px;display:none;font-size:16px}
+.ai.on{display:block}
+.ai .better{display:block;font-weight:800;margin-top:4px;color:var(--green)}
+.story{list-style:none;padding:0;margin:0}
+.story li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line);font-size:19px}
+.story li .ic{font-size:26px;width:36px;text-align:center}
+.hide-text .story li .t{filter:blur(7px);user-select:none}
+.prog{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 12px}
+.prog i{display:block;height:100%;background:var(--green);width:0;transition:.4s}
+footer{position:fixed;left:0;right:0;bottom:0;background:rgba(251,247,240,.95);backdrop-filter:blur(6px);border-top:1px solid var(--line);padding:10px 16px}
+footer .in{max-width:980px;margin:0 auto;display:flex;justify-content:space-between;gap:8px}
+.hidden{display:none!important}
+.done-banner{background:var(--green-l);border:2px solid var(--green);border-radius:16px;padding:14px;text-align:center;font-weight:900;font-size:20px;margin-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><h1>Your Project 1 · <span>so</span> &amp; <span style="color:var(--bc)">because</span></h1><button class="btn ghost sm" id="ttsT" title="Озвучка">🔊 on</button></div>
+  <nav id="nav"></nav>
+</header>
+<main>
+
+<!-- 1 RULE -->
+<section class="stage" data-t="1 · Rule">
+  <h2>so and because</h2>
+  <p class="sub">Tap each card. What's the difference?</p>
+  <div class="grid2">
+    <div class="rule so" onclick="this.classList.add('open')"><span class="tap">tap 👆</span>
+      <div class="w">so</div>
+      <div class="hid">
+        <div class="flow"><span class="pill">reason 🌧</span> ➡️ <span class="pill">result ☂️</span></div>
+        <div>gives a <b>result</b> = поэтому</div>
+        <div class="ex">My grandfather was born in Spain, <b class="so">so</b> he speaks Spanish very well.</div>
+      </div>
+    </div>
+    <div class="rule bc" onclick="this.classList.add('open')"><span class="tap">tap 👆</span>
+      <div class="w">because</div>
+      <div class="hid">
+        <div class="flow"><span class="pill">result ☂️</span> ⬅️ <span class="pill">reason 🌧</span></div>
+        <div>says <b>why</b> = потому что</div>
+        <div class="ex">He moved to England <b class="bc">because</b> his father got a job in London.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 4px">⚡ Quick check</h3>
+    <div id="quick"></div>
+  </div>
+</section>
+
+<!-- 2 1b -->
+<section class="stage" data-t="2 · Ex 1b">
+  <h2>1b · Complete the sentences</h2>
+  <p class="sub">Choose <b style="color:var(--so)">so</b> or <b style="color:var(--bc)">because</b>.</p>
+  <div class="card" id="ex1b"></div>
+</section>
+
+<!-- 3 EX 2 -->
+<section class="stage" data-t="3 · Ex 2">
+  <h2>2 · Grandad's life</h2>
+  <p class="sub">Join the sentences with <b style="color:var(--so)">so</b> or <b style="color:var(--bc)">because</b>. Then say the whole sentence!</p>
+  <div class="prog"><i id="p2"></i></div>
+  <div class="card" id="pairBox"></div>
+  <div class="card">
+    <h3 style="margin:0">📜 His life story</h3>
+    <div class="timeline" id="tline"></div>
+    <div class="bar hidden" id="retellBar">
+      <button class="btn" onclick="document.getElementById('tline').classList.toggle('hide-text');this.textContent=document.getElementById('tline').classList.contains('hide-text')?'👁 Show text':'🙈 Hide text & retell'">🙈 Hide text &amp; retell</button>
+      <span style="font-size:15px;color:var(--mute)">Retell his life with <b>so</b> and <b>because</b> — only pictures and key words!</span>
+    </div>
+  </div>
+</section>
+
+<!-- 4 SONG -->
+<section class="stage" data-t="4 · Song">
+  <h2>🎵 Song · Our House</h2>
+  <p class="sub">Before you listen: match the words.</p>
+  <div class="card"><div class="match" id="match"></div><div class="fb" id="matchFb"></div></div>
+  <div class="card" id="listenCard" style="opacity:.35;pointer-events:none">
+    <h3 style="margin:0">🎧 Listen (1.18)</h3>
+    <p class="sub" style="margin:4px 0 0">Listen and tap the words in the order you hear them: gap 1, 2, 3…</p>
+    <div class="slots" id="slots"></div>
+    <div class="chips" id="songChips"></div>
+    <div class="bar"><button class="btn" onclick="checkSong()">✅ Check</button><button class="btn ghost" onclick="resetSong()">↺ Again</button></div>
+    <div class="fb" id="songFb"></div>
+  </div>
+</section>
+
+<!-- 5 PICTURE -->
+<section class="stage" data-t="5 · Picture">
+  <h2>2 · Who are the people? What are they doing?</h2>
+  <p class="sub">Look at the picture in the book. Tap a person — use the key words. Use the <b>Present Continuous</b>: <i>He is …ing</i>.</p>
+  <div class="people" id="people"></div>
+  <div class="card pdet" id="pdet"></div>
+  <div class="tnote">⭐ Bonus: add <b>so</b> or <b>because</b> — <i>The brother is running <b>because</b> he's got a date.</i></div>
+</section>
+
+<!-- 6 PROJECT A -->
+<section class="stage" data-t="6 · Soap family">
+  <h2>📺 Project · Create a TV soap family</h2>
+  <p class="sub">Step 1: make a family tree. Add 5–6 people.</p>
+  <div class="card">
+    <label>Name of the soap opera</label>
+    <input id="showName" placeholder="e.g. Life on Maple Street">
+  </div>
+  <div class="card">
+    <div class="form">
+      <div><label>Name</label><input id="fName" placeholder="e.g. Harry"></div>
+      <div><label>Who?</label><select id="fRole"></select></div>
+      <div><label>Age</label><input id="fAge" type="number" min="1" max="110" placeholder="72"></div>
+      <div><label>Job</label><input id="fJob" list="jobs" placeholder="e.g. doctor"><datalist id="jobs"></datalist></div>
+      <div><button class="btn" onclick="addPerson()" style="width:100%">＋ Add</button></div>
+    </div>
+    <div class="fb" id="fFb"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0" id="treeTitle">👪 Family tree</h3>
+    <div class="tree" id="tree"></div>
+    <div class="scaf" id="describe">🗣 Describe each person: <b>This is …</b> &nbsp;·&nbsp; <b>He's / She's … years old.</b> &nbsp;·&nbsp; <b>He's a …</b> &nbsp;·&nbsp; <b>He's …'s husband / son / grandfather.</b></div>
+  </div>
+</section>
+
+<!-- 7 PROJECT B -->
+<section class="stage" data-t="7 · Life story">
+  <h2>📖 Step 2 · Write a life story</h2>
+  <p class="sub">Choose an <b>older</b> person. Give him / her an interesting life! Use <b>so</b> and <b>because</b>.</p>
+  <div class="card" id="pickOld"></div>
+  <div class="card hidden" id="storyBox">
+    <div class="prog"><i id="p7"></i></div>
+    <div id="stepBox"></div>
+  </div>
+  <div class="card hidden" id="finalBox">
+    <h3 style="margin:0 0 6px" id="finalTitle"></h3>
+    <ul class="story" id="storyList"></ul>
+    <div class="bar">
+      <button class="btn ghost" onclick="speakStory()">🔊 Listen</button>
+      <button class="btn" id="hideBtn" onclick="toggleStory()">🙈 Hide text &amp; tell the story</button>
+    </div>
+    <div class="done-banner">🎬 Great job! Your soap opera is ready.</div>
+  </div>
+</section>
+
+</main>
+<footer><div class="in"><button class="btn ghost" id="prev">← Back</button><button class="btn" id="next">Next →</button></div></footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const AI_PROXY="https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";
+let ttsOn=true;
+$("#ttsT").onclick=()=>{ttsOn=!ttsOn;$("#ttsT").textContent=ttsOn?"🔊 on":"🔇 off";speechSynthesis.cancel()};
+function speak(t){if(!ttsOn||!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.9;const v=speechSynthesis.getVoices().find(v=>/en-GB/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)}
+function shake(el){el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake")}
+
+/* ---------- NAV ---------- */
+const stages=[...document.querySelectorAll(".stage")];let cur=0;const done=new Set();
+stages.forEach((s,i)=>{const b=document.createElement("button");b.textContent=s.dataset.t;b.onclick=()=>go(i);$("#nav").appendChild(b)});
+function go(i){cur=Math.max(0,Math.min(stages.length-1,i));stages.forEach((s,k)=>s.classList.toggle("on",k===cur));
+  [...$("#nav").children].forEach((b,k)=>{b.classList.toggle("on",k===cur);b.classList.toggle("done",done.has(k)&&k!==cur)});
+  $("#nav").children[cur].scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
+  $("#prev").disabled=cur===0;$("#next").textContent=cur===stages.length-1?"🏁 Finish":"Next →";window.scrollTo({top:0,behavior:"smooth"});
+  if(cur===6)renderPick();}
+function mark(i){done.add(i);go(cur)}
+$("#prev").onclick=()=>go(cur-1);$("#next").onclick=()=>{done.add(cur);go(cur+1)};
+
+/* ---------- generic gap item ---------- */
+function gapItem(host,n,pre,post,ans,full,onOk){
+  const d=document.createElement("div");d.className="q";
+  d.innerHTML=`<span class="num">${n}</span><span>${pre}</span> <span class="gap">&nbsp;</span> <span>${post}</span>
+    <span class="choices"><button class="btn so sm">so</button><button class="btn bc sm">because</button></span>`;
+  const [bs,bb]=d.querySelectorAll(".choices button");
+  [bs,bb].forEach(b=>b.onclick=()=>{
+    const w=b.textContent;
+    if(w===ans){const g=d.querySelector(".gap");g.textContent=w;g.classList.add("ok");d.querySelector(".choices").remove();speak(full);onOk&&onOk()}
+    else{shake(d);b.disabled=true}
+  });
+  host.appendChild(d);
+}
+
+/* ---------- 1 quick check ---------- */
+const QUICK=[["It was cold,","I put on my coat.","so","It was cold, so I put on my coat."],
+ ["I stayed at home","I was ill.","because","I stayed at home because I was ill."],
+ ["She was hungry,","she made a sandwich.","so","She was hungry, so she made a sandwich."],
+ ["He was late","he missed the bus.","because","He was late because he missed the bus."]];
+let qOk=0;QUICK.forEach((q,i)=>gapItem($("#quick"),i+1,q[0],q[1],q[2],q[3],()=>{if(++qOk===QUICK.length)mark(0)}));
+
+/* ---------- 2 ex 1b ---------- */
+const B1=[["My grandfather speaks Spanish very well","he was born in Spain.","because","My grandfather speaks Spanish very well because he was born in Spain."],
+ ["His father got a job in London,","he moved to England.","so","His father got a job in London, so he moved to England."]];
+let b1=0;B1.forEach((q,i)=>gapItem($("#ex1b"),i+1,q[0],q[1],q[2],q[3],()=>{if(++b1===2)mark(1)}));
+
+/* ---------- 3 ex 2 ---------- */
+const PAIRS=[
+ {a:"His parents didn't have a lot of money.",b:"He didn't go to university.",ans:"so",full:"His parents didn't have a lot of money, so he didn't go to university.",ic:"💸🎓",kw:"money → university"},
+ {a:"He worked on a ship for a few years.",b:"He wanted to travel.",ans:"because",full:"He worked on a ship for a few years because he wanted to travel.",ic:"🚢🌍",kw:"ship ← travel"},
+ {a:"He left the ship.",b:"He got married.",ans:"because",full:"He left the ship because he got married.",ic:"💍",kw:"left the ship ← married"},
+ {a:"He needed a job.",b:"He started work in a factory.",ans:"so",full:"He needed a job, so he started work in a factory.",ic:"🏭",kw:"job → factory"},
+ {a:"He worked hard.",b:"He became the manager.",ans:"so",full:"He worked hard, so he became the manager.",ic:"💪👔",kw:"hard → manager"},
+ {a:"He doesn't work in the factory now.",b:"He retired a few years ago.",ans:"because",full:"He doesn't work in the factory now because he retired a few years ago.",ic:"🏡",kw:"doesn't work ← retired"}];
+let pi=0;
+$("#tline").innerHTML=PAIRS.map((p,i)=>`<div class="tl" id="tl${i}"><div class="ic">${p.ic}</div><div class="kw">${p.kw}</div><div class="tx">${p.full}</div></div>`).join("");
+function showPair(){
+  const p=PAIRS[pi];$("#p2").style.width=(pi/PAIRS.length*100)+"%";
+  $("#pairBox").innerHTML=`<div class="pair"><span class="num">${pi+1}</span>
+    <span class="s">${p.a}</span><span class="s">${p.b}</span></div>
+    <div class="bar"><button class="btn so" data-w="so">so</button><button class="btn bc" data-w="because">because</button></div>
+    <div class="fb" id="pfb"></div>
+    <div class="say" id="say">🗣 <b>Say the whole sentence!</b>
+      <div class="full" id="full">${p.full}</div>
+      <div class="bar"><button class="btn ghost sm" id="showFull">👁 Check</button><button class="btn sm" id="nextPair">${pi<PAIRS.length-1?"Next →":"Finish ✔"}</button></div></div>`;
+  $("#pairBox").querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.w===p.ans){$("#pairBox").querySelectorAll("[data-w]").forEach(x=>x.disabled=true);b.disabled=false;
+      $("#pfb").className="fb ok";$("#pfb").textContent=p.ans==="so"?"✔ so → the result":"✔ because → the reason (why?)";$("#say").classList.add("on")}
+    else{shake(b);b.disabled=true;$("#pfb").className="fb bad";$("#pfb").textContent="Hmm… Which sentence is the reason? Which is the result?"}
+  });
+  $("#showFull").onclick=()=>{$("#full").classList.add("on");speak(p.full)};
+  $("#nextPair").onclick=()=>{$("#tl"+pi).classList.add("on");pi++;
+    if(pi<PAIRS.length)showPair();else{$("#p2").style.width="100%";$("#pairBox").innerHTML=`<div class="done-banner">✔ All done! Now retell Grandad's life 👇</div>`;$("#retellBar").classList.remove("hidden");mark(2)}};
+}
+showPair();
+
+/* ---------- 4 song ---------- */
+const WORDS=[["loud","🔊 very noisy"],["miss","😢 feel sad because someone isn't with you"],["sleep","😴 what you do in bed at night"],["proud","🏆 happy about something good you or your family did"],["rest","🛋 stop working and relax"],["shirt","👔 clothes for the top of your body, with buttons"]];
+const SONG=["rest","sleep","loud","proud","shirt","miss"];
+let mSel=null,mOk=0;
+(function(){
+  const defs=[...WORDS].sort(()=>Math.random()-.5);
+  const L=WORDS.map(w=>`<button class="mi" data-w="${w[0]}">${w[0]}</button>`), R=defs.map(w=>`<button class="mi def" data-d="${w[0]}">${w[1]}</button>`);
+  const mixL=[...L].sort(()=>Math.random()-.5);
+  $("#match").innerHTML=mixL.map((l,i)=>l+R[i]).join("");
+  $("#match").querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{if(b.classList.contains("ok"))return;$("#match").querySelectorAll("[data-w]").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");mSel=b;speak(b.dataset.w)});
+  $("#match").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{
+    if(!mSel||b.classList.contains("ok"))return;
+    if(b.dataset.d===mSel.dataset.w){b.classList.add("ok");mSel.classList.remove("sel");mSel.classList.add("ok");b.textContent=mSel.dataset.w.toUpperCase()+" — "+b.textContent;mSel=null;
+      if(++mOk===WORDS.length){$("#matchFb").className="fb ok";$("#matchFb").textContent="✔ Great! Now listen to the song 🎧";const lc=$("#listenCard");lc.style.opacity=1;lc.style.pointerEvents="auto";lc.scrollIntoView({behavior:"smooth"})}}
+    else{shake(b);$("#matchFb").className="fb bad";$("#matchFb").textContent="Try again!"}
+  });
+})();
+let order=[];
+function renderSong(){
+  $("#slots").innerHTML=SONG.map((_,i)=>`<div class="slot" data-i="${i}"><small>gap ${i+1}</small>${order[i]||""}</div>`).join("");
+  $("#slots").querySelectorAll(".slot").forEach(s=>s.onclick=()=>{const i=+s.dataset.i;if(order[i]){order.splice(i,1);renderSong()}});
+  $("#songChips").innerHTML=[...WORDS].map(w=>w[0]).sort().map(w=>`<button class="chip ${order.includes(w)?"used":""}">${w}</button>`).join("");
+  $("#songChips").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{if(order.length<6){order.push(c.textContent);renderSong()}});
+  $("#songFb").textContent="";
+}
+function checkSong(){
+  let ok=0;$("#slots").querySelectorAll(".slot").forEach((s,i)=>{if(!order[i])return;const r=order[i]===SONG[i];s.classList.add(r?"ok":"bad");if(r)ok++});
+  $("#songFb").className="fb "+(ok===6?"ok":"bad");$("#songFb").textContent=ok===6?"🎉 6/6! Perfect!":`${ok}/6 — listen again and fix the red ones.`;if(ok===6)mark(3);
+}
+function resetSong(){order=[];renderSong()}
+renderSong();
+
+/* ---------- 5 picture ---------- */
+const PEOPLE=[
+ {ic:"👨‍🦳",nm:"Father",kw:["wear / pyjamas","hold / a cup","late for work"],m:"The father is wearing pyjamas. He's holding a cup. He's late for work!"},
+ {ic:"👩",nm:"Mother",kw:["iron / a shirt","wear / a pink dressing gown"],m:"The mother is ironing a shirt. She's wearing a pink dressing gown."},
+ {ic:"🧑",nm:"Brother",kw:["run / out of the house","hold / flowers","a date"],m:"The brother is running out of the house. He's holding flowers because he's got a date."},
+ {ic:"👧",nm:"Sister",kw:["wear / a green top","dance? / sing?"],m:"The sister is wearing a green top. She's dancing."},
+ {ic:"🧒🧒",nm:"The kids",kw:["run / down the stairs","carry / school bags","go / to school"],m:"The kids are running down the stairs. They're going to school."}];
+const seen=new Set();
+$("#people").innerHTML=PEOPLE.map((p,i)=>`<div class="pc" data-i="${i}"><div class="ic">${p.ic}</div><div class="nm">${p.nm}</div></div>`).join("");
+$("#people").querySelectorAll(".pc").forEach(c=>c.onclick=()=>{
+  $("#people").querySelectorAll(".pc").forEach(x=>x.classList.remove("on"));c.classList.add("on");
+  const p=PEOPLE[+c.dataset.i];seen.add(+c.dataset.i);if(seen.size===PEOPLE.length)done.add(4);
+  $("#pdet").classList.add("on");
+  $("#pdet").innerHTML=`<div class="prompt">${p.ic} Who is it? What is ${p.nm==="The kids"?"they":p.nm==="Mother"||p.nm==="Sister"?"she":"he"} doing?</div>
+   <div class="kws">${p.kw.map(k=>`<span class="kw">${k}</span>`).join("")}</div>
+   <button class="btn ghost sm" onclick="this.nextElementSibling.classList.add('on');speak(this.nextElementSibling.textContent)">👁 Example</button>
+   <div class="model">${p.m}</div>`;
+});
+
+/* ---------- 6 family tree ---------- */
+const ROLES=[["grandfather",1,"m","👴"],["grandmother",1,"f","👵"],["father",2,"m","👨"],["mother",2,"f","👩"],["uncle",2,"m","🧔"],["aunt",2,"f","👱‍♀️"],["son",3,"m","👦"],["daughter",3,"f","👧"],["cousin (boy)",3,"m","🧒"],["cousin (girl)",3,"f","👧"],["baby",4,"m","👶"]];
+$("#fRole").innerHTML=ROLES.map(r=>`<option>${r[0]}</option>`).join("");
+$("#jobs").innerHTML=["doctor","nurse","teacher","driver","police officer","cook","shop assistant","engineer","farmer","actor","singer","manager","businessman","businesswoman","student","pupil","retired"].map(j=>`<option value="${j}">`).join("");
+let fam=[];
+function addPerson(){
+  const n=$("#fName").value.trim(),role=$("#fRole").value,age=parseInt($("#fAge").value),job=$("#fJob").value.trim();
+  if(!n||!age){$("#fFb").className="fb bad";$("#fFb").textContent="Write a name and an age.";return}
+  const r=ROLES.find(x=>x[0]===role);
+  fam.push({n:n[0].toUpperCase()+n.slice(1),role,age,job:job||"—",gen:r[1],g:r[2],ic:r[3]});
+  const he=r[2]==="m"?"He":"She";
+  $("#fFb").className="fb ok";$("#fFb").innerHTML=`🗣 Say: <i>This is ${esc(fam.at(-1).n)}. ${he}'s ${age} years old.${job?` ${he}'s ${/^[aeiou]/i.test(job)?"an":"a"} ${esc(job)}.`:""}</i>`;
+  $("#fName").value="";$("#fAge").value="";$("#fJob").value="";$("#fName").focus();renderTree();
+}
+function delP(i){fam.splice(i,1);renderTree()}
+function renderTree(){
+  const sn=$("#showName").value.trim();$("#treeTitle").textContent="👪 "+(sn||"Family tree");
+  const labs={1:"grandparents",2:"parents",3:"children",4:"grandchildren"};
+  $("#tree").innerHTML=[1,2,3,4].map(g=>{const ps=fam.map((p,i)=>({...p,i})).filter(p=>p.gen===g);if(!ps.length)return"";
+    return `<div><div class="genlab">${labs[g]}</div><div class="gen">${ps.map(p=>`<div class="person ${p.age>=50?"star":""}"><button class="x" onclick="delP(${p.i})">✕</button><div class="ic">${p.ic}</div><div class="n">${esc(p.n)}</div><div class="r">${p.role} · ${p.age}</div><div class="r">${esc(p.job)}</div></div>`).join("")}</div></div>`}).join("")||`<p class="sub" style="text-align:center">Add your first person ☝️</p>`;
+  if(fam.length>=4)done.add(5);
+}
+$("#showName").oninput=renderTree;renderTree();
+
+/* ---------- 7 life story ---------- */
+let hero=null,si=0,story=[];
+const STEPS=[
+ {ic:"👶",q:h=>`Where and when was ${h.he.toLowerCase()} born?`,kw:["was born in …","in 19…"],ex:h=>`${h.n} was born in Liverpool in 1952.`},
+ {ic:"🧒",q:h=>`What was ${h.his} childhood like?`,kw:["lived in …","had / didn't have …","his/her parents were …"],ex:h=>`${h.he} lived in a small house with five brothers.`},
+ {ic:"💼",q:h=>`What was ${h.his} first job? Why?`,need:"because",kw:["worked as …","because …"],ex:h=>`${h.he} worked as a cook because ${h.he.toLowerCase()} loved food.`},
+ {ic:"💘",q:h=>`How did ${h.he.toLowerCase()} meet ${h.his} ${h.g==="m"?"wife":"husband"}?`,kw:["met … at / in …","fell in love","got married in …"],ex:h=>`${h.he} met ${h.his} ${h.g==="m"?"wife":"husband"} at a party and they got married in 1975.`},
+ {ic:"⚡",q:h=>`Something interesting happened! What? What did ${h.he.toLowerCase()} do?`,need:"so",kw:["won …","lost …","found …","moved to …","so …"],ex:h=>`${h.he} won a lot of money, so ${h.he.toLowerCase()} bought a big house by the sea.`},
+ {ic:"🏡",q:h=>`What does ${h.he.toLowerCase()} do now?`,kw:["is retired","lives with …","likes …-ing"],ex:h=>`Now ${h.he.toLowerCase()} is retired. ${h.he} lives with ${h.his} family and likes gardening.`}];
+function renderPick(){
+  const olds=fam.filter(p=>p.age>=45||p.gen===1);
+  if(hero)return;
+  $("#pickOld").innerHTML=olds.length?`<h3 style="margin:0 0 8px">Who is the hero of the story?</h3><div class="chips">${olds.map(p=>`<button class="chip" data-n="${esc(p.n)}">${p.ic} ${esc(p.n)} (${p.age})</button>`).join("")}</div>`
+   :`<p>First add an older person (a grandparent) to your family tree. <button class="btn sm" onclick="go(5)">← Family tree</button></p>`;
+  $("#pickOld").querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{const p=fam.find(x=>x.n===b.dataset.n);
+    hero={...p,he:p.g==="m"?"He":"She",his:p.g==="m"?"his":"her"};$("#pickOld").innerHTML=`<b>${p.ic} The life of ${esc(p.n)}</b> <button class="btn ghost sm" onclick="hero=null;story=[];si=0;$('#storyBox').classList.add('hidden');$('#finalBox').classList.add('hidden');renderPick()">change</button>`;
+    $("#storyBox").classList.remove("hidden");si=0;story=[];showStep()});
+}
+function showStep(){
+  const s=STEPS[si];$("#p7").style.width=(si/STEPS.length*100)+"%";
+  $("#stepBox").innerHTML=`<div class="prompt">${s.ic} ${s.q(hero)}${s.need?`<span class="need ${s.need==="so"?"so":""}">use: ${s.need}</span>`:""}</div>
+   <div class="kws">${s.kw.map(k=>`<span class="kw">${k}</span>`).join("")}</div>
+   <textarea id="ans" placeholder="Write one or two sentences…"></textarea>
+   <div class="bar"><button class="btn" id="chk">✨ Check</button><button class="btn ghost sm" id="exB">💡 Example</button></div>
+   <div class="fb" id="exT"></div>
+   <div class="ai" id="aiBox"></div>`;
+  $("#exB").onclick=()=>{$("#exT").className="fb";$("#exT").innerHTML="e.g. <i>"+esc(s.ex(hero))+"</i>"};
+  $("#chk").onclick=checkStep;
+}
+async function checkStep(){
+  const t=$("#ans").value.trim(),s=STEPS[si];if(!t)return;
+  const box=$("#aiBox");box.classList.add("on");box.innerHTML="✍️ …";$("#chk").disabled=true;
+  let res=null;
+  try{
+    const r=await fetch(AI_PROXY+"?forceFunctionRegion=us-east-1",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({systemInstruction:{parts:[{text:`You are a kind English teacher. An A2 student writes a life story of an invented TV soap-opera character (${hero.n}, ${hero.g==="m"?"male":"female"}, ${hero.age} years old). Check ONE answer. Past Simple is expected for the past, Present Simple for "now".${s.need?` The student must use "${s.need}" in this answer.`:""}
+Reply ONLY with JSON: {"ok": true/false, "feedback_ru": "ONE short encouraging sentence in Russian; if there is a mistake, name it simply${s.need?`; if '${s.need}' is missing, ask to add it`:""}", "better": "the student's idea as correct simple English (A2), keep her meaning and the character's name"}`}]},
+        contents:[{role:"user",parts:[{text:`Question: ${s.q(hero)}\nAnswer: ${t}`}]}],generationConfig:{responseMimeType:"application/json",temperature:.5}})});
+    const j=await r.json();if(!r.ok)throw 0;res=JSON.parse(j.candidates[0].content.parts[0].text);
+  }catch(e){res=null}
+  const need=s.need&&!new RegExp("\\b"+s.need+"\\b","i").test(t);
+  if(res){box.innerHTML=`${esc(res.feedback_ru)}${res.better?`<span class="better">✔ ${esc(res.better)}</span>`:""}`;if(res.better)speak(res.better)}
+  else box.innerHTML=need?`Добавь <b>${s.need}</b> 🙂`:"👍 Сверь с учителем.";
+  const final=(res&&res.better)||t;
+  box.innerHTML+=`<div class="bar">${need&&!res?"":`<button class="btn sm" id="keep">${si<STEPS.length-1?"Next →":"Finish ✔"}</button>`}<button class="btn ghost sm" id="retry">✏️ Edit</button></div>`;
+  $("#retry").onclick=()=>{box.classList.remove("on");$("#chk").disabled=false;$("#ans").focus()};
+  const k=$("#keep");if(k)k.onclick=()=>{story[si]={ic:s.ic,t:final};si++;if(si<STEPS.length)showStep();else finishStory()};
+}
+function finishStory(){
+  $("#storyBox").classList.add("hidden");$("#finalBox").classList.remove("hidden");
+  $("#finalTitle").textContent=`📖 The life of ${hero.n}`+($("#showName").value.trim()?` · ${$("#showName").value.trim()}`:"");
+  $("#storyList").innerHTML=story.map(s=>`<li><span class="ic">${s.ic}</span><span class="t">${esc(s.t)}</span></li>`).join("");
+  done.add(6);go(6);
+}
+function speakStory(){speak(story.map(s=>s.t).join(" "))}
+function toggleStory(){const f=$("#finalBox");f.classList.toggle("hide-text");$("#hideBtn").textContent=f.classList.contains("hide-text")?"👁 Show text":"🙈 Hide text & tell the story"}
+
+go(0);
+</script>
+</body>
+</html>
