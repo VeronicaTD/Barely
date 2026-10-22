@@ -74,6 +74,14 @@ main{max-width:1100px;margin:0 auto;padding-top:22px}
 .pair{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:14px;background:var(--paper);border:2px solid var(--line)}
 .pair button{font-family:var(--f-word);font-weight:700;font-size:clamp(28px,4vw,38px);padding:4px 10px;border-radius:10px;border:2px solid transparent}
 .pair button.e1{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.magic{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.mcell{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:14px;background:var(--paper);border:2px solid var(--line)}
+.mcell .word{font-size:clamp(28px,4vw,38px)}
+.mcell.on{border-color:var(--vowel);background:var(--vowel-soft)}
+.eb{width:52px;height:52px;border-radius:12px;border:3px solid var(--vowel);color:var(--vowel);font-family:var(--f-word);font-weight:700;font-size:24px;flex:none}
+.mcell.on .eb{background:var(--vowel);color:var(--card)}
+.cols.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cols.two .col>button{font-family:var(--f-body);font-size:22px}
 .pair .arr{color:var(--muted);font-size:22px}
 
 /* speed column */
@@ -268,23 +276,24 @@ const LEVELS=[
  {n:12,t:'Цифра дня',s:'все рекорды урока',min:3},
  {n:13,t:'Столбик с сочетаниями',s:'stop · ring · think · chin',min:4},
  {n:14,t:'Открытый слог',s:'a_e · i_e · o_e · go',min:6},
- {n:15,t:'Бонус',s:'скороговорки и резерв',min:0}];
+ {n:15,t:'Открытый и закрытый слог',s:'все пять гласных',min:15},
+ {n:16,t:'Бонус',s:'скороговорки и резерв',min:0}];
 
 /* ---------- каркас ---------- */
 let cur=store.get('cur',0);
 const app=$('#app');
-function renderPills(){const p=$('#pills');p.innerHTML='';p.append(h('button',{class:'pill'+(cur===0?' on':''),title:'Карта уровней',onclick:()=>go(0)},'⌂'));LEVELS.forEach(l=>p.append(h('button',{class:'pill'+(cur===l.n?' on':'')+(R['done'+l.n]?' done':''),title:l.t,onclick:()=>go(l.n)},l.n===15?'★':String(l.n))))}
+function renderPills(){const p=$('#pills');p.innerHTML='';p.append(h('button',{class:'pill'+(cur===0?' on':''),title:'Карта уровней',onclick:()=>go(0)},'⌂'));LEVELS.forEach(l=>p.append(h('button',{class:'pill'+(cur===l.n?' on':'')+(R['done'+l.n]?' done':''),title:l.t,onclick:()=>go(l.n)},l.n===16?'★':String(l.n))))}
 function teacher(html){return h('div',{class:'teacher',hidden:!teacherOn,html})}
-function head(l){return h('div',{class:'lvlhead'},h('div',{class:'lvlnum'},l.n===15?'★':String(l.n).padStart(2,'0')),h('div',{},h('div',{class:'lvlttl'},l.t),h('div',{class:'lvlsub'},l.s+(l.min?` · ${l.min} мин`:''))))}
+function head(l){return h('div',{class:'lvlhead'},h('div',{class:'lvlnum'},l.n===16?'★':String(l.n).padStart(2,'0')),h('div',{},h('div',{class:'lvlttl'},l.t),h('div',{class:'lvlsub'},l.s+(l.min?` · ${l.min} мин`:''))))}
 function nav(n){const done=()=>{R['done'+n]=true;saveR()};return h('div',{class:'navbar'},
   h('button',{class:'btn ghost',onclick:()=>go(n-1)},n===1?'← Карта':'← Назад'),
-  n<15?h('button',{class:'btn big',onclick:()=>{done();go(n+1)}},'Уровень пройден →'):h('button',{class:'btn ghost',onclick:()=>go(0)},'Карта'))}
-function go(n){if('speechSynthesis'in window)speechSynthesis.cancel();cur=Math.max(0,Math.min(15,n));store.set('cur',cur);renderPills();app.innerHTML='';
+  n<16?h('button',{class:'btn big',onclick:()=>{done();go(n+1)}},'Уровень пройден →'):h('button',{class:'btn ghost',onclick:()=>go(0)},'Карта'))}
+function go(n){if('speechSynthesis'in window)speechSynthesis.cancel();cur=Math.max(0,Math.min(16,n));store.set('cur',cur);renderPills();app.innerHTML='';
   if(cur===0)return home();const l=LEVELS[cur-1];app.append(head(l));BUILD[cur](l);app.append(nav(cur));scrollTo({top:0})}
 
 function home(){
   app.append(h('div',{class:'hero'},h('div',{},h('h1',{html:'Урок <em>рекордов</em>'}),h('p',{},'Двенадцать уровней. В каждом своя цифра. В конце считаем всё вместе и сравниваем с прошлыми уроками.'))));
-  const m=h('div',{class:'map'});LEVELS.forEach(l=>m.append(h('button',{class:'mcard'+(R['done'+l.n]?' done':''),onclick:()=>go(l.n)},h('div',{class:'n'},l.n===15?'★':String(l.n)),h('div',{},h('b',{},l.t),h('small',{},l.s)))));
+  const m=h('div',{class:'map'});LEVELS.forEach(l=>m.append(h('button',{class:'mcard'+(R['done'+l.n]?' done':''),onclick:()=>go(l.n)},h('div',{class:'n'},l.n===16?'★':String(l.n)),h('div',{},h('b',{},l.t),h('small',{},l.s)))));
   app.append(m,h('div',{class:'gap'}),h('div',{class:'row'},h('button',{class:'btn big',onclick:()=>go(1)},'Начать с уровня 1'),
     h('button',{class:'btn ghost',onclick:e=>{const b=e.currentTarget;if(b.dataset.c){for(const k in R)delete R[k];saveR();go(0)}else{b.dataset.c=1;b.textContent='Точно стереть результаты? Нажми ещё раз'}}},'Новый урок: стереть результаты')));
   app.append(teacher('Ученик открывает ссылку и показывает экран. Озвучка слов звучит у него. Эти серые рамки видны, пока включена кнопка «учитель» сверху: перед демонстрацией экрана её можно выключить.'));
@@ -318,11 +327,11 @@ BUILD[13]=()=>{app.append(teacher('<i>Twenty words — old and new. Finger. Go.<
 const markOpen=w=>/[aeiou][^aeiou]+e$/.test(w)?w.replace(/([aeiou])([^aeiou]+)e$/,'<span class="vw">$1</span>$2<span class="mute">e</span>'):/[aeiou]$/.test(w)&&w.length<=3?w.replace(/([aeiou])$/,'<span class="vw">$1</span>'):w;
 const L14=['cake','kite','home','cap','bike','note','go','time','lake','hop','rope','pin','game','hide','stone','hat','smile','nose','kit','plane'];
 const P14=[['cap','cape'],['hat','hate'],['tap','tape'],['mad','made'],['plan','plane'],['kit','kite'],['pin','pine'],['rip','ripe'],['slid','slide'],['hop','hope'],['not','note'],['rob','robe'],['cod','code'],['no','not'],['go','got'],['so','sock']];
-function pairsView(key){
+function pairsView(key,list=P14){
   const p=h('div',{class:'panel'});let marks=true;const grid=h('div',{class:'pairs'});const st={};const errEl=h('b',{},'0');
   const rec=store.get('rec_'+key,null);const recEl=h('b',{},rec?rec+' с':'—');
   const T=makeTimer(t=>{const e=Object.values(st).filter(Boolean).length;R[key]={time:t,e1:e};saveR();const r=store.get('rec_'+key,null);if(e<=2&&(!r||t<r)){store.set('rec_'+key,t);recEl.textContent=t+' с · новый!'}});
-  function draw(){grid.innerHTML='';P14.forEach((pr,i)=>{const row=h('div',{class:'pair'});pr.forEach((w,j)=>{const id=i+'_'+j;const b=h('button',{class:st[id]?'e1':'',html:marks?markOpen(w):w});b.onclick=()=>{st[id]=!st[id];b.className=st[id]?'e1':'';errEl.textContent=Object.values(st).filter(Boolean).length;say(w)};row.append(b);if(!j)row.append(h('span',{class:'arr'},'→'))});grid.append(row)})}
+  function draw(){grid.innerHTML='';list.forEach((pr,i)=>{const row=h('div',{class:'pair'});pr.forEach((w,j)=>{const id=i+'_'+j;const b=h('button',{class:st[id]?'e1':'',html:marks?markOpen(w):w});b.onclick=()=>{st[id]=!st[id];b.className=st[id]?'e1':'';errEl.textContent=Object.values(st).filter(Boolean).length;say(w)};row.append(b);if(!j)row.append(h('span',{class:'arr'},'→'))});grid.append(row)})}
   const mB=h('button',{class:'btn ghost',onclick:()=>{marks=!marks;mB.textContent=marks?'Без подсказки':'С подсказкой';draw()}},'Без подсказки');
   p.append(h('div',{class:'row'},T.el,h('button',{class:'btn big',onclick:()=>T.running?T.stop():(T.reset(),T.start())},'Старт / стоп'),h('button',{class:'btn ghost',onclick:()=>T.reset()},'Сброс'),mB,h('div',{class:'stat'},h('small',{},'рекорд'),recEl),h('div',{class:'stat'},h('small',{},'ошибки'),errEl)),h('div',{class:'gap'}),grid,h('p',{class:'legend'},'Нажми на слово с ошибкой — оно станет красным. Рекорд засчитывается только при 2 ошибках и меньше.'));draw();return p}
 BUILD[14]=()=>{
@@ -330,6 +339,37 @@ BUILD[14]=()=>{
   const tabs=h('div',{class:'tabs'});const box=h('div');
   [['Пары',()=>pairsView('l14p')],['Столбик на скорость',()=>speedColumn(L14,'l14',false)]].forEach(([t,f],i)=>tabs.append(h('button',{class:'tab'+(i?'':' on'),onclick:e=>{tabs.querySelectorAll('.tab').forEach(x=>x.className='tab');e.currentTarget.className='tab on';box.innerHTML='';box.append(f())}},t)));
   app.append(tabs,box);box.append(pairsView('l14p'))};
+
+const isOpen=w=>/[aeiou][^aeiou]+e$/i.test(w)||/^[^aeiou]*[aeiou]$/i.test(w);
+const P15=[['cap','cape'],['mad','made'],['plan','plane'],['tap','tape'],['pet','Pete'],['them','theme'],['men','me'],['hen','he'],['bet','be'],['kit','kite'],['pin','pine'],['rid','ride'],['slim','slime'],['hop','hope'],['not','note'],['rob','robe'],['got','go'],['cut','cute'],['tub','tube'],['cub','cube'],['us','use'],['plum','plume'],['duck','duke']];
+const S15=['cake','cap','pine','pin','home','hop','cute','cut','Pete','pet','tube','tub','kite','kit','he','hen','go','got','me','men'];
+const M15=['cap','tap','mad','plan','hat','pet','them','kit','pin','rip','slid','hop','not','rob','cod','cut','tub','cub','us','plum'];
+const L15=['cute','kite','Pete','hop','made','tube','pine','cut','home','he','plane','cub','smile','note','pet','rule','slide','me','hat','June'];
+const T15=[{p:'🚲',t:'Pete rides a bike to the lake.'},{p:'🏞️',t:'The lake is not big, but it is fun.'},{p:'🪁',t:'Jane has a red kite and a cap.'},{p:'💨',t:'The wind takes the kite up!'},{p:'🐶',t:'Pete has a cute pup.'},{p:'🏡',t:'The pup hops and digs at home.'},{p:'🪵',t:'Then Jane and Pete sit on a log and smile.'}];
+const T15W=T15.reduce((n,l)=>n+l.t.split(/\s+/).length,0);
+function magicView(){
+  const p=h('div',{class:'panel'});const g=h('div',{class:'magic'});const cnt=h('span',{class:'progress'},'Превращено 0 из '+M15.length);const on=new Set();
+  M15.forEach(w=>{const word=h('div',{class:'word',html:w});const cell=h('div',{class:'mcell'},word);const b=h('button',{class:'eb'},'+e');
+    b.onclick=()=>{const was=on.has(w);was?on.delete(w):on.add(w);cell.classList.toggle('on',!was);const cur=was?w:w+'e';word.innerHTML=was?w:markOpen(cur);b.textContent=was?'+e':'−e';say(cur);cnt.textContent=`Превращено ${on.size} из ${M15.length}`};
+    word.onclick=()=>say(on.has(w)?w+'e':w);cell.append(b);g.append(cell)});
+  p.append(h('div',{class:'row'},cnt),h('div',{class:'gap'}),g);return p}
+function miniText(){
+  const p=h('div',{class:'panel'});const list=h('div',{class:'textlines'});T15.forEach(l=>list.append(h('div',{class:'tl'},h('div',{class:'p'},l.p),h('div',{class:'t',html:l.t.split(' ').map(w=>{const c=w.replace(/[^A-Za-z]/g,'');return isOpen(c)&&c.length>2&&c.toLowerCase()!=='the'?w.replace(c,markOpen(c)):w}).join(' ')}))));
+  const res=h('div',{class:'row'});const draw=()=>{res.innerHTML='';const a=R.l15t||{};[['1-й заход',a.t1],['2-й заход',a.t2]].forEach(([n,v])=>res.append(h('div',{class:'stat'},h('small',{},n),h('b',{},v?v+' с':'—'))))};
+  let which=(R.l15t&&R.l15t.t1)?2:1;const lab=h('span',{class:'progress'});const setLab=()=>lab.textContent=`Сейчас: ${which}-й заход · ${T15W} слов`;
+  const T=makeTimer(t=>{R.l15t=R.l15t||{};R.l15t['t'+which]=t;saveR();draw();which=which===1?2:1;setLab()});
+  p.append(h('div',{class:'row'},T.el,h('button',{class:'btn big',onclick:()=>T.running?T.stop():(T.reset(),T.start())},'Старт / стоп'),h('button',{class:'btn ghost',onclick:()=>{which=1;setLab()}},'Это 1-й заход'),lab),res,h('div',{class:'gap'}),list);setLab();draw();return p}
+BUILD[15]=()=>{
+  app.append(teacher('Шесть заданий от лёгкого к быстрому. Главный вопрос всего уровня: <i>Is there an e at the end? Open or closed? Long or short?</i><br>1. Сортировка: читает слово и сама решает колонку.<br>2. Волшебная e: читает закрытое слово, нажимает +e, читает новое. <i>Cut — add e — cute. U says its name.</i><br>3. Пары всех гласных: с подсказкой, потом без, на время.<br>4. На слух: звучит слово, она выбирает из пары.<br>5. Столбик на скорость.<br>6. Мини-текст: два захода на время.<br>Если время поехало, режем сначала «На слух», потом «Волшебную e».'));
+  const tabs=h('div',{class:'tabs'});const box=h('div');
+  const parts=[['Сортировка',()=>{const el=sorter(shuffle(S15),['открытый','закрытый'],w=>isOpen(w)?'открытый':'закрытый','l15s');el.querySelector('.cols').classList.add('two');return h('div',{},teacher('Открытый — гласная звучит как в алфавите (cake, he). Закрытый — короткая (cap, hen).'),el)}],
+    ['Волшебная e',magicView],
+    ['Пары',()=>pairsView('l15p',P15)],
+    ['На слух',()=>listenGame(P15.map(x=>x.slice()),shuffle(P15).slice(0,12).map(pr=>pr[Math.random()*2|0]),'l15l','Слушай и выбери слово из пары.')],
+    ['Столбик',()=>speedColumn(L15,'l15',false)],
+    ['Мини-текст',miniText]];
+  parts.forEach(([t,f],i)=>tabs.append(h('button',{class:'tab'+(i?'':' on'),onclick:e=>{tabs.querySelectorAll('.tab').forEach(x=>x.className='tab');e.currentTarget.className='tab on';box.innerHTML='';box.append(f())}},t)));
+  app.append(tabs,box);box.append(parts[0][1]())};
 
 /* ---------- 2: на слух ---------- */
 function listenGame(rows,seq,key,intro){
@@ -498,6 +538,7 @@ BUILD[12]=()=>{
   const l10=R.l10||{};card('Смешанный столбик',l10.time!=null?l10.time+' с':'—',`th/w/s/t: ${l10.e1??'—'} ош. · гласные: ${l10.e2??'—'} ош.`);
   const l13=R.l13||{};card('Столбик с сочетаниями',l13.time!=null?l13.time+' с':'—',`согласные: ${l13.e1??'—'} ош. · гласные: ${l13.e2??'—'} ош.`);
   const l14=R.l14||{},l14p=R.l14p||{};card('Открытый слог: пары',l14p.time!=null?l14p.time+' с':'—',l14p.e1!=null?`${l14p.e1} ош.`:'');card('Открытый слог: столбик',l14.time!=null?l14.time+' с':'—',l14.e1!=null?`${l14.e1} ош.`:'');
+  const l15=R.l15||{},l15p=R.l15p||{},l15t=R.l15t||{};card('Все гласные: сортировка',R.l15s?`${R.l15s.err} ош.`:'—','открытый / закрытый');card('Все гласные: пары',l15p.time!=null?l15p.time+' с':'—',l15p.e1!=null?`${l15p.e1} ош.`:'');card('Все гласные: на слух',R.l15l?`${R.l15l.ok} / ${R.l15l.total}`:'—','');card('Все гласные: столбик',l15.time!=null?l15.time+' с':'—',l15.e1!=null?`${l15.e1} ош.`:'');card('Мини-текст',`${T15W} слов`,`${l15t.t1?l15t.t1+' с':'—'} → ${l15t.t2?l15t.t2+' с':'—'}`);
   const t=R.l11||{};const best=Math.min(...[t.t1,t.t2].filter(Boolean));
   card('Текст',`${TEXTWORDS} слов`,`${t.t1?t.t1+' с':'—'} → ${t.t2?t.t2+' с':'—'}${isFinite(best)?` · ${Math.round(TEXTWORDS/best*60)} слов в минуту`:''}`);
   const hist=[['урок 6',24],['урок 7',34],['урок 8',38],['сегодня',TEXTWORDS]];const mx=TEXTWORDS;
@@ -505,7 +546,7 @@ BUILD[12]=()=>{
   app.append(h('div',{class:'panel'},g),h('div',{class:'gap'}),h('div',{class:'panel'},h('div',{class:'lvlsub',style:'font-weight:700'},'Слов в тексте'),bars))};
 
 /* ---------- 13: бонус ---------- */
-BUILD[15]=()=>{
+BUILD[16]=()=>{
   app.append(teacher('Резерв, если осталось время. Скороговорки: медленно, потом быстро. Девятая строка: она сама дописывает из слов на доске, ты записываешь, она читает.'));
   const F=['Tim and Sam sit with ten thin cats.','Beth sets the wet dish on the mat.','Seth has a thick sock and a thin sock.','Is it a bag, a bug or a big bog?'];
   const list=h('div',{class:'textlines'});F.forEach(f=>list.append(h('div',{class:'tl'},h('button',{class:'ico',onclick:()=>say(f,.75)},'🔊'),h('div',{class:'t',html:markDg(f)}))));
