@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Урок рекордов 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Unbounded:wght@500;700;800&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout: тетрадь в клетку; сверху полоса уровней, ниже одна рабочая зона уровня. Открытая дверь — зелёная, закрытая — синяя */
+:root{
+  --paper:#F3F6FA; --grid:#DCE5F0; --card:#FFFFFF; --ink:#18223A; --muted:#5B6782;
+  --pen:#2B47C9; --pen-soft:#E3E8FB; --red:#D2402F; --red-soft:#FBE4E0;
+  --ok:#1E8A55; --ok-soft:#DDF3E7; --dg:#C2410C; --dg-soft:#FFE7D6;
+  --magic:#7A3FB8; --magic-soft:#EFE5FA; --line:#C9D4E3; --gold:#B7791F; --gold-soft:#FDF1D8;
+  --f-word:"Andika","Comic Sans MS",system-ui,sans-serif;
+  --f-head:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Andika",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#131A2B; --grid:#1D2740; --card:#1B2438; --ink:#EEF2FA; --muted:#9AA6C2;
+  --pen:#8EA2FF; --pen-soft:#25305A; --red:#FF7B6B; --red-soft:#4A2221;
+  --ok:#5BD69A; --ok-soft:#173A2B; --dg:#FF9F5A; --dg-soft:#47290F;
+  --magic:#C79BFF; --magic-soft:#33224D; --line:#2C3956; --gold:#F2C060; --gold-soft:#3D3115; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#131A2B; --grid:#1D2740; --card:#1B2438; --ink:#EEF2FA; --muted:#9AA6C2;
+  --pen:#8EA2FF; --pen-soft:#25305A; --red:#FF7B6B; --red-soft:#4A2221;
+  --ok:#5BD69A; --ok-soft:#173A2B; --dg:#FF9F5A; --dg-soft:#47290F;
+  --magic:#C79BFF; --magic-soft:#33224D; --line:#2C3956; --gold:#F2C060; --gold-soft:#3D3115; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.45;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+input{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:8px;padding:6px 10px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);
+  margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  border-bottom:2px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.brand{font-family:var(--f-head);font-weight:800;font-size:15px;letter-spacing:.02em;margin-right:4px}
+.brand b{color:var(--pen)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.chip{font-family:var(--f-head);font-weight:700;font-size:13px;width:34px;height:34px;border-radius:50%;
+  border:2px solid var(--line);background:var(--card);display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.chip.on{background:var(--pen);border-color:var(--pen);color:var(--card)}
+.chip.done{border-color:var(--ok);color:var(--ok)}
+.chip.on.done{color:var(--card)}
+.tool{font-size:14px;padding:6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--card)}
+.tool.on{border-color:var(--pen);background:var(--pen-soft)}
+
+main{max-width:980px;margin:22px auto 0}
+.head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.lvl{font-family:var(--f-head);font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--pen)}
+h1{font-family:var(--f-head);font-weight:700;font-size:clamp(22px,4vw,32px);margin:0;text-wrap:balance}
+.mins{font-size:14px;color:var(--muted)}
+.lead{color:var(--muted);margin:4px 0 16px;max-width:62ch}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;min-width:0}
+.teacher{background:var(--gold-soft);border:2px dashed var(--gold);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:15px}
+.teacher i{display:block}
+.teacher::before{content:"учитель";display:block;font-family:var(--f-head);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+
+.word{font-family:var(--f-word);font-weight:700;font-size:clamp(26px,4.4vw,38px);line-height:1.15;letter-spacing:.02em}
+.me{color:var(--magic);text-decoration:underline wavy;text-underline-offset:6px}
+.dg{color:var(--dg)}
+.hints-off .me{color:inherit;text-decoration:none}
+.hints-off .dg{color:inherit}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.w{border:2px solid transparent;border-radius:10px;padding:6px 10px;text-align:left;background:var(--paper)}
+.w:hover{border-color:var(--line)}
+.w.err{background:var(--red-soft);border-color:var(--red)}
+.w.err2{background:var(--ok-soft);border-color:var(--ok)}
+.w .n{font-family:var(--f-head);font-size:11px;color:var(--muted);display:block;font-variant-numeric:tabular-nums}
+
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.btn{font-family:var(--f-head);font-weight:700;font-size:14px;padding:10px 18px;border-radius:12px;background:var(--pen);color:var(--card)}
+.btn.ghost{background:var(--card);color:var(--pen);border:2px solid var(--pen)}
+.btn.red{background:var(--red)}
+.btn.ok{background:var(--ok)}
+.btn:disabled{opacity:.4;cursor:default}
+.clock{font-family:var(--f-head);font-weight:800;font-size:34px;font-variant-numeric:tabular-nums;min-width:4ch}
+.clock.run{color:var(--red)}
+.passes{display:flex;gap:6px;flex-wrap:wrap}
+.pass{font-size:14px;padding:4px 10px;border-radius:999px;background:var(--pen-soft);font-variant-numeric:tabular-nums}
+.pass.best{background:var(--ok-soft);color:var(--ok);font-weight:700}
+.errc{font-size:14px;color:var(--red);font-weight:700}
+
+/* двери */
+.doors{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.door{border-radius:16px;padding:22px 12px;text-align:center;border:3px solid;font-family:var(--f-head);font-weight:700;font-size:18px}
+.door svg{display:block;margin:0 auto 8px}
+.door.closed{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
+.door.open{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.door.flash-ok{outline:5px solid var(--ok)}
+.door.flash-bad{outline:5px solid var(--red)}
+.big{font-family:var(--f-word);font-weight:700;font-size:clamp(44px,9vw,76px);text-align:center;min-height:1.3em}
+.score{font-family:var(--f-head);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+
+table.dt{width:100%;border-collapse:separate;border-spacing:6px}
+.dt th{font-family:var(--f-head);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:0 6px}
+.dt td{background:var(--paper);border-radius:10px;padding:10px;vertical-align:middle}
+.dt td.letter{font-family:var(--f-word);font-weight:700;font-size:36px;text-align:center;width:70px;background:var(--card)}
+.cell{width:100%;text-align:left;min-height:52px}
+.cell .q{font-family:var(--f-head);font-size:24px;color:var(--line)}
+.cell .ex{font-family:var(--f-word);font-weight:700;font-size:26px}
+.cell .snd{font-size:16px;color:var(--muted);margin-left:8px}
+.tbl-wrap{overflow-x:auto}
+
+.pairs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.pair{display:grid;grid-template-columns:28px 1fr 18px 1fr;align-items:center;gap:6px;background:var(--paper);border-radius:10px;padding:4px 8px}
+.pair .n{font-family:var(--f-head);font-size:11px;color:var(--muted)}
+.pair .arr{color:var(--muted);text-align:center}
+.pair .w{background:transparent;padding:4px 6px}
+.only-open .pair .left,.only-open .pair .arr{visibility:hidden}
+
+.ladders{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.ladder{background:var(--paper);border-radius:12px;padding:12px}
+.ladder h3{font-family:var(--f-head);font-size:13px;margin:0 0 8px;color:var(--muted);font-weight:700}
+.steps{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.step{display:flex;align-items:center;gap:10px}
+.step .k{font-family:var(--f-head);font-size:11px;color:var(--muted);width:18px}
+.step .word{font-size:30px}
+.step.hidden-step .word{color:var(--line)}
+.ch{background:var(--gold-soft);color:var(--gold);border-radius:4px;padding:0 2px}
+
+.txt .line{display:flex;gap:12px;align-items:baseline;padding:4px 0}
+.txt .ln{font-family:var(--f-head);font-size:12px;color:var(--muted);width:22px;flex:none}
+.txt .line .word{font-size:clamp(24px,3.6vw,34px);font-weight:700}
+.txt .line.dim{opacity:.18}
+.tw{cursor:pointer;border-radius:6px;padding:0 2px}
+.tw.err{background:var(--red-soft);color:var(--red)}
+
+.list{margin:0;padding-left:20px}
+.list li{margin:4px 0}
+
+.sum{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.st{background:var(--paper);border-radius:12px;padding:12px}
+.st .l{font-size:13px;color:var(--muted)}
+.st .v{font-family:var(--f-head);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
+.st .s{font-size:14px;color:var(--muted)}
+.chart{width:100%;max-width:100%;height:auto;display:block}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px}
+.fb{font-family:var(--f-head);font-weight:700;font-size:18px;text-align:center;min-height:1.6em}
+.fb.good{color:var(--ok)} .fb.bad{color:var(--red)}
+@media (max-width:520px){.doors{grid-template-columns:1fr 1fr}.door{padding:14px 6px;font-size:14px}.clock{font-size:28px}}
+@media (prefers-reduced-motion:no-preference){.chip,.w,.door{transition:background .15s,border-color .15s,outline-color .15s}}
+</style>
+
+</head>
+<body>
+<div class="top">
+  <div class="brand">Урок <b>рекордов 2</b></div>
+  <div class="chips" id="chips"></div>
+  <button class="tool" id="hints">✨ подсказки</button>
+  <button class="tool" id="tts">🔊 голос</button>
+  <button class="tool" id="tch">учитель</button>
+</div>
+<main id="app"></main>
+
+<script>
+(()=>{
+/* ---------- хранилище ---------- */
+const P='rekordy2_';
+const store={get(k,d){try{const v=localStorage.getItem(P+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(P+k,JSON.stringify(v))}catch(e){}}};
+let R=store.get('res',{});            // результаты этого урока
+let BEST=store.get('best',{});        // рекорды (не стираются)
+const save=()=>{store.set('res',R);store.set('best',BEST)};
+let ttsOn=store.get('tts',true),teacherOn=store.get('teacher',true),hintsOn=store.get('hints',true);
+let cur=store.get('cur',0);
+
+/* ---------- утилиты ---------- */
+const $=s=>document.querySelector(s);
+function h(tag,attrs={},...kids){const el=document.createElement(tag);
+  for(const[k,v]of Object.entries(attrs||{})){if(v==null)continue;
+    if(k==='class')el.className=v;else if(k==='html')el.innerHTML=v;else if(k.startsWith('on'))el.addEventListener(k.slice(2),v);else el.setAttribute(k,v)}
+  for(const c of kids.flat()){if(c==null||c===false)continue;el.append(c.nodeType?c:document.createTextNode(c))}return el}
+let voice=null;
+function pickVoice(){if(!('speechSynthesis'in window))return;const vs=speechSynthesis.getVoices();
+  voice=vs.find(v=>/en-GB/i.test(v.lang)&&/female|Google UK|Serena|Kate|Martha|Libby/i.test(v.name))||vs.find(v=>/en-GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}
+if('speechSynthesis'in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function say(t,force){if(!(ttsOn||force)||!('speechSynthesis'in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);
+  u.lang=voice?voice.lang:'en-GB';if(voice)u.voice=voice;u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
+
+/* подсветка: диграфы sh ch th ck ng nk — оранжевым; волшебная e — фиолетовой */
+function mark(w){
+  const esc=w.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  let s=esc.replace(/(sh|ch|th|ck|ng|nk)/gi,'<span class="dg">$1</span>');
+  // гласная + согласная + e на конце слова (кроме самого e в коротких словах типа he)
+  s=s.replace(/([aeiouAEIOU](?:<span class="dg">[a-z]{2}<\/span>|[b-df-hj-np-tv-z]))e(?=s?(\b|$))/g,'$1<span class="me">e</span>');
+  return s}
+const fmt=t=>t==null?'—':(t<60?t.toFixed(1)+' с':Math.floor(t/60)+':'+String(Math.round(t%60)).padStart(2,'0'));
+
+/* ---------- таймер с заходами ---------- */
+function timer(key,labels,opts={}){
+  const box=h('div',{class:'bar'});const clock=h('div',{class:'clock'},'0.0');
+  const passes=h('div',{class:'passes'});let run=false,t0=0,raf=0;
+  const btn=h('button',{class:'btn'},'▶ старт');
+  const reset=h('button',{class:'btn ghost'},'сброс');
+  function tick(){clock.textContent=((performance.now()-t0)/1000).toFixed(1);raf=requestAnimationFrame(tick)}
+  function draw(){passes.innerHTML='';const arr=(R[key]||[]);const best=BEST[key];
+    labels.forEach((lb,i)=>{const t=arr[i];passes.append(h('span',{class:'pass'+(t!=null&&best!=null&&Math.abs(t-best)<.05?' best':'')},lb+': '+fmt(t)))});
+    if(best!=null)passes.append(h('span',{class:'pass best'},'🏆 рекорд '+fmt(best)))}
+  btn.onclick=()=>{if(!run){run=true;t0=performance.now();clock.classList.add('run');btn.textContent='■ стоп';btn.classList.add('red');opts.onStart&&opts.onStart();tick()}
+    else{run=false;cancelAnimationFrame(raf);clock.classList.remove('run');btn.textContent='▶ старт';btn.classList.remove('red');
+      const t=(performance.now()-t0)/1000;clock.textContent=t.toFixed(1);
+      const arr=R[key]||[];const i=arr.findIndex((x,j)=>x==null&&j<labels.length);const idx=i>=0?i:(arr.length<labels.length?arr.length:labels.length-1);
+      arr[idx]=t;R[key]=arr;if(BEST[key]==null||t<BEST[key])BEST[key]=t;save();draw();refreshChips();opts.onStop&&opts.onStop(t,idx)}};
+  reset.onclick=()=>{R[key]=[];save();draw();clock.textContent='0.0'};
+  box.toggle=()=>btn.click();
+  box.append(btn,clock,passes,reset);draw();return box}
+
+/* ---------- столбик слов с отметкой ошибок ---------- */
+function wordGrid(words,key,{numbered=true,cls='cols',speak=true}={}){
+  const errs=R[key+'_e']||{};const wrap=h('div',{class:cls});const cnt=h('span',{class:'errc'});
+  const upd=()=>{const n=Object.values(errs).filter(Boolean).length;cnt.textContent='ошибок: '+n;R[key+'_e']=errs;R[key+'_n']=n;save()};
+  words.forEach((w,i)=>{const b=h('button',{class:'w'+(errs[i]?' err':''),title:'нажми — отметить ошибку'},
+      numbered?h('span',{class:'n'},String(i+1)):null,h('span',{class:'word',html:mark(w)}));
+    b.onclick=()=>{errs[i]=!errs[i];b.classList.toggle('err',errs[i]);upd()};
+    b.oncontextmenu=e=>{e.preventDefault();say(w,true)};
+    wrap.append(b)});
+  upd();wrap.counter=cnt;return wrap}
+
+/* ---------- данные урока ---------- */
+const PAIRS=[['cap','cape'],['tap','tape'],['mad','made'],['hat','hate'],['can','cane'],['plan','plane'],['Sam','same'],
+ ['kit','kite'],['pin','pine'],['bit','bite'],['rid','ride'],['fin','fine'],['slim','slime'],['Tim','time'],
+ ['hop','hope'],['not','note'],['rob','robe'],['cod','code'],['slop','slope'],
+ ['cut','cute'],['tub','tube'],['cub','cube'],['pet','Pete']];
+const OPEN0=['he','she','we','me','be','go','no','so','hi','I','my','by','fly','sky','try','dry'];
+const LADDERS=[['hop','hope','rope','ripe','ride','rid','red'],
+ ['cut','cute','mute','mule','mole','pole','pile','pine'],
+ ['mad','made','make','bake','bike','like','lime','time'],
+ ['cap','chap','chip','ship','shin','shine','spine','spin'],
+ ['ring','rang','rank','tank','thank','think','thin','shin','shine']];
+const CATCH=[{w:'cape',say:'cap',bad:1},{w:'ride',say:'ride'},{w:'note',say:'not',bad:1},{w:'cute',say:'cute'},{w:'she',say:'she'},
+ {w:'hop',say:'hope',bad:1},{w:'shine',say:'shine'},{w:'time',say:'time'},{w:'me',say:'meh',bad:1,tSay:'«мэ»'},{w:'plane',say:'plane'}];
+const NONS_O=['dake','fime','pobe','nube','jate','shime','chobe','thape','wike'];
+const NONS_C=['dack','fim','pob','nub','jat','shim','chob','thap','wib'];
+const NONS_MIX=['fime','dack','nub','jate','shim','pobe','thap','wike','dake','chob','nube','fim','shime','jat','wib','chobe','pob','thape'];
+const MIX30=['cape','ship','kite','duck','he','think','moth','home','chin','cute','sing','plane','stop','my','rock','Pete','bell','shine','frog','go','much','tube','jump','ride','bank','she','hope','lunch','time','thick'];
+const OPENSET=new Set(['cape','kite','he','home','cute','plane','my','Pete','shine','go','tube','ride','she','hope','time']);
+const TWINS=[['Kate has a cap.','Kate has a cape.'],['Tim has a kit.','Tim has a kite.'],['It is a pin.','It is a pine.'],['The cub is red.','The cube is red.'],['The man is mad.','The man made it.']];
+const WARM=['June has a cute mule.','Pete rides the mule to the lake.','The mule is rude! It stops.','«Mule, go!» yells Pete.','The mule will not go. June and Pete sit by the lake.'];
+const TEXT=['Kate has a red kite.','She and Mike go to the hill.','The wind is strong.','«Run, Mike! Let the kite go!»','The kite is up in the sky.','It is so fine!','Then the kite hits a pine.','Mike is sad.','«No, no! Not the pine!»','Kate has a plan.','She gets a long stick and pokes the kite.','The kite drops on a rock.','Is it fine? Yes!','«Let me fly it!» yells Mike.','Kate and Mike ride home with the kite.'];
+const TEXT_Q=['What has Kate got?','Where do they go?','—','—','Where is the kite?','—','What does the kite hit?','Is Mike sad?','—','What has Kate got? A plan!','What does she get?','Where is the kite?','Is it fine?','What does Mike yell?','Where do they go?'];
+const countWords=a=>a.join(' ').replace(/[«»!?.,]/g,' ').split(/\s+/).filter(Boolean).length;
+const WARM_N=countWords(WARM),TEXT_N=countWords(TEXT);
+
+/* ---------- текст: строки со словами-кнопками ---------- */
+function textBlock(lines,key){
+  const errs=R[key+'_e']||{};const box=h('div',{class:'txt'});const cnt=h('span',{class:'errc'});
+  const upd=()=>{const n=Object.values(errs).filter(Boolean).length;cnt.textContent='ошибок: '+n;R[key+'_e']=errs;R[key+'_n']=n;save()};
+  lines.forEach((ln,li)=>{const row=h('div',{class:'line'},h('span',{class:'ln'},String(li+1)));
+    const wd=h('div',{class:'word'});
+    ln.split(' ').forEach((tok,ti)=>{const id=li+'_'+ti;const s=h('span',{class:'tw'+(errs[id]?' err':''),html:mark(tok)});
+      s.onclick=()=>{errs[id]=!errs[id];s.classList.toggle('err',errs[id]);upd()};
+      s.oncontextmenu=e=>{e.preventDefault();say(tok.replace(/[«»!?.,]/g,''),true)};
+      wd.append(s,' ')});
+    row.append(wd);box.append(row)});
+  upd();box.counter=cnt;return box}
+
+/* ---------- уровни ---------- */
+const L=[];
+const T=(...lines)=>h('div',{class:'teacher'},...lines.map(l=>h('i',{},l)));
+
+L.push({t:'Разгон: текст про u_e и e_e',m:'4 мин',lead:`Пять строк по прошлой теме, ${WARM_N} слов. Два захода на время, палец под словом.`,
+ r(){const tb=textBlock(WARM,'L1');return[
+  T('Two times. Finger. Go.','rude — после r звук «у». cute — после c звук «ю».','Нажми на слово — отметится ошибка. Правая кнопка мыши — послушать слово.'),
+  timer('L1',['заход 1','заход 2']),h('div',{class:'card'},tb,h('div',{},tb.counter))]}});
+
+L.push({t:'Двери на слух',m:'3 мин',lead:'Звучит слово. Дверь закрыта или открыта? Нажми на дверь.',
+ r(){const items=['cap','cape','pin','pine','hop','hope','cut','cute','he','hen','go','got','me','men'];
+  const OPEN=new Set(['cape','pine','hope','cute','he','go','me']);
+  const order=[3,0,9,4,12,1,7,10,2,13,5,8,11,6].map(i=>items[i]);
+  let i=0,score=0,answered=false;
+  const big=h('div',{class:'big'},'?');const fb=h('div',{class:'fb'});const sc=h('div',{class:'score'});
+  const tline=h('div',{class:'teacher'});
+  const draw=()=>{sc.textContent=`${Math.min(i+ (answered?1:0),order.length)} / ${order.length} · верно ${score}`;
+    tline.innerHTML='';tline.append(h('i',{},i<order.length?`Скажи: ${order[i]}`:'Готово.'))};
+  const doorSVG=open=>`<svg width="56" height="72" viewBox="0 0 56 72" aria-hidden="true"><rect x="4" y="4" width="48" height="64" rx="4" fill="none" stroke="currentColor" stroke-width="4"/>${open?'<path d="M8 8 L30 16 L30 72 L8 64Z" fill="currentColor" opacity=".25" stroke="currentColor" stroke-width="3"/>':'<rect x="10" y="10" width="36" height="52" rx="2" fill="currentColor" opacity=".18"/><circle cx="40" cy="38" r="3.5" fill="currentColor"/>'}</svg>`;
+  const mk=(open)=>{const b=h('button',{class:'door '+(open?'open':'closed'),html:doorSVG(open)+(open?'открыта':'закрыта')});
+    b.onclick=()=>{if(answered||i>=order.length)return;answered=true;const w=order[i];const right=OPEN.has(w)===open;
+      if(right)score++;b.classList.add(right?'flash-ok':'flash-bad');big.textContent=w;
+      fb.className='fb '+(right?'good':'bad');fb.textContent=right?'Да!':(OPEN.has(w)?'Это открытая дверь':'Это закрытая дверь');
+      R.L2=[score];R.L2_n=order.length;save();refreshChips();draw();setTimeout(()=>b.classList.remove('flash-ok','flash-bad'),700)};return b};
+  const play=h('button',{class:'btn'},'▶ слово');play.onclick=()=>{if(i<order.length)say(order[i],true)};
+  const next=h('button',{class:'btn ghost'},'дальше →');
+  next.onclick=()=>{if(!answered&&i<order.length)return;i++;answered=false;big.textContent=i<order.length?'?':'🏁';fb.textContent='';draw();if(i<order.length)setTimeout(()=>say(order[i]),150)};
+  const again=h('button',{class:'btn ghost'},'заново');again.onclick=()=>{i=0;score=0;answered=false;big.textContent='?';fb.textContent='';draw()};
+  draw();
+  return[tline,h('div',{class:'card'},h('div',{class:'bar'},play,next,again,sc),big,fb,h('div',{class:'doors'},mk(false),mk(true)))]}});
+
+L.push({t:'Таблица дверей своими словами',m:'3 мин',lead:'Ученик сам называет оба звука каждой гласной. Нажми на «?» после ответа — откроется пример.',
+ r(){const rows=[['a','cap','«э»','cape','«эй»'],['e','pet','«е»','Pete','«и:»'],['i','kit','«и»','kite','«ай»'],['o','hop','«о»','hope','«оу»'],['u','cut','«а»','cute','«ю:»']];
+  const done=R.L3||{};
+  const cell=(k,ex,snd)=>{const b=h('button',{class:'cell'});const draw=()=>{b.innerHTML='';
+      if(done[k])b.append(h('span',{class:'ex',html:mark(ex.split(' ')[0])}),ex.includes(' ')?h('span',{class:'snd'},ex.slice(ex.indexOf(' ')+1)):null,h('span',{class:'snd'},snd));
+      else b.append(h('span',{class:'q'},'?'))};
+    b.onclick=()=>{done[k]=!done[k];R.L3=done;save();refreshChips();draw();if(done[k])say(ex.split(' ')[0])};draw();return b};
+  const tb=h('table',{class:'dt'},h('tr',{},h('th',{},''),h('th',{},'🚪 закрыта'),h('th',{},'🚪 открыта')),
+    ...rows.map(r=>h('tr',{},h('td',{class:'letter'},r[0]),h('td',{},cell(r[0]+'c',r[1],r[2])),h('td',{},cell(r[0]+'o',r[3],r[4])))));
+  return[T('Closed door — what sound? Open door — what sound? Your turn, all five.','Ты молчишь. Открываешь клетку только после её ответа.'),
+   h('div',{class:'card tbl-wrap'},tb),
+   h('div',{class:'card'},h('b',{},'Правило одной строкой: '),'гласная последняя или после неё согласная + e → дверь открыта, буква говорит своё имя. После гласной согласная → дверь закрыта.')]}});
+
+L.push({t:'Пары с волшебной e',m:'6 мин',lead:'23 пары: сначала закрытое слово, потом открытое. Два захода парами, третий — только правая колонка.',
+ r(){const card=h('div',{class:'card'});const grid=h('div',{class:'pairs'});const errs=R.L4_e||{};const cnt=h('span',{class:'errc'});
+  const upd=()=>{const n=Object.values(errs).filter(Boolean).length;cnt.textContent='ошибок: '+n;R.L4_e=errs;R.L4_n=n;save()};
+  PAIRS.forEach((p,i)=>{const mkW=(w,side)=>{const id=i+side;const b=h('button',{class:'w '+(side==='l'?'left':'right')+(errs[id]?' err':''),html:`<span class="word">${mark(w)}</span>`});
+      b.onclick=()=>{errs[id]=!errs[id];b.classList.toggle('err',errs[id]);upd()};b.oncontextmenu=e=>{e.preventDefault();say(w,true)};return b};
+    grid.append(h('div',{class:'pair'},h('span',{class:'n'},String(i+1)),mkW(p[0],'l'),h('span',{class:'arr'},'→'),mkW(p[1],'r')))});
+  upd();
+  const only=h('button',{class:'btn ghost'},'только открытые');only.onclick=()=>{card.classList.toggle('only-open');only.textContent=card.classList.contains('only-open')?'показать пары':'только открытые'};
+  card.append(h('div',{class:'bar'},only,cnt),grid);
+  return[T('Pairs. Finger. Closed — open. Go.','Ошиблась → палец на e в конце: «Есть e? Дверь какая?» Голосом не поправляем.','Перед третьим заходом нажми «только открытые».'),
+   timer('L4',['пары 1','пары 2','только открытые']),card]}});
+
+L.push({t:'Открытый слог без e',m:'3 мин',lead:'Гласная стоит последней — дверь открыта. 16 слов, два захода.',
+ r(){const g=wordGrid(OPEN0,'L5');return[
+  T('The vowel is last — the door is open. Finger. Go.'),timer('L5',['заход 1','заход 2']),
+  h('div',{class:'card'},h('div',{class:'bar'},g.counter),g),
+  h('div',{class:'card'},h('div',{class:'lvl'},'Мини-фразы'),...['I can fly.','We go.','He has my cap.'].map(s=>h('div',{class:'word',style:'margin-top:6px',html:s.split(' ').map(mark).join(' ')})))]}});
+
+L.push({t:'Лесенки',m:'7 мин',lead:'Меняется одна буква. Открывай ступеньку за ступенькой, время идёт само до последней.',
+ r(){const wrap=h('div',{class:'ladders'});
+  const diff=(a,b)=>{if(!a)return mark(b);let p=0;while(p<a.length&&p<b.length&&a[p]===b[p])p++;let s=0;while(s<a.length-p&&s<b.length-p&&a[a.length-1-s]===b[b.length-1-s])s++;
+    const mid=b.slice(p,b.length-s);return b.slice(0,p)+(mid?`<span class="ch">${mid}</span>`:'<span class="ch">·</span>')+b.slice(b.length-s)};
+  LADDERS.forEach((L_,li)=>{const key='L6_'+li;let shown=0,t0=0;const steps=h('div',{class:'steps'});
+    const rows=L_.map((w,k)=>{const r=h('div',{class:'step hidden-step'},h('span',{class:'k'},String(k+1)),h('span',{class:'word'},'• • •'));steps.append(r);return r});
+    const res=h('div',{class:'passes'});const drawRes=()=>{res.innerHTML='';const t=(R[key]||[])[0];if(t!=null)res.append(h('span',{class:'pass'},'время: '+fmt(t)));if(BEST[key]!=null)res.append(h('span',{class:'pass best'},'🏆 '+fmt(BEST[key])))};
+    const btn=h('button',{class:'btn'},'первая ступенька');
+    btn.onclick=()=>{if(shown>=L_.length){shown=0;rows.forEach(r=>{r.classList.add('hidden-step');r.lastChild.textContent='• • •'});btn.textContent='первая ступенька';return}
+      if(shown===0)t0=performance.now();const w=L_[shown];const r=rows[shown];r.classList.remove('hidden-step');r.lastChild.innerHTML=diff(L_[shown-1],w);shown++;
+      if(shown===L_.length){const t=(performance.now()-t0)/1000;R[key]=[t];if(BEST[key]==null||t<BEST[key])BEST[key]=t;save();refreshChips();drawRes();btn.textContent='ещё раз'}else btn.textContent='следующая →'};
+    drawRes();wrap.append(h('div',{class:'ladder'},h('h3',{},`Лесенка ${li+1}: ${L_[0]} → ${L_[L_.length-1]}`),steps,h('div',{class:'bar'},btn,res)))});
+  return[T('One letter changes. Read every step. Go.','Изменившаяся буква подсвечена. Если идёт легко: назови первое и последнее слово (hop … red), пусть вспомнит ступеньки сама.','Режем первым: оставь лесенки 1, 3, 5.'),wrap]}});
+
+L.push({t:'Ловим ошибку учителя',m:'3 мин',lead:'Голос читает слово, иногда неправильно. Верно или ошибка?',
+ r(){let i=0,score=0,answered=false;const big=h('div',{class:'big'});const fb=h('div',{class:'fb'});const sc=h('div',{class:'score'});const tl=h('div',{class:'teacher'});
+  const draw=()=>{const it=CATCH[i];big.innerHTML=it?mark(it.w):'🏁';sc.textContent=`${Math.min(i+1,CATCH.length)} / ${CATCH.length} · поймала ${score}`;
+    tl.innerHTML='';tl.append(h('i',{},it?(it.bad?`Читай с ошибкой: ${it.tSay||'«'+it.say+'»'}`:`Читай верно: ${it.w}`):'Готово.'))};
+  const play=h('button',{class:'btn'},'▶ послушать');play.onclick=()=>{const it=CATCH[i];if(it)say(it.say,true)};
+  const ans=bad=>{if(answered||i>=CATCH.length)return;answered=true;const it=CATCH[i];const right=!!it.bad===bad;if(right)score++;
+    fb.className='fb '+(right?'good':'bad');fb.textContent=right?(bad?`Поймала! Верно: ${it.w}`:'Да, верно'):(it.bad?`Тут была ошибка. Верно: ${it.w}`:'Это было верно');
+    if(it.bad)setTimeout(()=>say(it.w),400);R.L7=[score];save();refreshChips();sc.textContent=`${i+1} / ${CATCH.length} · поймала ${score}`};
+  const next=h('button',{class:'btn ghost'},'дальше →');next.onclick=()=>{if(!answered&&i<CATCH.length)return;i++;answered=false;fb.textContent='';draw();if(i<CATCH.length)setTimeout(()=>say(CATCH[i].say),150)};
+  draw();
+  return[tl,h('div',{class:'card'},h('div',{class:'bar'},play,next,sc),big,fb,
+    h('div',{class:'doors'},h('button',{class:'door open',onclick:()=>ans(false)},'✓ верно'),h('button',{class:'door',style:'border-color:var(--red);background:var(--red-soft);color:var(--red)',onclick:()=>ans(true)},'✗ ошибка!'))),
+    T('hop → «хоуп» — обратная ошибка: открыла закрытую дверь. Её тоже ловим.')]}});
+
+L.push({t:'Чепуховые слова',m:'5 мин',lead:'Таких слов нет. Прочитать их можно только по правилу — это честная проверка.',
+ r(){const o=wordGrid(NONS_O,'L8o',{numbered:false});const c=wordGrid(NONS_C,'L8c',{numbered:false});const m=wordGrid(NONS_MIX,'L8');
+  return[T('These are not real words. Only the rule can help. Finger. Go.','Больше 3 ошибок из 18 — правило ещё не встало. Тогда 2 минуты чепухи в разгон следующих трёх уроков.'),
+   h('div',{class:'card'},h('div',{class:'lvl'},'Заход 1 · по колонкам'),
+     h('div',{class:'doors',style:'margin-top:10px;align-items:start'},
+       h('div',{},h('div',{class:'door open',style:'padding:8px;margin-bottom:8px'},'открыта'),o),
+       h('div',{},h('div',{class:'door closed',style:'padding:8px;margin-bottom:8px'},'закрыта'),c))),
+   h('div',{class:'card'},h('div',{class:'lvl'},'Заход 2 · вперемешку на время'),timer('L8t',['вперемешку']),h('div',{class:'bar'},m.counter),m)]}});
+
+L.push({t:'Смешанный столбик: 30 слов',m:'5 мин',lead:'Всё пройденное вперемешку: открытый слог, sh, ch, th, ck, ng, nk.',
+ r(){const g=wordGrid(MIX30,'L9');const sp=h('span',{class:'errc'});
+  const upd=()=>{const e=R.L9_e||{};let a=0,b=0;MIX30.forEach((w,i)=>{if(e[i]){OPENSET.has(w)?a++:b++}});R.L9_open=a;R.L9_other=b;save();sp.textContent=`открытый слог: ${a} · остальное: ${b}`};
+  g.addEventListener('click',()=>setTimeout(upd,0));upd();
+  return[T('Thirty words. Old and new. Finger. Go.'),timer('L9',['заход 1','заход 2']),h('div',{class:'card'},h('div',{class:'bar'},g.counter,sp),g)]}});
+
+L.push({t:'Фразы-близнецы',m:'4 мин',lead:'Голос читает одну фразу из пары. Какую?',
+ r(){const card=h('div',{class:'card'});const fb=h('div',{class:'fb'});let score=R.L10?R.L10[0]:0;const sc=h('div',{class:'score'},`верно: ${score}`);
+  TWINS.forEach((p,i)=>{let target=null;const row=h('div',{style:'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0'});
+    const btns=p.map((s,k)=>{const b=h('button',{class:'w',html:`<span class="word" style="font-size:clamp(20px,3vw,28px)">${s.split(' ').map(mark).join(' ')}</span>`});
+      b.onclick=()=>{if(target==null)return;const ok=k===target;b.classList.add(ok?'err2':'err');if(ok){score++;R.L10=[score];save();refreshChips();sc.textContent=`верно: ${score}`}
+        fb.className='fb '+(ok?'good':'bad');fb.textContent=ok?'Да!':'Послушай ещё раз';target=ok?null:target;if(ok)setTimeout(()=>b.classList.remove('err2'),900);else setTimeout(()=>b.classList.remove('err'),700)};return b});
+    const play=h('button',{class:'btn ghost',style:'padding:6px 12px'},`▶ пара ${i+1}`);play.onclick=()=>{if(target==null)target=Math.random()<.5?0:1;say(p[target],true)};
+    row.append(...btns);card.append(h('div',{class:'bar',style:'margin:14px 0 0'},play),row)});
+  return[T('Which one — cap or cape? Listen.','Потом наоборот: ты описываешь (It is in the sky. It is red.), она находит фразу.','Режем первым, если время поехало.'),h('div',{class:'bar'},sc,fb),card]}});
+
+L.push({t:'Текст-рекорд',m:'14 мин',lead:`15 строк, ${TEXT_N} слов — самый длинный текст курса. Сначала по строкам с вопросами, потом целиком на время.`,
+ r(){const tb=textBlock(TEXT,'L11');const lines=[...tb.querySelectorAll('.line')];let mode='all',k=0;
+  const tq=h('div',{class:'teacher'});
+  const show=()=>{lines.forEach((l,i)=>l.classList.toggle('dim',mode==='step'&&i!==k));tq.innerHTML='';
+    tq.append(h('i',{},mode==='step'?`Строка ${k+1}. Вопрос: ${TEXT_Q[k]==='—'?'без вопроса, дальше':TEXT_Q[k]}`:'Весь текст: два захода на время. Строки 4, 9, 14 — громко, это крики.'))};
+  const bStep=h('button',{class:'btn ghost'},'по строкам');const bNext=h('button',{class:'btn ghost'},'следующая строка →');const bAll=h('button',{class:'btn ghost'},'весь текст');
+  bStep.onclick=()=>{mode='step';k=0;show()};bNext.onclick=()=>{mode='step';k=Math.min(k+1,lines.length-1);show()};bAll.onclick=()=>{mode='all';show()};
+  show();
+  return[tq,h('div',{class:'bar'},bStep,bNext,bAll),timer('L11',['заход 1','заход 2'],{onStart:()=>{mode='all';show()}}),
+   h('div',{class:'card'},tb,h('div',{},tb.counter)),
+   h('div',{class:'card'},h('div',{class:'lvl'},'После второго захода · Yes / No'),
+     h('ul',{class:'list'},...['Is the kite red?','Is the kite in the pine?','Is Mike sad?','Has Kate got a plan?'].map(q=>h('li',{class:'word',style:'font-size:24px'},q))),
+     h('p',{style:'margin:8px 0 0;color:var(--muted)'},'Потом она задаёт тебе два вопроса.'))]}});
+
+L.push({t:'Цифра дня',m:'3 мин',lead:'Все цифры урока в одном месте.',
+ r(){const g=k=>(R[k]||[]);const two=k=>g(k).filter(x=>x!=null).map(fmt).join(' → ')||'—';
+  const st=(l,v,s)=>h('div',{class:'st'},h('div',{class:'l'},l),h('div',{class:'v'},v),s?h('div',{class:'s'},s):null);
+  const ladders=LADDERS.map((_,i)=>(R['L6_'+i]||[])[0]).filter(x=>x!=null);
+  const t11=g('L11').filter(x=>x!=null);
+  const sum=h('div',{class:'sum'},
+   st(`Разгон, ${WARM_N} слов`,two('L1'),`ошибок: ${R.L1_n||0}`),
+   st('Двери на слух',R.L2?`${R.L2[0]} / 14`:'—'),
+   st('Пары с e',two('L4'),`ошибок: ${R.L4_n||0}`),
+   st('Открытый без e',two('L5'),`ошибок: ${R.L5_n||0}`),
+   st('Лесенки',`${ladders.length} из 5`,ladders.length?'всего '+fmt(ladders.reduce((a,b)=>a+b,0)):null),
+   st('Поймала ошибок',R.L7?`${R.L7[0]} / 10`:'—'),
+   st('Чепуха, 18 слов',`ошибок: ${R.L8_n||0}`,two('L8t')),
+   st('Столбик 30',two('L9'),`ошибок: ${R.L9_n||0} (открытый слог: ${R.L9_open||0})`),
+   st(`ТЕКСТ, ${TEXT_N} слов`,t11.length?t11.map(fmt).join(' → '):'—',t11.length?`${(TEXT_N/Math.min(...t11)*60).toFixed(0)} слов в минуту`:null));
+  // график текстов курса
+  const hist=h('input',{id:'hist',value:store.get('hist','24, 34, 38, 50'),style:'width:200px'});
+  const chartBox=h('div',{});
+  const drawChart=()=>{const prev=hist.value.split(/[,\s]+/).map(Number).filter(n=>n>0);const vals=[...prev,TEXT_N];
+    const W=640,H=230,pad=34,bw=Math.min(70,(W-pad*2)/vals.length-14),max=Math.max(...vals)*1.15;
+    let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Длина текстов по урокам">`;
+    s+=`<line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="var(--line)" stroke-width="2"/>`;
+    vals.forEach((v,i)=>{const x=pad+i*((W-pad*2)/vals.length)+7;const bh=(H-pad*2)*v/max;const last=i===vals.length-1;
+      s+=`<rect x="${x}" y="${H-pad-bh}" width="${bw}" height="${bh}" rx="6" fill="${last?'var(--ok)':'var(--pen)'}" opacity="${last?1:.55}"/>`;
+      s+=`<text x="${x+bw/2}" y="${H-pad-bh-8}" text-anchor="middle" font-family="Unbounded,Arial" font-weight="700" font-size="16" fill="var(--ink)">${v}</text>`;
+      s+=`<text x="${x+bw/2}" y="${H-pad+20}" text-anchor="middle" font-family="Andika,Arial" font-size="13" fill="var(--muted)">${last?'сегодня':'текст '+(i+1)}</text>`});
+    chartBox.innerHTML=s+'</svg>'};
+  hist.oninput=()=>{store.set('hist',hist.value);drawChart()};drawChart();
+  const wipe=h('button',{class:'btn ghost'},'стереть результаты урока');let armed=false;
+  wipe.onclick=()=>{if(!armed){armed=true;wipe.textContent='точно стереть? нажми ещё раз';wipe.classList.add('red');return}R={};save();cur=0;store.set('cur',0);render()};
+  return[T(`${TEXT_N} words. The longest text. That's today.`,'Заканчиваем цифрой, не общей похвалой.'),sum,
+   h('div',{class:'card',style:'margin-top:16px'},h('div',{class:'lvl'},'Тексты курса: сколько слов'),chartBox,
+     h('label',{for:'hist',style:'font-size:14px;color:var(--muted)'},'Прошлые тексты через запятую: '),hist),
+   h('div',{class:'card'},h('p',{style:'margin:0 0 10px;color:var(--muted)'},'Перед новым учеником или новым заходом. Рекорды 🏆 при этом останутся.'),wipe)]}});
+
+/* ---------- навигация ---------- */
+const doneLevel=i=>{const k='L'+(i+1);if(i===2)return Object.values(R.L3||{}).filter(Boolean).length>=10;
+  if(i===5)return LADDERS.some((_,j)=>(R['L6_'+j]||[])[0]!=null);if(i===7)return (R.L8t||[]).some(x=>x!=null);if(i===11)return false;
+  return Array.isArray(R[k])&&R[k].some(x=>x!=null)};
+function refreshChips(){const c=$('#chips');c.innerHTML='';L.forEach((l,i)=>c.append(h('button',{class:'chip'+(i===cur?' on':'')+(doneLevel(i)?' done':''),title:l.t,onclick:()=>go(i)},String(i+1))))}
+function render(){const app=$('#app');app.innerHTML='';const l=L[cur];
+  app.append(h('div',{class:'head'},h('span',{class:'lvl'},`Уровень ${cur+1} из ${L.length}`),h('span',{class:'mins'},l.m)),h('h1',{},l.t),h('p',{class:'lead'},l.lead),...l.r());
+  const prev=h('button',{class:'btn ghost',disabled:cur===0?'':null,onclick:()=>go(cur-1)},'← назад');
+  const next=h('button',{class:'btn',disabled:cur===L.length-1?'':null,onclick:()=>go(cur+1)},'следующий уровень →');
+  app.append(h('div',{class:'nav'},prev,next));syncTools();refreshChips()}
+function go(n){if(n<0||n>=L.length)return;if('speechSynthesis'in window)speechSynthesis.cancel();cur=n;store.set('cur',n);render();window.scrollTo(0,0)}
+
+const tb=$('#tts'),tc=$('#tch'),th=$('#hints');
+function syncTools(){tb.className='tool'+(ttsOn?' on':'');tb.textContent=ttsOn?'🔊 голос':'🔇 голос';
+  tc.className='tool'+(teacherOn?' on':'');document.querySelectorAll('.teacher').forEach(t=>t.hidden=!teacherOn);
+  th.className='tool'+(hintsOn?' on':'');document.body.classList.toggle('hints-off',!hintsOn)}
+tb.onclick=()=>{ttsOn=!ttsOn;store.set('tts',ttsOn);syncTools()};
+tc.onclick=()=>{teacherOn=!teacherOn;store.set('teacher',teacherOn);syncTools()};
+th.onclick=()=>{hintsOn=!hintsOn;store.set('hints',hintsOn);syncTools()};
+document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea'))return;
+  if(e.altKey&&e.key==='ArrowRight')go(cur+1);if(e.altKey&&e.key==='ArrowLeft')go(cur-1)});
+if(cur>=L.length)cur=0;render();
+})();
+</script>
+</body>
+</html>
