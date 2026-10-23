@@ -64,6 +64,7 @@ h1 span{color:var(--accent)}
 .label{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 10px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 [hidden]{display:none!important}
+.done-btn{font:inherit;font-weight:800;font-size:18px;margin-top:18px;width:100%;padding:14px;border-radius:999px;border:2px solid var(--ok,#35c98a);background:#0f2a22;color:#c9f5e1;cursor:pointer}
 .chip{font:inherit;font-weight:700;font-size:17px;color:var(--ink);background:transparent;border:1.5px dashed #4a5880;padding:9px 15px;border-radius:999px;cursor:pointer}
 .chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .chip.mine{border-style:solid}
@@ -94,23 +95,29 @@ h1 span{color:var(--accent)}
 const $=id=>document.getElementById(id);
 const N=SECTORS.length, A=360/N;
 let rot=0, count=0, last=-1;
+const doneSet=new Set();
 
-(function drawWheel(){
+function drawWheel(){
   let s="";
   SECTORS.forEach((sec,k)=>{
     const a0=(k*A-90)*Math.PI/180, a1=((k+1)*A-90)*Math.PI/180;
     const x0=200+200*Math.cos(a0), y0=200+200*Math.sin(a0), x1=200+200*Math.cos(a1), y1=200+200*Math.sin(a1);
-    s+=`<path d="M200 200L${x0} ${y0}A200 200 0 0 1 ${x1} ${y1}Z" fill="${COLORS[k%COLORS.length]}"/>`;
+    const off=doneSet.has(k);
+    s+=`<path d="M200 200L${x0} ${y0}A200 200 0 0 1 ${x1} ${y1}Z" fill="${off?"#0d1220":COLORS[k%COLORS.length]}" stroke="#070b16" stroke-width="2"/>`;
     const am=((k+.5)*A-90)*Math.PI/180, tx=200+140*Math.cos(am), ty=200+140*Math.sin(am);
     const dark = ["#ff9f2e","#ffc06b"].includes(COLORS[k%COLORS.length]);
-    s+=`<g transform="translate(${tx} ${ty}) rotate(${(k+.5)*A>90&&(k+.5)*A<270?(k+.5)*A+180:(k+.5)*A})"><text text-anchor="middle" y="-6" font-size="30">${sec.icon}</text>
-        <text text-anchor="middle" y="22" font-size="15" font-weight="800" font-family="Manrope,system-ui,sans-serif" fill="${dark?"#1b1206":"#f1f3f9"}">${sec.topic}</text></g>`;
+    s+=`<g transform="translate(${tx} ${ty}) rotate(${(k+.5)*A>90&&(k+.5)*A<270?(k+.5)*A+180:(k+.5)*A})"><text text-anchor="middle" y="-6" font-size="30" opacity="${off?.35:1}">${off?"✅":sec.icon}</text>
+        <text text-anchor="middle" y="22" font-size="15" font-weight="800" font-family="Manrope,system-ui,sans-serif" fill="${off?"#56607a":dark?"#1b1206":"#f1f3f9"}">${sec.topic}</text></g>`;
   });
   $("wheel").innerHTML=s;
-})();
+}
+drawWheel();
 
 $("spin").onclick=()=>{
-  let k; do{k=Math.floor(Math.random()*N);}while(N>1&&k===last); last=k;
+  const free=[...Array(N).keys()].filter(x=>!doneSet.has(x));
+  if(!free.length) return;
+  const pool=free.length>1?free.filter(x=>x!==last):free;
+  const k=pool[Math.floor(Math.random()*pool.length)]; last=k;
   const target = 360 - (k*A + A/2);
   const cur = ((rot%360)+360)%360;
   rot += 360*5 + ((target - cur + 360)%360) + (Math.random()*A*.6 - A*.3);
@@ -131,9 +138,18 @@ function show(k){
     <div class="frame ${neg?"wont":""}"><small>In 2135…</small>${frame}</div>
     <button class="ask-btn" id="ideab">💡 Need ideas?</button>
     <div class="chips" id="ideas" hidden style="margin-top:12px">${s.ideas.map(x=>`<button class="chip">${x}</button>`).join("")}</div>
-    <div class="ask"><button class="ask-btn" id="askb">Now ask your teacher ↓</button><div id="askq"></div></div></div>`;
+    <div class="ask"><button class="ask-btn" id="askb">Now ask your teacher ↓</button><div id="askq"></div></div>
+    <button class="done-btn" id="doneb">✓ Done</button></div>`;
   document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");});
   $("ideab").onclick=()=>{ $("ideas").hidden=false; $("ideab").remove(); };
+  $("doneb").onclick=()=>{
+    doneSet.add(k); drawWheel();
+    const left=N-doneSet.size;
+    $("card").innerHTML = left
+      ? `<div class="empty"><div><div class="ball">🔮</div>Spin again! ${left} left.</div></div>`
+      : `<div class="empty"><div><div class="ball">🎉</div>All done! Great predictions!<br><button class="ask-btn" id="reset" style="margin-top:16px">Play again</button></div></div>`;
+    if(!left){ $("spin").disabled=true; $("reset").onclick=()=>{doneSet.clear();drawWheel();$("spin").disabled=false;$("card").innerHTML=`<div class="empty"><div><div class="ball">🔮</div>Your future is waiting…</div></div>`;}; }
+  };
   $("askb").onclick=()=>{ $("askq").innerHTML=`<div class="ask-q">Will ${subj} ${qWill.replace(" …","")} …?<small>${{you:"Yes, I will. / No, I won't.","your robot":"Yes, it will. / No, it won't."}[subj]||"Yes, they will. / No, they won't."}</small></div>`; $("askb").remove(); };
 }
 </script>
