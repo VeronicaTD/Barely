@@ -128,10 +128,11 @@ function show(k){
   $("card").innerHTML=`<div class="res">
     <div class="topic"><span class="e">${s.icon}</span><b>${s.topic}</b><span class="badge ${neg?"wont":"will"}">${neg?"WON'T":"WILL"}</span></div>
     <div class="frame ${neg?"wont":""}"><small>In 2135…</small>${frame}</div>
-    <div class="label">Ideas (or your own!)</div>
-    <div class="chips">${s.ideas.map(x=>`<button class="chip">${x}</button>`).join("")}</div>
+    <button class="ask-btn" id="ideab">💡 Need ideas?</button>
+    <div class="chips" id="ideas" hidden style="margin-top:12px">${s.ideas.map(x=>`<button class="chip">${x}</button>`).join("")}</div>
     <div class="ask"><button class="ask-btn" id="askb">Now ask your teacher ↓</button><div id="askq"></div></div></div>`;
   document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");});
+  $("ideab").onclick=()=>{ $("ideas").hidden=false; $("ideab").remove(); };
   $("askb").onclick=()=>{ $("askq").innerHTML=`<div class="ask-q">Will ${subj} ${qWill.replace(" …","")} …?<small>${{you:"Yes, I will. / No, I won't.","your robot":"Yes, it will. / No, it won't."}[subj]||"Yes, they will. / No, they won't."}</small></div>`; $("askb").remove(); };
 }
 </script>
