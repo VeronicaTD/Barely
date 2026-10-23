@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Space Reporter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<script>
+// AI server (Supabase). Empty = AI off, the game still works with examples.
+const AI_PROXY = "https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";
+
+/* ================= CONTENT (edit here) ================= */
+// Part 1: the reporter asks, you answer as an astronaut.
+const P1 = [
+  { q:"When will you start the journey?", keys:["tomorrow","1 January 2135","We'll start…"], model:"We'll start the journey tomorrow, on 1 January 2135." },
+  { q:"How long will the journey take?", keys:["250 years","It'll take…"], model:"It'll take 250 years." },
+  { q:"What will you do during the journey?", keys:["sleep","suspended animation","We'll…"], model:"We'll sleep. We'll be in suspended animation." },
+  { q:"How old will you be when you arrive?", keys:["the same age","not get older","I'll be…"], model:"I'll be thirteen. I won't get any older!" },
+  { q:"Will your parents look after you on the journey?", keys:["No, they won't","asleep","robots","PJ9"], model:"No, they won't. They'll be asleep too. PJ9 will look after us." },
+  { q:"Will you see the Earth again?", keys:["No, I won't","never come back","I'll miss…"], model:"No, I won't. We'll never come back. I'll miss my friends." },
+  { q:"Will you be the first people on Sigma 3?", keys:["Yes, we will","the first people","build a new home"], model:"Yes, we will. We'll build a new home there." }
+];
+
+// Part 2: you are the reporter. Make questions from the cues.
+const P2 = [
+  { cue:["When","you","start","the journey"] },
+  { cue:["How long","the journey","take"] },
+  { cue:["What","you","do","during the journey"] },
+  { cue:["How old","you","be","when you arrive"] },
+  { cue:["your parents","look after","you"] },
+  { cue:["you","see","the Earth","again"] },
+  { cue:["you","be","the first people","on Sigma 3"] },
+  { cue:["Your question!"], own:true, ideas:["food","robots","friends","school","pets","games","the new planet"] },
+  { cue:["One more question!"], own:true, ideas:["miss","take","do first","live","sleep","wake up"] }
+];
+// Answers the astronaut gives when AI is off (one per question above).
+const P2_ANSWERS = [
+  "We'll start tomorrow, on 1 January 2135!",
+  "It'll take 250 years. That's a long time!",
+  "We'll sleep. We'll be in suspended animation.",
+  "I'll be thirteen. I won't get older!",
+  "No, they won't. PJ9 will look after us.",
+  "No, I won't. I'll miss it.",
+  "Yes, we will! We'll be the first people there.",
+  "Good question! I think it will be great.",
+  "Hmm… To be honest, I don't know yet!"
+];
+
+// Part 3: the news. Key words only.
+const P3 = [
+  ["Tomorrow","Galaxy","leave","the Moon's orbit"],
+  ["500 astronauts","start","their journey","to Sigma 3"],
+  ["the journey","take","250 years"],
+  ["the astronauts","not get older","suspended animation"],
+  ["robots","look after","the people"],
+  ["robots","not need","air, food or water"],
+  ["in 2385","Galaxy","land","on Sigma 3"],
+  ["they","build","a new home"]
+];
+const P3_MODEL = "Good evening. Here is the news. Tomorrow, the spaceship Galaxy will leave the Moon's orbit. 500 astronauts will start their journey to Sigma 3. The journey will take 250 years. The astronauts won't get older, because they will be in suspended animation. Robots will look after the people. Robots won't need air, food or water. In 2385, Galaxy will land on Sigma 3, and they will build a new home there.";
+</script>
+<style>
+:root{--bg:#070b16;--panel:#111829;--panel2:#18213a;--line:#27324f;--ink:#f1f3f9;--muted:#9ba6c2;--accent:#ff9f2e;--accent-ink:#1b1206;--ok:#35c98a;--bad:#ff6b6b;--r:20px;--rs:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
+body{min-height:100dvh;overflow-x:hidden}
+.sky{position:fixed;inset:0;pointer-events:none;background:radial-gradient(1px 1px at 12% 18%,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 72% 12%,#fff9 50%,transparent 51%),radial-gradient(1.5px 1.5px at 33% 64%,#fff7 50%,transparent 51%),radial-gradient(1px 1px at 88% 52%,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 55% 88%,#fff6 50%,transparent 51%),radial-gradient(900px 500px at 90% -10%,#1b2a4f55,transparent 60%)}
+.app{position:relative;max-width:900px;margin:0 auto;padding:16px 16px 40px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+.brand{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:pointer}
+.brand b{color:var(--accent)}
+.live{font-weight:800;font-size:13px;letter-spacing:.1em;background:var(--bad);color:#2a0808;padding:6px 12px;border-radius:8px}
+h1{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(30px,6vw,56px);line-height:1.05}
+h1 span{color:var(--accent)}
+h2{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(20px,3.4vw,28px);line-height:1.2}
+.sub{color:var(--muted);font-size:19px;margin:12px 0 22px;line-height:1.45}
+.slide{animation:in .4s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.parts{display:grid;gap:12px}
+.part{font:inherit;display:flex;align-items:center;gap:16px;text-align:left;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:var(--r);padding:18px 20px;cursor:pointer;transition:border-color .2s,transform .15s}
+.part:hover{border-color:var(--accent);transform:translateY(-2px)}
+.part .e{font-size:40px}
+.part b{display:block;font-family:Unbounded,system-ui,sans-serif;font-size:19px;margin-bottom:4px}
+.part span{color:var(--muted);font-weight:700}
+.part.done{border-color:var(--ok)}
+
+.head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.prog{font-weight:800;color:var(--muted)}
+.prog b{color:var(--accent)}
+.bubble{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.av{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:28px;background:var(--panel2);border:2px solid var(--line)}
+.av.rep{border-color:var(--accent)}
+.say{background:var(--panel);border:1px solid var(--line);border-radius:4px var(--r) var(--r) var(--r);padding:14px 18px;font-size:clamp(19px,2.8vw,24px);font-weight:800;line-height:1.35;flex:1}
+.say small{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.say.me{background:#2a1d0c;border-color:#ff9f2e55;border-radius:var(--r) 4px var(--r) var(--r)}
+.bubble.right{flex-direction:row-reverse}
+.label{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:14px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-weight:700;font-size:17px;background:var(--panel2);border:1.5px dashed #4a5880;padding:8px 14px;border-radius:999px}
+.cue{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 6px}
+.cue .w{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(18px,2.8vw,24px);background:var(--panel2);border:1px solid var(--line);padding:10px 16px;border-radius:12px}
+.cue .sl{color:var(--muted);font-weight:800;font-size:22px}
+.cue .q{font-family:Unbounded,system-ui,sans-serif;font-size:28px;color:var(--accent)}
+
+.answer{margin-top:16px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:stretch}
+textarea{font:inherit;font-weight:700;font-size:19px;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:var(--rs);padding:12px 14px;resize:vertical;min-height:58px;width:100%}
+textarea:focus{outline:none;border-color:var(--accent)}
+.btn{font:inherit;font-weight:800;font-size:17px;border-radius:var(--rs);padding:12px 18px;cursor:pointer;border:2px solid var(--line);background:var(--panel2);color:var(--ink)}
+.btn.main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.mic{font-size:24px;padding:10px 16px}
+.btn.mic.rec{background:var(--bad);border-color:var(--bad);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:focus-visible,.part:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.fb{margin-top:14px;padding:14px 18px;border-radius:var(--r);background:var(--panel);border:1px solid var(--line);font-size:18px;font-weight:700;line-height:1.45;animation:in .35s}
+.fb.ok{border-color:#35c98a88}
+.fb.fix{border-color:#ff9f2e88}
+.fb .c{color:var(--accent)}
+.fb .ru{display:block;color:var(--muted);font-size:16px;margin-top:6px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.news{display:grid;gap:10px}
+.nl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:var(--rs);padding:10px 12px}
+.nl i{font-style:normal;font-weight:800;color:var(--muted);width:24px}
+.nl .w{font-weight:800;font-size:18px;background:var(--panel2);padding:6px 12px;border-radius:8px}
+.studio{display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,#ff9f2e22,transparent);border-left:4px solid var(--accent);padding:12px 16px;border-radius:10px;font-weight:800;margin-bottom:14px}
+.wait{color:var(--muted)}
+@media (max-width:640px){.answer{grid-template-columns:auto 1fr}.answer .send{grid-column:1/-1}.av{width:44px;height:44px;font-size:22px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sky"></div>
+<div class="app">
+  <div class="top"><div class="brand" id="home"><b>Galaxy News</b> · Space Reporter</div><div class="live">● LIVE</div></div>
+  <div id="stage"></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const done={p1:false,p2:false,p3:false};
+let part=null, idx=0;
+
+/* ---------- speech ---------- */
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.9;
+  const v=speechSynthesis.getVoices().find(v=>/en-GB/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u);}catch(e){}}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function micBind(btn,ta){
+  if(!SR){btn.style.display="none";return;}
+  let rec=null;
+  btn.onclick=()=>{
+    if(rec){rec.stop();return;}
+    rec=new SR();rec.lang="en-GB";rec.interimResults=true;
+    const base=ta.value?ta.value.trim()+" ":"";
+    rec.onresult=e=>{ta.value=base+[...e.results].map(r=>r[0].transcript).join(" ");};
+    rec.onend=()=>{rec=null;btn.classList.remove("rec");};
+    rec.onerror=()=>{};
+    btn.classList.add("rec");rec.start();
+  };
+}
+
+/* ---------- AI ---------- */
+async function callAI(sys,user){
+  if(!AI_PROXY) throw new Error("off");
+  const r=await fetch(AI_PROXY+"?forceFunctionRegion=us-east-1",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:user}]}],
+      generationConfig:{responseMimeType:"application/json",temperature:.5}})});
+  const j=await r.json(); if(!r.ok) throw new Error(j.error?.message||r.status);
+  return JSON.parse(j.candidates[0].content.parts[0].text);
+}
+const CONTEXT="Story: in 2134 a family (Tom, 11, and his sister Josie, 13, and their parents) will travel on the spaceship Galaxy from the Moon's orbit to the planet Sigma 3. The journey starts on 1 January 2135 and takes 250 years. People will be in suspended animation (asleep) and won't get older. The robot PJ9 will look after them. They will arrive in 2385 and be the first people on Sigma 3. They will never come back to Earth.";
+const RULES="The learner is a 12-13 year-old Russian student, English level A2. They are practising will / won't for the future. Typical mistake: using 'did' in future questions, or forgetting 'will'. Ignore small spelling and punctuation mistakes and missing capital letters. Do not correct the content of what they say, only grammar that matters. Russian tips: one short friendly sentence for a child, no grammar jargon beyond 'will'. Return ONLY JSON.";
+
+/* ---------- screens ---------- */
+function home(){
+  part=null; speechSynthesis?.cancel?.();
+  $("stage").innerHTML=`<div class="slide">
+    <h1>Galaxy News<br><span>31 December 2134</span></h1>
+    <p class="sub">Tomorrow the spaceship Galaxy will start a 250-year journey to Sigma 3. Our reporter is talking to the space travellers!</p>
+    <div class="parts">
+      <button class="part ${done.p1?"done":""}" data-p="p1"><span class="e">🧑‍🚀</span><div><b>1. You are the astronaut</b><span>The reporter asks. You answer.</span></div></button>
+      <button class="part ${done.p2?"done":""}" data-p="p2"><span class="e">🎤</span><div><b>2. You are the reporter</b><span>Make questions. Interview Josie.</span></div></button>
+      <button class="part ${done.p3?"done":""}" data-p="p3"><span class="e">📺</span><div><b>3. Read the news</b><span>Tell the news. Use only the key words.</span></div></button>
+    </div></div>`;
+  document.querySelectorAll(".part").forEach(b=>b.onclick=()=>{part=b.dataset.p;idx=0;render();});
+}
+$("home").onclick=home;
+
+function render(){ ({p1:renderP1,p2:renderP2,p3:renderP3})[part](); window.scrollTo(0,0); }
+function navBar(total){
+  return `<div class="nav"><button class="btn" id="prev" ${idx===0?"disabled":""}>Back</button>
+    <button class="btn main" id="nxt">${idx===total-1?"Finish":"Next question"}</button></div>`;
+}
+function bindNav(total){
+  $("prev").onclick=()=>{if(idx>0){idx--;render();}};
+  $("nxt").onclick=()=>{if(idx<total-1){idx++;render();}else{done[part]=true;home();}};
+}
+function answerBox(ph){return `<div class="answer"><button class="btn mic" id="mic" title="Speak">🎤</button>
+  <textarea id="ta" placeholder="${ph}"></textarea><button class="btn main send" id="send">Send</button></div><div id="fb"></div>`;}
+
+/* ---------- PART 1 ---------- */
+function renderP1(){
+  const it=P1[idx];
+  $("stage").innerHTML=`<div class="slide">
+    <div class="head"><h2>🧑‍🚀 You are the astronaut</h2><div class="prog"><b>${idx+1}</b> / ${P1.length}</div></div>
+    <div class="bubble"><div class="av rep">🎤</div><div class="say"><small>Reporter</small>${it.q}</div></div>
+    <button class="btn" id="listen">🔊 Listen again</button>
+    <div class="label">Key words</div><div class="chips">${it.keys.map(k=>`<span class="chip">${k}</span>`).join("")}</div>
+    ${answerBox("Answer the reporter…")}${navBar(P1.length)}</div>`;
+  speak(it.q); $("listen").onclick=()=>speak(it.q);
+  micBind($("mic"),$("ta")); bindNav(P1.length);
+  $("send").onclick=async()=>{
+    const t=$("ta").value.trim(); if(!t) return;
+    $("send").disabled=true; $("fb").innerHTML=`<div class="fb wait">✍️ …</div>`;
+    try{
+      const r=await callAI(`You are a friendly TV reporter in 2134 interviewing a space traveller. ${CONTEXT} ${RULES}
+JSON format: {"reaction":"a short natural reaction to the answer, max 12 words, simple English, no question","correct":true or false,"better":"if not correct: the student's sentence corrected (keep their idea), else empty","tip_ru":"if not correct: one short tip in Russian, else empty"}`,
+        `Reporter's question: ${it.q}\nStudent's answer: ${t}`);
+      showFb(r.reaction, r.correct, r.better, r.tip_ru); speak(r.reaction);
+    }catch(e){
+      $("fb").innerHTML=`<div class="fb ok">Thank you! <span class="ru">Example: ${esc(it.model)}</span></div>`;
+    }
+    $("send").disabled=false;
+  };
+}
+function showFb(main,ok,better,tip){
+  $("fb").innerHTML=`<div class="fb ${ok?"ok":"fix"}">${esc(main||"")}${!ok&&better?`<br>Say it like this: <span class="c">${esc(better)}</span>`:""}${!ok&&tip?`<span class="ru">${esc(tip)}</span>`:""}</div>`;
+}
+
+/* ---------- PART 2 ---------- */
+function localCheck(q){
+  const s=q.toLowerCase();
+  if(/\bdid\b/.test(s)) return {correct:false,tip_ru:"Это вопрос про будущее: вместо did нужно will."};
+  if(!/\bwill\b|\bwon't\b/.test(s)) return {correct:false,tip_ru:"Не забудь will: Will you…? / When will you…?"};
+  return {correct:true};
+}
+function renderP2(){
+  const it=P2[idx];
+  const cue = it.own
+    ? `<div class="cue"><span class="w">${it.cue[0]}</span></div><div class="label">Ideas</div><div class="chips">${it.ideas.map(k=>`<span class="chip">${k}</span>`).join("")}</div>`
+    : `<div class="cue">${it.cue.map((w,k)=>`${k?'<span class="sl">/</span>':""}<span class="w">${w}</span>`).join("")}<span class="q">?</span></div>`;
+  $("stage").innerHTML=`<div class="slide">
+    <div class="head"><h2>🎤 You are the reporter</h2><div class="prog"><b>${idx+1}</b> / ${P2.length}</div></div>
+    <div class="studio">📺 You're talking to Josie, 13, a space traveller.</div>
+    <div class="label">Make a question</div>${cue}
+    ${answerBox("Ask Josie a question…")}<div id="josie"></div>${navBar(P2.length)}</div>`;
+  micBind($("mic"),$("ta")); bindNav(P2.length);
+  $("send").onclick=async()=>{
+    const t=$("ta").value.trim(); if(!t) return;
+    $("send").disabled=true; $("fb").innerHTML=`<div class="fb wait">✍️ …</div>`; $("josie").innerHTML="";
+    let r;
+    try{
+      r=await callAI(`You check a student's interview question and then answer it as Josie, 13, a girl from the story. ${CONTEXT} ${RULES}
+JSON format: {"correct":true or false (is it a grammatically correct question?),"better":"if not correct: the corrected question, else empty","tip_ru":"if not correct: one short tip in Russian, else empty","answer":"Josie's answer to the (corrected) question: 1-2 short sentences, A2 English, use will / won't, friendly and a little funny"}`,
+        `${it.own?"The student invents their own question.":"Cue words: "+it.cue.join(" / ")}\nStudent's question: ${t}`);
+    }catch(e){ r={...localCheck(t),answer:P2_ANSWERS[idx]||"Good question!"}; }
+    showFb(r.correct?"Great question! ✅":"Almost!", r.correct, r.better, r.tip_ru);
+    if(r.answer){ $("josie").innerHTML=`<div class="bubble right" style="margin-top:14px"><div class="av">👧</div><div class="say me"><small>Josie</small>${esc(r.answer)}</div></div>`; speak(r.answer); }
+    $("send").disabled=false;
+  };
+}
+
+/* ---------- PART 3 ---------- */
+function renderP3(){
+  $("stage").innerHTML=`<div class="slide">
+    <div class="head"><h2>📺 Read the news</h2></div>
+    <div class="studio">🎙️ Good evening. Here is the news…</div>
+    <div class="news">${P3.map((l,k)=>`<div class="nl"><i>${k+1}</i>${l.map(w=>`<span class="w">${w}</span>`).join("")}</div>`).join("")}</div>
+    <div class="label">Your news report</div>
+    ${answerBox("Good evening. Here is the news. Tomorrow…")}
+    <div class="nav"><button class="btn" id="model">Show an example</button><button class="btn main" id="fin">Finish</button></div></div>`;
+  micBind($("mic"),$("ta"));
+  $("fin").onclick=()=>{done.p3=true;home();};
+  $("model").onclick=()=>{$("fb").innerHTML=`<div class="fb">${esc(P3_MODEL)}</div>`;};
+  $("send").onclick=async()=>{
+    const t=$("ta").value.trim(); if(!t) return;
+    $("send").disabled=true; $("fb").innerHTML=`<div class="fb wait">✍️ …</div>`;
+    try{
+      const r=await callAI(`You are a kind TV news editor checking a student's short news report. ${CONTEXT} ${RULES}
+JSON format: {"praise":"one short sentence of praise, simple English","fixes":[{"wrong":"exact wrong part","right":"corrected part"}] (max 4, only real grammar mistakes, empty array if none),"tip_ru":"one short tip in Russian, or empty"}`,
+        `Key words given: ${P3.map(l=>l.join(" / ")).join("; ")}\nStudent's report: ${t}`);
+      $("fb").innerHTML=`<div class="fb ${r.fixes?.length?"fix":"ok"}">${esc(r.praise||"Well done!")}
+        ${(r.fixes||[]).map(f=>`<br><s style="color:var(--muted)">${esc(f.wrong)}</s> → <span class="c">${esc(f.right)}</span>`).join("")}
+        ${r.tip_ru?`<span class="ru">${esc(r.tip_ru)}</span>`:""}</div>`;
+    }catch(e){
+      $("fb").innerHTML=`<div class="fb ok">Well done! Compare: <span class="ru">${esc(P3_MODEL)}</span></div>`;
+    }
+    $("send").disabled=false;
+  };
+}
+home();
+</script>
+</body>
+</html>

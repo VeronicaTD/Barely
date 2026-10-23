@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fortune Teller 2135</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<script>
+/* ================= CONTENT (edit here) ================= */
+// Each sector: icon, topic, sentence frame, and ideas. "will" or "won't" is chosen at random on each spin.
+const SECTORS = [
+  { icon:"🏠", topic:"Home",      will:"I will live …",         wont:"I won't live …",        ideas:["on the Moon","under the sea","in a flying house","on Mars","in a glass dome","in a tree house"] },
+  { icon:"💼", topic:"Job",       will:"I will be a …",          wont:"I won't be a …",         ideas:["space pilot","robot doctor","Moon farmer","teacher on Mars","time traveller","famous singer"] },
+  { icon:"🚗", topic:"Transport", will:"I will travel by …",     wont:"I won't travel by …",    ideas:["flying car","rocket","teleport","jetpack","space bus","robot horse"] },
+  { icon:"🐾", topic:"Pet",       will:"I will have a …",        wont:"I won't have a …",       ideas:["robot dog","dragon","talking cat","alien pet","dinosaur","space fish"] },
+  { icon:"🍕", topic:"Food",      will:"I will eat …",           wont:"I won't eat …",          ideas:["space pizza","food pills","Moon ice cream","blue bananas","3D-printed burgers","soup from a tube"] },
+  { icon:"🤖", topic:"Robot",     will:"My robot will …",        wont:"My robot won't …",       ideas:["do my homework","cook dinner","clean my room","walk my dog","sing songs","drive me to school"] },
+  { icon:"🎒", topic:"School",    will:"Children will …",        wont:"Children won't …",       ideas:["study at home","learn on the Moon","have robot teachers","go to school","have homework","use books"] },
+  { icon:"🌍", topic:"The world", will:"People will …",          wont:"People won't …",         ideas:["live to 150","visit other planets","use money","drive cars","speak one language","need phones"] }
+];
+const COLORS = ["#ff9f2e","#2b3a63","#ffc06b","#1e2a4a","#ff9f2e","#2b3a63","#ffc06b","#1e2a4a"];
+</script>
+<style>
+:root{--bg:#070b16;--panel:#111829;--panel2:#18213a;--line:#27324f;--ink:#f1f3f9;--muted:#9ba6c2;--accent:#ff9f2e;--accent-ink:#1b1206;--red:#ff6b6b;--r:20px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
+body{min-height:100dvh;overflow-x:hidden}
+.sky{position:fixed;inset:0;pointer-events:none;
+ background:radial-gradient(1px 1px at 12% 18%,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 72% 12%,#fff9 50%,transparent 51%),radial-gradient(1.5px 1.5px at 33% 64%,#fff7 50%,transparent 51%),radial-gradient(1px 1px at 88% 52%,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 55% 88%,#fff6 50%,transparent 51%),radial-gradient(800px 500px at 50% -10%,#3a2a5a40,transparent 60%)}
+.app{position:relative;max-width:1040px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.brand{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--accent)}
+.count{font-weight:800;font-size:14px;background:var(--panel);border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+.count b{color:var(--accent)}
+h1{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(28px,5vw,48px);line-height:1.1;margin:6px 0 4px}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);font-size:18px;margin-bottom:18px}
+
+.layout{display:grid;grid-template-columns:minmax(280px,440px) 1fr;gap:28px;align-items:center}
+.wheel-wrap{position:relative;width:100%;aspect-ratio:1}
+.pointer{position:absolute;top:-6px;left:50%;width:34px;height:40px;margin-left:-17px;z-index:2;background:#f6f1e7;clip-path:polygon(0 0,100% 0,50% 100%);filter:drop-shadow(0 3px 4px #0008)}
+#wheel{width:100%;height:100%;transition:transform 4.2s cubic-bezier(.12,.75,.12,1);border-radius:50%;box-shadow:0 0 0 8px var(--panel),0 0 0 10px var(--line),0 0 80px #ff9f2e22}
+.hub{position:absolute;inset:39%;border-radius:50%;background:var(--bg);border:3px solid var(--line);display:grid;place-items:center;font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(14px,2.2vw,20px);color:var(--accent);z-index:1}
+.spin{font:inherit;font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:22px;padding:18px 34px;border-radius:999px;border:none;background:var(--accent);color:var(--accent-ink);cursor:pointer;margin-top:18px;width:100%}
+.spin:disabled{opacity:.45;cursor:default}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-height:340px}
+.empty{display:grid;place-items:center;text-align:center;color:var(--muted);font-size:20px;font-weight:700;min-height:300px}
+.empty .ball{font-size:72px;margin-bottom:10px}
+.res{animation:in .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.topic{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.topic .e{font-size:44px}
+.topic b{font-family:Unbounded,system-ui,sans-serif;font-size:24px}
+.badge{margin-left:auto;font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:20px;padding:8px 16px;border-radius:12px}
+.badge.will{background:var(--accent);color:var(--accent-ink)}
+.badge.wont{background:var(--red);color:#2a0808}
+.frame{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(20px,3vw,28px);background:var(--panel2);border-left:5px solid var(--accent);padding:14px 18px;border-radius:12px;margin-bottom:16px}
+.frame.wont{border-left-color:var(--red)}
+.frame small{display:block;font-family:Manrope,system-ui,sans-serif;font-size:14px;color:var(--muted);font-weight:800;letter-spacing:.08em;margin-bottom:4px}
+.label{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-weight:700;font-size:17px;color:var(--ink);background:transparent;border:1.5px dashed #4a5880;padding:9px 15px;border-radius:999px;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip.mine{border-style:solid}
+.ask{margin-top:18px;border-top:1px dashed var(--line);padding-top:16px}
+.ask-btn{font:inherit;font-weight:800;font-size:17px;padding:12px 20px;border-radius:999px;border:2px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer}
+.ask-q{margin-top:12px;font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(18px,2.6vw,24px);color:var(--accent);animation:in .4s}
+.ask-q small{display:block;font-family:Manrope,system-ui,sans-serif;font-size:15px;color:var(--muted);margin-top:6px}
+.chip:focus-visible,.spin:focus-visible,.ask-btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media (max-width:780px){.layout{grid-template-columns:1fr}.wheel-wrap{max-width:340px;margin:0 auto}}
+@media (prefers-reduced-motion:reduce){#wheel{transition:none}*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="sky"></div>
+<div class="app">
+  <div class="top"><div class="brand"><b>Fortune Teller</b> · 2135</div><div class="count">Predictions: <b id="n">0</b></div></div>
+  <h1>What will your life be like<br>in <span>2135?</span></h1>
+  <p class="sub">Spin the wheel. Make a prediction about you.</p>
+  <div class="layout">
+    <div>
+      <div class="wheel-wrap"><div class="pointer"></div><svg id="wheel" viewBox="0 0 400 400"></svg><div class="hub">2135</div></div>
+      <button class="spin" id="spin">Spin!</button>
+    </div>
+    <div class="card" id="card"><div class="empty"><div><div class="ball">🔮</div>Your future is waiting…</div></div></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const N=SECTORS.length, A=360/N;
+let rot=0, count=0, last=-1;
+
+(function drawWheel(){
+  let s="";
+  SECTORS.forEach((sec,k)=>{
+    const a0=(k*A-90)*Math.PI/180, a1=((k+1)*A-90)*Math.PI/180;
+    const x0=200+200*Math.cos(a0), y0=200+200*Math.sin(a0), x1=200+200*Math.cos(a1), y1=200+200*Math.sin(a1);
+    s+=`<path d="M200 200L${x0} ${y0}A200 200 0 0 1 ${x1} ${y1}Z" fill="${COLORS[k%COLORS.length]}"/>`;
+    const am=((k+.5)*A-90)*Math.PI/180, tx=200+140*Math.cos(am), ty=200+140*Math.sin(am);
+    const dark = ["#ff9f2e","#ffc06b"].includes(COLORS[k%COLORS.length]);
+    s+=`<g transform="translate(${tx} ${ty}) rotate(${(k+.5)*A>90&&(k+.5)*A<270?(k+.5)*A+180:(k+.5)*A})"><text text-anchor="middle" y="-6" font-size="30">${sec.icon}</text>
+        <text text-anchor="middle" y="22" font-size="15" font-weight="800" font-family="Manrope,system-ui,sans-serif" fill="${dark?"#1b1206":"#f1f3f9"}">${sec.topic}</text></g>`;
+  });
+  $("wheel").innerHTML=s;
+})();
+
+$("spin").onclick=()=>{
+  let k; do{k=Math.floor(Math.random()*N);}while(N>1&&k===last); last=k;
+  const target = 360 - (k*A + A/2);
+  const cur = ((rot%360)+360)%360;
+  rot += 360*5 + ((target - cur + 360)%360) + (Math.random()*A*.6 - A*.3);
+  $("spin").disabled=true;
+  $("wheel").style.transform=`rotate(${rot}deg)`;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setTimeout(()=>{ show(k); $("spin").disabled=false; }, reduce?50:4300);
+};
+
+function show(k){
+  const s=SECTORS[k], neg=Math.random()<.35;
+  count++; $("n").textContent=count;
+  const frame = neg? s.wont : s.will;
+  const qWill = frame.replace(/^I will |^I won't /,"").replace(/^My robot will |^My robot won't /,"").replace(/^Children will |^Children won't /,"").replace(/^People will |^People won't /,"");
+  const subj = /^My robot/.test(frame)?"your robot":/^Children/.test(frame)?"children":/^People/.test(frame)?"people":"you";
+  $("card").innerHTML=`<div class="res">
+    <div class="topic"><span class="e">${s.icon}</span><b>${s.topic}</b><span class="badge ${neg?"wont":"will"}">${neg?"WON'T":"WILL"}</span></div>
+    <div class="frame ${neg?"wont":""}"><small>In 2135…</small>${frame}</div>
+    <div class="label">Ideas (or your own!)</div>
+    <div class="chips">${s.ideas.map(x=>`<button class="chip">${x}</button>`).join("")}</div>
+    <div class="ask"><button class="ask-btn" id="askb">Now ask your teacher ↓</button><div id="askq"></div></div></div>`;
+  document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");});
+  $("askb").onclick=()=>{ $("askq").innerHTML=`<div class="ask-q">Will ${subj} ${qWill.replace(" …","")} …?<small>${{you:"Yes, I will. / No, I won't.","your robot":"Yes, it will. / No, it won't."}[subj]||"Yes, they will. / No, they won't."}</small></div>`; $("askb").remove(); };
+}
+</script>
+</body>
+</html>
