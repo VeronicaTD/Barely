@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Artemis II: Guess the Facts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<script>
+/* ================= CONTENT (edit here) ================= */
+const IMAGES = {
+  // Replace with your own image links if you like (NASA photos are public domain).
+  earth: "https://katv.com/resources/media/52abef79-a60a-49ea-b5b1-3058065a5537-AP26093511396128.jpg",
+  crew:  "https://katv.com/resources/media/9cb716d7-5179-465b-9492-57e1f946bcf9-AP26093108423147.jpg"
+};
+
+const SLIDES = [
+  { type: "intro",
+    title: "Real space.<br>Real people.<br><span>2026.</span>",
+    text: "Look, think and guess." },
+
+  { type: "photo", img: "earth", fallback: "earth",
+    title: "What can you see?",
+    questions: ["What can you see?", "Where is the photographer?", "Is it near or far?"],
+    words: ["the Earth", "space", "a window", "a spaceship", "dark", "far away", "beautiful", "I think…"] },
+
+  { type: "photo", img: "crew", fallback: "crew",
+    title: "Who are they?",
+    questions: ["Who are they?", "How many people can you see?", "Where are they?", "How do they feel?"],
+    words: ["astronauts", "four", "in space", "happy", "excited", "tired", "scared", "proud"] },
+
+  { type: "guess", icon: "crew",
+    q: "This is the Artemis II crew. How many astronauts were on board?",
+    options: ["2", "4", "6"], answer: 1,
+    reveal: "4 astronauts: three from the USA and one from Canada." },
+
+  { type: "guess", icon: "moon",
+    q: "Where did they fly?",
+    options: ["to Mars", "around the Moon", "to the Sun"], answer: 1,
+    reveal: "Around the Moon and back to Earth. They didn't land on the Moon." },
+
+  { type: "guess", icon: "clock",
+    q: "How long was the mission?",
+    options: ["about 10 days", "about 10 weeks", "about 10 months"], answer: 0,
+    reveal: "About 10 days, in April 2026." },
+
+  { type: "guess", icon: "rocket",
+    q: "When did people last fly to the Moon before Artemis II?",
+    options: ["in 1972", "in 1999", "in 2015"], answer: 0,
+    reveal: "In 1972! More than 50 years ago." },
+
+  { type: "guess", icon: "capsule",
+    q: "How much living space did the four astronauts have?",
+    options: ["about 9 m³", "about 90 m³", "about 900 m³"], answer: 0,
+    reveal: "Only about 9 m³ for four people for 10 days. Tiny!" },
+
+  { type: "guess", icon: "star",
+    q: "They broke a record. What was it?",
+    options: ["the fastest rocket", "the farthest people from Earth", "the longest time in space"], answer: 1,
+    reveal: "They flew farther from Earth than any people in history." },
+
+  { type: "bridge",
+    left: { big: "10 days", small: "Artemis II, 2026" },
+    right: { big: "250 years", small: "Galaxy, 2135" },
+    q: "Would you go on a journey like that?",
+    words: ["Yes, because…", "No, because…", "To be honest…", "Actually…", "I'd miss…", "It sounds…"] }
+];
+</script>
+<style>
+/* ================= STYLE ================= */
+:root{
+  --bg:#070b16; --panel:#111829; --panel2:#18213a; --line:#27324f;
+  --ink:#f1f3f9; --muted:#9ba6c2; --accent:#ff9f2e; --accent-ink:#1b1206;
+  --ok:#35c98a; --bad:#ff6363; --r:20px; --rs:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
+body{min-height:100dvh;overflow-x:hidden}
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+   radial-gradient(1px 1px at 12% 18%,#fff8 50%,transparent 51%),
+   radial-gradient(1px 1px at 72% 12%,#fff9 50%,transparent 51%),
+   radial-gradient(1.5px 1.5px at 33% 64%,#fff7 50%,transparent 51%),
+   radial-gradient(1px 1px at 88% 52%,#fff8 50%,transparent 51%),
+   radial-gradient(1px 1px at 55% 88%,#fff6 50%,transparent 51%),
+   radial-gradient(1.5px 1.5px at 8% 82%,#fff7 50%,transparent 51%),
+   radial-gradient(1px 1px at 44% 30%,#fff5 50%,transparent 51%),
+   radial-gradient(1px 1px at 93% 86%,#fff6 50%,transparent 51%),
+   radial-gradient(900px 500px at 85% -10%,#1b2a4f55,transparent 60%);
+}
+.sky::after{content:"";position:absolute;inset:0;
+  background:
+   radial-gradient(1px 1px at 22% 42%,#fff 50%,transparent 51%),
+   radial-gradient(1px 1px at 63% 48%,#fff 50%,transparent 51%),
+   radial-gradient(1px 1px at 80% 28%,#fff 50%,transparent 51%);
+  animation:tw 4s ease-in-out infinite alternate;opacity:.3}
+@keyframes tw{to{opacity:.9}}
+
+.app{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:16px 16px 110px;min-height:100dvh;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.brand{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--accent)}
+.score{font-weight:800;font-size:14px;background:var(--panel);border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+.score b{color:var(--accent)}
+.bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:20px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+
+.stage{flex:1;display:flex}
+.slide{flex:1;animation:in .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+
+h1{font-family:Unbounded,system-ui,sans-serif;font-weight:700;line-height:1.05;font-size:clamp(38px,8vw,76px)}
+h1 span{color:var(--accent)}
+h2{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(22px,4.2vw,34px);line-height:1.15;margin-bottom:16px}
+.lead{color:var(--muted);font-size:20px;margin-top:18px}
+
+/* intro */
+.intro{display:grid;grid-template-columns:1.2fr 1fr;align-items:center;gap:24px;min-height:60dvh}
+.orbit{position:relative;aspect-ratio:1;max-width:340px;width:100%;justify-self:center}
+.orbit .moon{position:absolute;inset:22%;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e8e6e0,#a9a69c 55%,#56544e);
+  box-shadow:inset -18px -14px 40px #0008,0 0 60px #ffffff14}
+.orbit .ring{position:absolute;inset:4%;border:1.5px dashed #ffffff30;border-radius:50%;animation:spin 18s linear infinite}
+.orbit .ship{position:absolute;top:-3%;left:50%;width:28px;height:28px;margin-left:-14px;background:var(--accent);
+  clip-path:polygon(50% 0,100% 100%,50% 78%,0 100%);transform:rotate(90deg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* photo */
+.photo{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;align-items:start}
+.frame{position:relative;border-radius:var(--r);overflow:hidden;background:#000;border:1px solid var(--line);aspect-ratio:3/2}
+.frame img,.frame svg{width:100%;height:100%;object-fit:cover;display:block}
+.frame .cap{position:absolute;left:10px;bottom:10px;font-size:12px;background:#000a;padding:4px 10px;border-radius:999px;color:#ddd}
+.qs{list-style:none;display:grid;gap:10px;margin-bottom:18px}
+.qs li{background:var(--panel);border:1px solid var(--line);border-radius:var(--rs);padding:12px 14px;font-size:19px;font-weight:700}
+.qs li::before{content:"?";display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:800;margin-right:10px;font-size:14px}
+.words{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-weight:700;font-size:16px;color:var(--ink);background:var(--panel2);border:1px dashed #4a5880;padding:8px 14px;border-radius:999px}
+.label{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:4px 0 10px}
+
+/* guess */
+.guess{display:grid;grid-template-columns:120px 1fr;gap:22px;align-items:start}
+.icon{width:120px;height:120px;border-radius:28px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center}
+.icon svg{width:70px;height:70px}
+.opts{display:grid;gap:12px;margin-top:6px}
+.opt{font:inherit;font-weight:800;font-size:clamp(18px,3vw,24px);text-align:left;color:var(--ink);background:var(--panel);
+  border:2px solid var(--line);border-radius:var(--r);padding:18px 20px;cursor:pointer;transition:transform .15s,border-color .2s,background .2s;display:flex;align-items:center;gap:14px}
+.opt .k{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--panel2);font-size:15px;color:var(--muted)}
+.opt:hover:not(:disabled){transform:translateY(-2px);border-color:#4a5880}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:#0f2a22}
+.opt.right .k{background:var(--ok);color:#06140e}
+.opt.wrong{border-color:var(--bad);background:#2a1214;animation:shake .35s}
+.opt.dim{opacity:.45}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.reveal{margin-top:16px;padding:16px 18px;border-radius:var(--r);background:linear-gradient(0deg,#ff9f2e14,#ff9f2e14),var(--panel);border:1px solid #ff9f2e55;font-size:19px;font-weight:700;line-height:1.4;animation:in .4s}
+.reveal b{color:var(--accent)}
+
+/* bridge */
+.bridge{text-align:center;padding-top:10px}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin:10px 0 28px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:26px 16px}
+.box .big{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(30px,6vw,54px)}
+.box.hot{border-color:var(--accent)}
+.box.hot .big{color:var(--accent)}
+.box .small{color:var(--muted);font-weight:700;margin-top:6px}
+.arrow{font-family:Unbounded,system-ui,sans-serif;font-size:30px;color:var(--muted)}
+.bridge .words{justify-content:center;margin-top:16px}
+.final-score{margin-top:22px;color:var(--muted);font-weight:700}
+
+/* nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:2;padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,var(--bg) 60%,transparent)}
+.nav .in{max-width:980px;margin:0 auto;display:flex;justify-content:space-between;gap:12px}
+.btn{font:inherit;font-weight:800;font-size:18px;border-radius:999px;padding:14px 26px;cursor:pointer;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.btn.main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn:focus-visible,.opt:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+@media (max-width:720px){
+  .intro,.photo{grid-template-columns:1fr}
+  .orbit{max-width:220px;order:-1}
+  .guess{grid-template-columns:1fr}
+  .icon{width:84px;height:84px;border-radius:22px}
+  .icon svg{width:50px;height:50px}
+  .vs{grid-template-columns:1fr}
+  .arrow{transform:rotate(90deg)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="sky"></div>
+<div class="app">
+  <div class="top">
+    <div class="brand"><b>Artemis II</b> · Guess the facts</div>
+    <div class="score" id="score">Facts: <b>0</b> / 0</div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="stage" id="stage"></div>
+</div>
+<div class="nav"><div class="in">
+  <button class="btn" id="back">Back</button>
+  <button class="btn main" id="next">Next</button>
+</div></div>
+
+<script>
+const ICONS = {
+  moon:`<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="#c9c6bd"/><circle cx="24" cy="26" r="5" fill="#a19e95"/><circle cx="40" cy="38" r="7" fill="#a19e95"/><circle cx="38" cy="22" r="3" fill="#a19e95"/><ellipse cx="32" cy="32" rx="30" ry="9" fill="none" stroke="#ff9f2e" stroke-width="2.5" stroke-dasharray="5 4" transform="rotate(-20 32 32)"/></svg>`,
+  crew:`<svg viewBox="0 0 64 64">${[10,24,38,52].map(x=>`<circle cx="${x}" cy="26" r="7" fill="#e9ecf4"/><rect x="${x-8}" y="35" width="16" height="18" rx="7" fill="#e9ecf4"/><rect x="${x-4}" y="23" width="8" height="5" rx="2" fill="#ff9f2e"/>`).join("")}</svg>`,
+  clock:`<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="none" stroke="#e9ecf4" stroke-width="4"/><path d="M32 18v15l10 6" stroke="#ff9f2e" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`,
+  rocket:`<svg viewBox="0 0 64 64"><path d="M32 6c9 8 12 20 10 32H22C20 26 23 14 32 6z" fill="#e9ecf4"/><circle cx="32" cy="24" r="5" fill="#27324f"/><path d="M22 38l-8 10h10zM42 38l8 10H40z" fill="#9ba6c2"/><path d="M27 42h10l-5 16z" fill="#ff9f2e"/></svg>`,
+  capsule:`<svg viewBox="0 0 64 64"><path d="M20 50L28 14h8l8 36z" fill="#e9ecf4"/><rect x="18" y="50" width="28" height="6" rx="2" fill="#9ba6c2"/><rect x="29" y="26" width="6" height="7" rx="2" fill="#27324f"/><path d="M8 30h6M50 30h6M8 38h6M50 38h6" stroke="#ff9f2e" stroke-width="3" stroke-linecap="round"/></svg>`,
+  star:`<svg viewBox="0 0 64 64"><path d="M32 6l7.6 16.5 18 2.1-13.3 12.3 3.6 17.8L32 45.8 16.1 54.7l3.6-17.8L6.4 24.6l18-2.1z" fill="#ff9f2e"/></svg>`
+};
+const FALLBACK = {
+  earth:`<svg viewBox="0 0 600 400"><rect width="600" height="400" fill="#03050b"/><circle cx="300" cy="200" r="300" fill="none" stroke="#2b3550" stroke-width="140"/><circle cx="300" cy="215" r="110" fill="#0d1b38"/><path d="M190 215a110 110 0 0 0 220 0a110 85 0 0 1-220 0z" fill="#4aa3ff"/><path d="M190 215a110 110 0 0 0 220 0a110 98 0 0 1-220 0z" fill="#bfe1ff" opacity=".7"/></svg>`,
+  crew:`<svg viewBox="0 0 600 400"><rect width="600" height="400" fill="#141c30"/>${[120,240,360,480].map(x=>`<circle cx="${x}" cy="170" r="42" fill="#e9ecf4"/><rect x="${x-52}" y="225" width="104" height="140" rx="40" fill="#2f6fd6"/><rect x="${x-14}" y="250" width="28" height="18" rx="4" fill="#ff9f2e"/>`).join("")}</svg>`
+};
+
+let i = 0;
+const state = SLIDES.map(()=>({picked:null}));
+const total = SLIDES.filter(s=>s.type==="guess").length;
+const $ = id => document.getElementById(id);
+
+function scoreNow(){ return SLIDES.reduce((n,s,k)=> n + (s.type==="guess" && state[k].picked===s.answer ? 1:0),0); }
+function updateTop(){
+  $("score").innerHTML = `Facts: <b>${scoreNow()}</b> / ${total}`;
+  $("bar").style.width = (i/(SLIDES.length-1)*100)+"%";
+  $("back").disabled = i===0;
+  $("next").textContent = i===SLIDES.length-1 ? "Start again" : (i===0 ? "Start" : "Next");
+}
+function chips(ws){ return `<div class="words">${ws.map(w=>`<span class="chip">${w}</span>`).join("")}</div>`; }
+
+function render(){
+  const s = SLIDES[i], st = state[i]; let h = "";
+  if(s.type==="intro"){
+    h = `<div class="slide intro"><div><h1>${s.title}</h1><p class="lead">${s.text}</p></div>
+         <div class="orbit"><div class="moon"></div><div class="ring"><div class="ship"></div></div></div></div>`;
+  }
+  if(s.type==="photo"){
+    h = `<div class="slide photo">
+      <div class="frame" id="fr"><img src="${IMAGES[s.img]}" alt="${s.title}" onerror="this.parentNode.innerHTML=FALLBACK['${s.fallback}']"><span class="cap">Photo: NASA</span></div>
+      <div><h2>${s.title}</h2><ul class="qs">${s.questions.map(q=>`<li>${q}</li>`).join("")}</ul>
+      <div class="label">Words to help you</div>${chips(s.words)}</div></div>`;
+  }
+  if(s.type==="guess"){
+    const done = st.picked!==null;
+    h = `<div class="slide guess"><div class="icon">${ICONS[s.icon]}</div><div>
+      <div class="label">Guess the fact</div><h2>${s.q}</h2>
+      <div class="opts">${s.options.map((o,k)=>{
+        let c=""; if(done){ if(k===s.answer) c="right"; else if(k===st.picked) c="wrong"; else c="dim"; }
+        return `<button class="opt ${c}" data-k="${k}" ${done?"disabled":""}><span class="k">${"ABC"[k]}</span>${o}</button>`;}).join("")}</div>
+      ${done?`<div class="reveal"><b>${st.picked===s.answer?"You're right! ":"Not quite. "}</b>${s.reveal}</div>`:""}
+      </div></div>`;
+  }
+  if(s.type==="bridge"){
+    h = `<div class="slide bridge">
+      <div class="vs"><div class="box"><div class="big">${s.left.big}</div><div class="small">${s.left.small}</div></div>
+      <div class="arrow">→</div>
+      <div class="box hot"><div class="big">${s.right.big}</div><div class="small">${s.right.small}</div></div></div>
+      <h2>${s.q}</h2>${chips(s.words)}
+      <p class="final-score">You guessed ${scoreNow()} of ${total} facts.</p></div>`;
+  }
+  $("stage").innerHTML = h;
+  $("stage").querySelectorAll(".opt").forEach(b=>b.onclick=()=>{ st.picked=+b.dataset.k; render(); });
+  updateTop();
+}
+$("next").onclick=()=>{ if(i===SLIDES.length-1){ state.forEach(x=>x.picked=null); i=0; } else i++; render(); window.scrollTo(0,0); };
+$("back").onclick=()=>{ if(i>0){ i--; render(); window.scrollTo(0,0);} };
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight") $("next").click();
+  if(e.key==="ArrowLeft") $("back").click();
+  const s=SLIDES[i]; if(s.type==="guess" && state[i].picked===null && ["1","2","3","a","b","c"].includes(e.key.toLowerCase())){
+    const k={"1":0,"2":1,"3":2,a:0,b:1,c:2}[e.key.toLowerCase()]; if(k<s.options.length){state[i].picked=k;render();}
+  }
+});
+render();
+</script>
+</body>
+</html>

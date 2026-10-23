@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mission Galaxy: Selection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<script>
+/* ================= CONTENT (edit here) ================= */
+const ABOUT = {
+  ask: "Tell us about yourself.",
+  frames: ["My name is…", "I'm … years old.", "I can …", "I'm good at …", "I'm not good at …, but …"],
+  chips: ["swim", "cook", "fix things", "draw", "take photos", "speak English", "play the guitar", "run fast", "help people", "work in a team"]
+};
+
+const GOSTAY = {
+  ask: "Will you go to Sigma 3 or stay on Earth? Why?",
+  frames: ["I'll go because …", "I won't go because …", "I'll miss …", "To be honest, …", "Actually, …"],
+  go:   [["🪐","a new planet"],["🚀","a big adventure"],["🤖","cool robots"],["🥇","the first people"],["🔭","see the stars"]],
+  stay: [["👨‍👩‍👧","my family"],["🧑‍🤝‍🧑","my friends"],["⏳","250 years"],["🏠","never come back"],["🐱","my pet"]]
+};
+
+const PACK = {
+  ask: "You can take only 3 things. What will you take? Why?",
+  frames: ["I'll take … because …", "I won't take … because …"],
+  reasons: ["I'll need it", "it's useful", "it's my favourite", "I'll be bored", "it reminds me of home", "I can't live without it"],
+  items: [["📱","my phone"],["📚","books"],["🎧","headphones"],["🧸","a teddy bear"],["📷","a camera"],["🎸","a guitar"],
+          ["🖼️","a family photo"],["🎮","a game console"],["🌱","a plant"],["⚽","a ball"],["🍫","chocolate"],["✏️","a sketchbook"]]
+};
+
+const SIGMA = {
+  ask: "What will your life on Sigma 3 be like?",
+  cards: [
+    { key:"job",   icon:"👩‍🔬", title:"My job",   frame:"I'll be a …", chips:["doctor","farmer","builder","teacher","robot engineer","scientist","pilot"] },
+    { key:"home",  icon:"🏡",  title:"My home",  frame:"I'll live in a …", chips:["glass dome","tall tower","house under the ground","spaceship"] },
+    { key:"robot", icon:"🤖",  title:"My robot", frame:"My robot will …", chips:["cook","clean my room","help with homework","play games","look after me"] },
+    { key:"wont",  icon:"🚫",  title:"No more…", frame:"I won't …", chips:["go to school","need a car","see the sea","eat pizza","see my old friends"] }
+  ]
+};
+</script>
+<style>
+:root{
+  --bg:#070b16; --panel:#111829; --panel2:#18213a; --line:#27324f;
+  --ink:#f1f3f9; --muted:#9ba6c2; --accent:#ff9f2e; --accent-ink:#1b1206;
+  --ok:#35c98a; --r:20px; --rs:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
+body{min-height:100dvh;overflow-x:hidden}
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+   radial-gradient(1px 1px at 12% 18%,#fff8 50%,transparent 51%),
+   radial-gradient(1px 1px at 72% 12%,#fff9 50%,transparent 51%),
+   radial-gradient(1.5px 1.5px at 33% 64%,#fff7 50%,transparent 51%),
+   radial-gradient(1px 1px at 88% 52%,#fff8 50%,transparent 51%),
+   radial-gradient(1px 1px at 55% 88%,#fff6 50%,transparent 51%),
+   radial-gradient(1.5px 1.5px at 8% 82%,#fff7 50%,transparent 51%),
+   radial-gradient(900px 500px at 10% -10%,#1b2a4f55,transparent 60%)}
+.app{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:16px 16px 110px;min-height:100dvh}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.brand{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.brand b{color:var(--accent)}
+.steps{display:flex;gap:6px}
+.steps span{width:34px;height:6px;border-radius:6px;background:var(--line)}
+.steps span.on{background:var(--accent)}
+.slide{animation:in .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+h1{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(34px,7vw,66px);line-height:1.05}
+h1 span{color:var(--accent)}
+h2{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(20px,3.6vw,30px);line-height:1.2}
+.step-no{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.ask{display:flex;gap:14px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:6px 0 18px}
+.ask .mc{flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:13px}
+.ask small{display:block;color:var(--muted);font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.label{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 0 10px}
+
+.frames{display:flex;flex-wrap:wrap;gap:10px}
+.frame{font-weight:800;font-size:clamp(17px,2.6vw,21px);background:var(--panel2);border-left:4px solid var(--accent);padding:10px 16px;border-radius:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-weight:700;font-size:16px;color:var(--ink);background:transparent;border:1.5px dashed #4a5880;padding:8px 14px;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s}
+.chip.on{background:var(--accent);color:var(--accent-ink);border:1.5px solid var(--accent)}
+.chip:focus-visible,.card:focus-visible,.btn:focus-visible,.item:focus-visible{outline:3px solid #fff;outline-offset:3px}
+input.name{font:inherit;font-weight:800;font-size:20px;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:var(--rs);padding:12px 16px;width:100%;max-width:360px}
+input.name:focus{outline:none;border-color:var(--accent)}
+
+/* intro */
+.intro{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center;min-height:62dvh}
+.intro p{color:var(--muted);font-size:20px;margin-top:16px;line-height:1.45}
+.intro p b{color:var(--ink)}
+.planet{position:relative;aspect-ratio:1;max-width:320px;width:100%;justify-self:center}
+.planet .p{position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd29a,#e3743a 55%,#6b2a18);box-shadow:inset -20px -16px 40px #0009,0 0 80px #ff9f2e26}
+.planet .r{position:absolute;inset:38% -4%;border:3px solid #ffffff38;border-radius:50%;transform:rotate(-16deg)}
+.planet .t{position:absolute;bottom:4%;left:0;right:0;text-align:center;font-family:Unbounded,system-ui,sans-serif;font-weight:700;color:var(--muted);letter-spacing:.1em}
+
+/* go/stay */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.col h3{font-family:Unbounded,system-ui,sans-serif;font-size:18px;margin-bottom:12px}
+.col.go h3{color:var(--accent)}
+.card{font:inherit;width:100%;display:flex;align-items:center;gap:12px;text-align:left;color:var(--ink);background:var(--panel2);border:2px solid transparent;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;font-weight:800;font-size:17px;cursor:pointer}
+.card .e{font-size:26px}
+.card.on{border-color:var(--accent)}
+.decide{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.decide .t{font-weight:800;color:var(--muted);margin-right:4px}
+.pick{font:inherit;font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:18px;padding:12px 24px;border-radius:999px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.pick.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.note{margin-top:14px;padding:14px 16px;border-radius:var(--r);border:1px solid #ff9f2e66;background:linear-gradient(0deg,#ff9f2e14,#ff9f2e14),var(--panel);font-weight:700;font-size:18px;animation:in .4s}
+
+/* pack */
+.bag-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.count{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:20px}
+.count b{color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.item{font:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px;border-radius:var(--rs);background:var(--panel);border:2px solid var(--line);color:var(--ink);font-weight:800;font-size:14px;cursor:pointer;transition:transform .15s}
+.item .e{font-size:34px}
+.item.on{border-color:var(--accent);background:#2a1d0c;transform:translateY(-3px)}
+.item.off{opacity:.4}
+
+/* sigma */
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sc{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.sc .hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sc .hd .e{font-size:30px}
+.sc .hd b{font-family:Unbounded,system-ui,sans-serif;font-size:17px}
+.sc .frame{display:inline-block;margin-bottom:12px}
+
+/* final */
+.final{text-align:center;padding-top:8px}
+.go-btn{font:inherit;font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:22px;padding:20px 34px;border-radius:999px;border:none;background:var(--accent);color:var(--accent-ink);cursor:pointer;margin-top:24px}
+.pass{position:relative;max-width:640px;margin:24px auto 0;text-align:left;display:grid;grid-template-columns:1fr 150px;background:#f6f1e7;color:#1a1a22;border-radius:22px;overflow:hidden;animation:in .5s}
+.pass .main{padding:22px 22px 20px}
+.pass .side{background:var(--accent);color:var(--accent-ink);padding:22px 16px;border-left:3px dashed #1a1a2255;display:flex;flex-direction:column;justify-content:space-between}
+.pass .t{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
+.pass .v{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:18px;margin-bottom:12px}
+.pass .row{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.pass .bag{font-size:26px;letter-spacing:6px}
+.stamp{position:absolute;right:170px;top:18px;font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:22px;color:#c0392b;border:4px solid #c0392b;padding:6px 14px;border-radius:10px;transform:rotate(-12deg);animation:stamp .5s cubic-bezier(.3,1.6,.5,1) .3s both}
+@keyframes stamp{from{opacity:0;transform:rotate(-12deg) scale(2.2)}to{opacity:.85;transform:rotate(-12deg) scale(1)}}
+.final .say{margin-top:22px}
+
+/* nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:2;padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(0deg,var(--bg) 60%,transparent)}
+.nav .in{max-width:1000px;margin:0 auto;display:flex;justify-content:space-between;gap:12px}
+.btn{font:inherit;font-weight:800;font-size:18px;border-radius:999px;padding:14px 26px;cursor:pointer;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+.btn.main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.35;cursor:default}
+
+@media (max-width:760px){
+  .intro,.cols,.sig{grid-template-columns:1fr}
+  .planet{max-width:200px;order:-1}
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .pass{grid-template-columns:1fr}
+  .pass .side{border-left:none;border-top:3px dashed #1a1a2255;flex-direction:row;gap:12px}
+  .stamp{right:16px;top:14px;font-size:17px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sky"></div>
+<div class="app">
+  <div class="top"><div class="brand"><b>Mission Galaxy</b> · Selection</div><div class="steps" id="steps"></div></div>
+  <div id="stage"></div>
+</div>
+<div class="nav"><div class="in"><button class="btn" id="back">Back</button><button class="btn main" id="next">Next</button></div></div>
+
+<script>
+const S = { name:"", about:new Set(), why:new Set(), choice:null, bag:[], reason:new Set(), sigma:{} };
+const SCREENS = ["intro","about","gostay","pack","sigma","final"];
+let i = 0;
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const frames = a => `<div class="frames">${a.map(f=>`<span class="frame">${f}</span>`).join("")}</div>`;
+const ask = (n,t) => `<div class="step-no">Step ${n} of 4</div><div class="ask"><div class="mc">MC</div><div><small>Mission Control asks</small><h2>${t}</h2></div></div>`;
+const chipRow = (list,set,grp) => `<div class="chips">${list.map(c=>`<button class="chip ${set.has(c)?"on":""}" data-g="${grp}" data-v="${esc(c)}">${c}</button>`).join("")}</div>`;
+
+function render(){
+  const s = SCREENS[i]; let h = "";
+  if(s==="intro") h = `<div class="slide intro"><div>
+      <h1>Galaxy needs<br><span>500 astronauts.</span></h1>
+      <p>The journey to <b>Sigma 3</b> will start on <b>1 January 2135</b>.<br>It will take <b>250 years</b>.<br>Do you want to be one of them?</p></div>
+      <div class="planet"><div class="p"></div><div class="r"></div><div class="t">SIGMA 3</div></div></div>`;
+
+  if(s==="about") h = `<div class="slide">${ask(1,ABOUT.ask)}
+      <div class="label">Your name</div><input class="name" id="nm" placeholder="Type your name" value="${esc(S.name)}" maxlength="24">
+      <div class="label">Say it like this</div>${frames(ABOUT.frames)}
+      <div class="label">Ideas</div>${chipRow(ABOUT.chips,S.about,"about")}</div>`;
+
+  if(s==="gostay"){
+    const col = (arr,cls,title) => `<div class="col ${cls}"><h3>${title}</h3>${arr.map(([e,t])=>`<button class="card ${S.why.has(t)?"on":""}" data-v="${esc(t)}"><span class="e">${e}</span>${t}</button>`).join("")}</div>`;
+    h = `<div class="slide">${ask(2,GOSTAY.ask)}
+      <div class="cols">${col(GOSTAY.go,"go","Reasons to go")}${col(GOSTAY.stay,"stay","Reasons to stay")}</div>
+      <div class="label">Say it like this</div>${frames(GOSTAY.frames)}
+      <div class="decide"><span class="t">My decision:</span>
+        <button class="pick ${S.choice==="go"?"on":""}" data-c="go">I'll go!</button>
+        <button class="pick ${S.choice==="stay"?"on":""}" data-c="stay">I'll stay.</button></div>
+      ${S.choice==="stay"?`<div class="note">Mission Control: Are you sure? Listen to our offer and think again!</div>`:""}
+      ${S.choice==="go"?`<div class="note">Mission Control: Great! Now pack your bag.</div>`:""}</div>`;
+  }
+
+  if(s==="pack"){
+    const full = S.bag.length>=3;
+    h = `<div class="slide">${ask(3,PACK.ask)}
+      <div class="bag-head"><div class="label">Choose 3 things</div><div class="count">Bag: <b>${S.bag.length}</b> / 3</div></div>
+      <div class="grid">${PACK.items.map(([e,t])=>{const on=S.bag.includes(t);return `<button class="item ${on?"on":(full?"off":"")}" data-v="${esc(t)}"><span class="e">${e}</span>${t}</button>`;}).join("")}</div>
+      <div class="label">Say it like this</div>${frames(PACK.frames)}
+      <div class="label">Because…</div>${chipRow(PACK.reasons,S.reason,"reason")}</div>`;
+  }
+
+  if(s==="sigma") h = `<div class="slide">${ask(4,SIGMA.ask)}
+      <div class="sig">${SIGMA.cards.map(c=>`<div class="sc"><div class="hd"><span class="e">${c.icon}</span><b>${c.title}</b></div>
+        <span class="frame">${c.frame}</span>
+        <div class="chips">${c.chips.map(x=>`<button class="chip ${S.sigma[c.key]===x?"on":""}" data-sig="${c.key}" data-v="${esc(x)}">${x}</button>`).join("")}</div></div>`).join("")}</div></div>`;
+
+  if(s==="final") h = `<div class="slide final" id="fin">
+      <h1>Mission Control<br><span>decision</span></h1>
+      <button class="go-btn" id="decide">Get the decision</button></div>`;
+
+  $("stage").innerHTML = h;
+  $("steps").innerHTML = [1,2,3,4].map(n=>`<span class="${i>=n?"on":""}"></span>`).join("");
+  $("back").disabled = i===0;
+  $("next").style.visibility = i===SCREENS.length-1 ? "hidden" : "visible";
+  $("next").textContent = i===0 ? "Start" : "Next";
+  bind();
+}
+
+function bind(){
+  const nm=$("nm"); if(nm) nm.oninput=()=>S.name=nm.value;
+  document.querySelectorAll(".chip[data-g]").forEach(b=>b.onclick=()=>{
+    const set = b.dataset.g==="about"?S.about:S.reason, v=b.dataset.v;
+    set.has(v)?set.delete(v):set.add(v); b.classList.toggle("on");
+  });
+  document.querySelectorAll(".card").forEach(b=>b.onclick=()=>{const v=b.dataset.v;S.why.has(v)?S.why.delete(v):S.why.add(v);b.classList.toggle("on");});
+  document.querySelectorAll(".pick").forEach(b=>b.onclick=()=>{S.choice=b.dataset.c;render();});
+  document.querySelectorAll(".item").forEach(b=>b.onclick=()=>{
+    const v=b.dataset.v, k=S.bag.indexOf(v);
+    if(k>-1) S.bag.splice(k,1); else if(S.bag.length<3) S.bag.push(v);
+    render();
+  });
+  document.querySelectorAll(".chip[data-sig]").forEach(b=>b.onclick=()=>{const k=b.dataset.sig;S.sigma[k]=S.sigma[k]===b.dataset.v?undefined:b.dataset.v;render();});
+  const d=$("decide"); if(d) d.onclick=showPass;
+}
+
+function showPass(){
+  const emo = t => (PACK.items.find(x=>x[1]===t)||["",""])[0];
+  const name = S.name.trim() || "Astronaut";
+  const seat = "Pod " + (100 + Math.floor(Math.random()*400));
+  $("fin").innerHTML = `<h1>Welcome on board,<br><span>${esc(name)}!</span></h1>
+    <div class="pass"><div class="stamp">ACCEPTED</div>
+      <div class="main">
+        <div class="t">Spaceship</div><div class="v">GALAXY</div>
+        <div class="row">
+          <div><div class="t">From</div><div class="v">the Moon's orbit</div></div>
+          <div><div class="t">To</div><div class="v">Sigma 3</div></div>
+          <div><div class="t">Departure</div><div class="v">1 Jan 2135</div></div>
+          <div><div class="t">Arrival</div><div class="v">2385</div></div>
+          <div><div class="t">Job on Sigma 3</div><div class="v">${esc(S.sigma.job||"astronaut")}</div></div>
+          <div><div class="t">Seat</div><div class="v">${seat}</div></div>
+        </div>
+      </div>
+      <div class="side"><div><div class="t">My bag</div><div class="bag">${S.bag.map(emo).join("")||"🎒"}</div></div>
+        <div><div class="t">Status</div><div class="v" style="margin:0">Sleeping<br>250 years</div></div></div>
+    </div>
+    <div class="say">${frames(["I'll be the first…","When I arrive, I'll …","I'll miss …","I won't …"])}</div>`;
+}
+
+$("next").onclick=()=>{ if(i<SCREENS.length-1){i++;render();window.scrollTo(0,0);} };
+$("back").onclick=()=>{ if(i>0){i--;render();window.scrollTo(0,0);} };
+render();
+</script>
+</body>
+</html>
