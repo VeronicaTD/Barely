@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robot's House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+[hidden]{display:none!important}
+:root{
+  --bg:#eef6fb; --ink:#2b3a4a; --muted:#6b7a8c; --line:#2b3a55;
+  --mint:#bfeee0; --pink:#ffd1e3; --sky:#cfe8ff; --lemon:#fff2b3; --peach:#ffe0c7;
+  --accent:#ff7aa8; --ok:#2fbf7a; --warn:#ffb03a; --r:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Rubik,system-ui,sans-serif;min-height:100dvh}
+button{font-family:inherit;cursor:pointer;border:0;color:inherit}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{max-width:1200px;margin:0 auto;padding:12px 16px 24px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:24px}
+.logo b{color:var(--accent)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:600;font-size:14px}
+.pill.btn:hover{background:var(--lemon)}
+.steps{display:flex;gap:6px}
+.step{background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600;opacity:.45}
+.step.on{opacity:1;background:var(--lemon)}
+.step.done{opacity:1;background:var(--mint)}
+
+/* task panel */
+.panel{background:#fff;border:3px solid var(--line);border-radius:var(--r);padding:12px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;box-shadow:0 4px 0 var(--line)}
+.big{font-size:22px;font-weight:700}
+.hear{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.say{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#fff;font-size:30px;border:3px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.say:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.phrase{font-size:24px;font-weight:700;padding:6px 12px;border-radius:12px;background:var(--sky);transition:filter .2s}
+.phrase.blur{filter:blur(8px);user-select:none}
+.b{background:#fff;border:2px solid var(--line);border-radius:12px;padding:9px 13px;font-weight:600;font-size:15px}
+.b:hover{background:var(--lemon)}
+.b.main{background:var(--accent);color:#fff}
+.b.ok{background:var(--mint)}
+.fb{font-weight:600;min-height:22px;color:var(--muted)}
+.fb.ok{color:var(--ok)} .fb.warn{color:#c47a00}
+.hint{font-size:46px;line-height:1}
+
+/* house */
+.scene{position:relative;display:grid;grid-template-columns:1fr 3.2fr 1fr;gap:10px;align-items:end}
+.house{display:grid;grid-template-rows:auto 1fr 1fr;gap:0;position:relative}
+.roof{height:90px;background:linear-gradient(transparent 0 0);position:relative}
+.roof::before{content:"";position:absolute;left:-14px;right:-14px;bottom:0;height:90px;background:var(--accent);clip-path:polygon(50% 0,100% 100%,0 100%);}
+.roof::after{content:"🤖 Robot's House";position:absolute;left:50%;bottom:16px;transform:translateX(-50%);font-weight:800;color:#fff;font-size:20px;white-space:nowrap}
+.floor{display:grid;grid-template-columns:1fr 1fr;border-left:4px solid var(--line);border-right:4px solid var(--line)}
+.floor.down{grid-template-columns:1fr;border-bottom:6px solid var(--line)}
+.room{position:relative;min-height:190px;border-top:4px solid var(--line);padding:30px 10px 10px;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;cursor:pointer;transition:transform .15s,box-shadow .2s}
+.room + .room{border-left:4px solid var(--line)}
+.room:hover{filter:brightness(1.03)}
+.room .lbl{position:absolute;left:10px;top:6px;font-weight:800;font-size:15px;background:#fff;border:2px solid var(--line);border-radius:999px;padding:1px 10px}
+.room .deco{position:absolute;right:8px;bottom:6px;font-size:40px;opacity:.55;pointer-events:none;letter-spacing:4px}
+.room.bedroom{background:var(--pink)} .room.living{background:var(--lemon)} .room.kitchen{background:var(--mint)}
+.room.garden{background:#d6f5c4;border:4px solid var(--line);border-radius:16px 16px 0 0;min-height:250px}
+.room.shop{background:var(--peach);border:4px solid var(--line);border-radius:16px 16px 0 0;min-height:250px}
+.room.shop::before{content:"";position:absolute;left:-4px;right:-4px;top:-22px;height:24px;border:4px solid var(--line);border-radius:12px 12px 0 0;background:repeating-linear-gradient(90deg,#ff8fb3 0 18px,#fff 18px 36px)}
+.room.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.room.glow{box-shadow:0 0 0 5px var(--warn),0 0 26px var(--warn);z-index:2}
+
+.card{background:#fff;border:2px solid var(--line);border-radius:12px;padding:4px 8px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px;box-shadow:0 2px 0 var(--line);animation:pop .35s}
+.card .e{font-size:22px}
+.card .bat{margin-left:2px}
+#chosen .card{font-size:22px!important;padding:6px 12px}
+#chosen .card .e{font-size:34px!important}
+.card.pickable{cursor:pointer}
+.card.pickable:hover{background:var(--lemon)}
+.card.used{background:#f3fff8}
+@keyframes pop{from{transform:scale(.3)}to{transform:scale(1)}}
+
+/* batteries */
+.bats{display:flex;gap:8px;flex-wrap:wrap}
+.batbtn{background:#fff;border:2px solid var(--line);border-radius:14px;padding:6px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;font-weight:700;min-width:96px}
+.batbtn:hover{background:var(--lemon)}
+.battery{display:inline-flex;align-items:center}
+.battery .body{display:flex;gap:2px;padding:2px;border:2px solid var(--line);border-radius:5px;background:#fff}
+.battery .seg{width:8px;height:14px;border-radius:2px;background:#e3e8ef}
+.battery .tip{width:3px;height:8px;background:var(--line);border-radius:0 2px 2px 0}
+.battery.lg .seg{width:13px;height:22px}
+.battery.lg .tip{width:5px;height:12px}
+
+.frame{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:22px;font-weight:700}
+.slot{border:3px dashed var(--accent);border-radius:12px;padding:4px 10px;background:#fff}
+.slot small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.slot.s b{color:var(--accent)}
+.rule{background:var(--lemon);border:2px solid var(--line);border-radius:12px;padding:6px 10px;font-weight:600;font-size:15px}
+.rule.glow{box-shadow:0 0 0 4px var(--warn),0 0 22px var(--warn)}
+
+.robot{position:absolute;right:16%;top:6px;font-size:54px;animation:bob 2s ease-in-out infinite;pointer-events:none}
+@keyframes bob{50%{transform:translateY(-6px)}}
+
+.modal{position:fixed;inset:0;background:rgba(30,40,60,.55);display:grid;place-items:center;z-index:50;padding:16px}
+.mcard{background:#fff;border:3px solid var(--line);border-radius:22px;padding:24px;max-width:520px;width:100%;box-shadow:0 6px 0 var(--line)}
+.mcard h1{margin:0 0 8px;font-size:28px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stat{background:var(--sky);border-radius:14px;padding:10px 12px}
+.stat b{display:block;font-size:28px}
+.stat span{font-size:13px;color:var(--muted)}
+.star{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);font-size:90px;z-index:60;transition:.25s;pointer-events:none}
+.star.on{transform:translate(-50%,-50%) scale(1)}
+
+@media (max-width:820px){
+  .scene{grid-template-columns:1fr 1fr}
+  .house{grid-column:1 / -1;order:-1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="logo">Robot's <b>House</b> 🏠</div>
+    <div class="steps">
+      <span class="step on" id="st1">1 · Where?</span>
+      <span class="step" id="st2">2 · How often?</span>
+      <span class="step" id="st3">3 · 🤖 Robot</span>
+    </div>
+    <div class="pills">
+      <span class="pill" id="pStars">⭐ 0</span>
+      <button class="pill btn" id="nextStage" title="Учитель: следующий шаг">⏭ Дальше</button>
+      <button class="pill btn" id="endBtn">🏁 Итог</button>
+    </div>
+  </div>
+
+  <!-- STEP 1 panel -->
+  <div class="panel" id="p1">
+    <div class="hear">
+      <button class="say" id="sayBtn" aria-label="Listen">🔊</button>
+      <div>
+        <div class="big">Listen! Where do you do it?</div>
+        <div class="row" style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+          <span class="phrase blur" id="phrase">load the dishwasher</span>
+          <button class="b" id="showBtn">👁 Текст</button>
+        </div>
+      </div>
+    </div>
+    <div class="hint" id="hint"></div>
+    <div style="flex:1;min-width:180px">
+      <div class="fb" id="fb1">Нажми на комнату.</div>
+      <div style="color:var(--muted);font-size:13px" id="count1"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2/3 panel -->
+  <div class="panel" id="p2" hidden>
+    <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:10px">
+      <div class="big" id="p2title">How often do YOU do it? Choose a job in the house.</div>
+      <div id="chosen" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"></div>
+      <div class="bats" id="bats" hidden></div>
+      <div class="frame" id="frame" hidden></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="sayRow" hidden>
+        <button class="b" id="frameBtn">🧩 Рамка</button>
+        <button class="b ok" id="okFrame">✅ Сказала по рамке</button>
+        <button class="b ok" id="okFree">⭐ Сказала сама</button>
+        <button class="b" id="oopsBtn" title="Учитель: ошибка, подсветить правило">💡 Правило</button>
+        <button class="b" id="modelBtn" title="Учитель: послушать образец">🔊 Образец</button>
+      </div>
+      <div class="rule" id="rule3" hidden>he / she / it + verb-<b>s</b>: My robot load<b>s</b> the dishwasher. · <b>does</b> the shopping · <b>tidies</b></div>
+      <div class="fb" id="fb2"></div>
+    </div>
+  </div>
+
+  <div class="scene" id="scene">
+    <div class="room shop" data-room="shop"><span class="lbl">shop</span><span class="deco">🏪</span></div>
+    <div class="house">
+      <div class="roof"></div>
+      <div class="floor">
+        <div class="room bedroom" data-room="bedroom"><span class="lbl">bedroom</span><span class="deco">🛏️</span></div>
+        <div class="room living" data-room="living"><span class="lbl">living room</span><span class="deco">🛋️</span></div>
+      </div>
+      <div class="floor down">
+        <div class="room kitchen" data-room="kitchen"><span class="lbl">kitchen</span><span class="deco">🍳🧊</span></div>
+      </div>
+      <div class="robot" id="robot" hidden>🤖</div>
+    </div>
+    <div class="room garden" data-room="garden"><span class="lbl">garden</span><span class="deco">🌳</span></div>
+  </div>
+</div>
+
+<div class="modal" id="startModal">
+  <div class="mcard">
+    <h1>Robot's House 🏠</h1>
+    <ol style="line-height:1.6;padding-left:20px">
+      <li><b>Where?</b> Listen to the job. Put it in the right room.</li>
+      <li><b>How often?</b> Choose a job and a battery. Say: <i>I usually set the table.</i></li>
+      <li><b>🤖 Robot</b> Your robot moves in! <i>My robot always loads the dishwasher.</i></li>
+    </ol>
+    <button class="b main" id="goBtn" style="width:100%;font-size:18px;padding:13px">▶ Start</button>
+  </div>
+</div>
+
+<div class="modal" id="endModal" hidden>
+  <div class="mcard">
+    <h1>Great job! 🎉</h1>
+    <div class="stats" id="stats"></div>
+    <button class="b main" id="endClose" style="width:100%">Продолжить</button>
+  </div>
+</div>
+<div class="star" id="star">⭐</div>
+
+<script>
+const CH = [
+  {id:"dish",  t:"load the dishwasher",     s:"loads the dishwasher",       e:"🍽️", room:"kitchen"},
+  {id:"cook",  t:"cook the dinner",         s:"cooks the dinner",           e:"🍳", room:"kitchen"},
+  {id:"table", t:"set the table",           s:"sets the table",             e:"🍴", room:"kitchen"},
+  {id:"cat",   t:"feed the cat",            s:"feeds the cat",              e:"🐱", room:"kitchen"},
+  {id:"bed",   t:"make the bed",            s:"makes the bed",              e:"🛏️", room:"bedroom"},
+  {id:"tidy",  t:"tidy your room",          s:"tidies the room",            e:"🧸", room:"bedroom"},
+  {id:"vac",   t:"vacuum the floor",        s:"vacuums the floor",          e:"🧹", room:"living"},
+  {id:"dog",   t:"take the dog for a walk", s:"takes the dog for a walk",   e:"🐕", room:"garden"},
+  {id:"rec",   t:"take out the recycling",  s:"takes out the recycling",    e:"♻️", room:"garden"},
+  {id:"shop",  t:"do the shopping",         s:"does the shopping",          e:"🛒", room:"shop"}
+];
+const ROOMNAME = {kitchen:"the kitchen", bedroom:"the bedroom", living:"the living room", garden:"the garden", shop:"the shop"};
+const ADV = [
+  {lvl:0, w:"never",      me:"I never",      it:"never"},
+  {lvl:1, w:"not often",  me:"I don't often", it:"doesn't often"},
+  {lvl:2, w:"sometimes",  me:"I sometimes",  it:"sometimes"},
+  {lvl:3, w:"often",      me:"I often",      it:"often"},
+  {lvl:4, w:"usually",    me:"I usually",    it:"usually"},
+  {lvl:5, w:"always",     me:"I always",     it:"always"}
+];
+const SEG = ["#ff6b6b","#ff9f43","#ffcf3f","#a3e05a","#3ddc84","#2fbf7a"];
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+let S={stage:1, queue:[], cur:null, miss:0, first:0, tries:0, stars:0,
+  meFrame:0, meFree:0, botFrame:0, botFree:0, rules:0, pick:null, adv:null, frameOn:true, t0:Date.now(), placed:{}};
+
+/* ---- voice ---- */
+let VO=[]; function lv(){ VO=speechSynthesis.getVoices(); } if("speechSynthesis" in window){ lv(); speechSynthesis.onvoiceschanged=lv; }
+function voice(){ const gb=VO.filter(v=>/en[-_]GB/i.test(v.lang));
+  return gb.find(v=>/Libby|Sonia|Kate|Serena|Hazel|Google UK English Female|Female/i.test(v.name))||gb[0]||VO.find(v=>/^en/i.test(v.lang)); }
+function say(t,slow){ if(!("speechSynthesis" in window)) return; speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t.replace(/\blives\b/gi,"livs").replace(/\blive\b/gi,"liv")); const v=voice(); if(v) u.voice=v;
+  u.lang=v?v.lang:"en-GB"; u.rate=slow?.68:.82; speechSynthesis.speak(u); }
+
+/* ---- sfx ---- */
+let AC; function beep(f,d=.12,t=0,v=.07){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); const o=AC.createOscillator(),g=AC.createGain(); o.type="sine"; o.frequency.value=f; g.gain.setValueAtTime(v,AC.currentTime+t); g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+t+d); o.connect(g).connect(AC.destination); o.start(AC.currentTime+t); o.stop(AC.currentTime+t+d+.02);}catch(e){} }
+const sWin=()=>{beep(660);beep(880,.12,.1);beep(1320,.2,.2)};
+const sHmm=()=>{beep(330,.12,0,.05);beep(260,.16,.13,.05)};
+function star(){ S.stars++; $("#pStars").textContent="⭐ "+S.stars; sWin(); const s=$("#star"); s.classList.add("on"); setTimeout(()=>s.classList.remove("on"),600); }
+
+/* ---- battery ---- */
+function batHTML(n,lg){ return `<span class="battery ${lg?"lg":""}"><span class="body">${[0,1,2,3,4].map(i=>`<span class="seg" style="${i<n?`background:${SEG[n]}`:""}"></span>`).join("")}</span><span class="tip"></span></span>`; }
+
+/* ---- STEP 1 ---- */
+function next1(){
+  if(!S.queue.length){ $("#fb1").textContent="All jobs are in the house! 🎉"; $("#fb1").className="fb ok"; setTimeout(()=>toStage(2),1100); return; }
+  S.cur=S.queue.shift(); S.miss=0;
+  $("#phrase").textContent=S.cur.t; $("#phrase").classList.add("blur"); $("#showBtn").textContent="👁 Текст";
+  $("#hint").textContent=""; $("#fb1").textContent="Нажми на комнату."; $("#fb1").className="fb";
+  $("#count1").textContent=`${CH.length-S.queue.length} / ${CH.length}`;
+  $$(".room").forEach(r=>r.classList.remove("glow"));
+  setTimeout(()=>say(S.cur.t),300);
+}
+function roomClick(r){
+  const room=r.dataset.room;
+  if(S.stage!==1||!S.cur) return;
+  if(room===S.cur.room){
+    S.tries++; if(S.miss===0) S.first++;
+    addCard(S.cur,room); star();
+    $("#fb1").textContent=`Yes! You ${S.cur.t} in ${ROOMNAME[room]}.`; $("#fb1").className="fb ok";
+    say(`Yes! ${S.cur.t}.`);
+    S.cur=null; setTimeout(next1,1400);
+  } else {
+    S.miss++; sHmm(); r.classList.remove("shake"); void r.offsetWidth; r.classList.add("shake");
+    if(S.miss===1){ $("#fb1").textContent="Hmm… listen again 👂"; $("#fb1").className="fb warn"; say(S.cur.t,true); }
+    else if(S.miss===2){ $("#hint").textContent=S.cur.e; $("#fb1").textContent="Look at the picture! 👀"; $("#fb1").className="fb warn"; say(S.cur.t,true); }
+    else { $(`.room[data-room="${S.cur.room}"]`).classList.add("glow"); $("#fb1").textContent="Here it is ✨"; $("#fb1").className="fb warn"; }
+  }
+}
+function addCard(c,room){
+  const d=document.createElement("div"); d.className="card"; d.dataset.id=c.id;
+  d.innerHTML=`<span class="e">${c.e}</span><span class="t">${c.t}</span><span class="bat"></span>`;
+  $(`.room[data-room="${room}"]`).appendChild(d); S.placed[c.id]=d;
+  d.addEventListener("click",ev=>{ ev.stopPropagation(); if(S.stage>=2) pickJob(c); });
+}
+
+/* ---- STEP 2 & 3 ---- */
+function toStage(n){
+  S.stage=n;
+  ["st1","st2","st3"].forEach((id,i)=>{ const e=$("#"+id); e.classList.toggle("on",i+1===n); e.classList.toggle("done",i+1<n); });
+  if(n===1){ $("#p1").hidden=false; $("#p2").hidden=true; return; }
+  // fill the house if teacher skipped
+  CH.forEach(c=>{ if(!S.placed[c.id]) addCard(c,c.room); });
+  $("#p1").hidden=true; $("#p2").hidden=false;
+  $$(".card").forEach(c=>{ c.classList.add("pickable"); });
+  S.pick=null; S.adv=null; $("#bats").hidden=true; $("#frame").hidden=true; $("#sayRow").hidden=true; $("#chosen").innerHTML="";
+  $("#fb2").textContent="";
+  if(n===2){ $("#p2title").textContent="How often do YOU do it? Choose a job in the house 👇"; $("#rule3").hidden=true; $("#robot").hidden=true;
+    say("How often do you do it? Choose a job."); }
+  if(n===3){ $("#p2title").textContent="🤖 Your robot moves in! What does it do? Choose a job 👇"; $("#rule3").hidden=false; $("#robot").hidden=false;
+    $$(".card").forEach(c=>{ c.classList.remove("used"); c.querySelector(".bat").innerHTML=""; });
+    say("Your robot moves in! What does your robot do?"); }
+}
+function pickJob(c){
+  S.pick=c; S.adv=null;
+  $$(".card").forEach(x=>x.style.outline=""); S.placed[c.id].style.outline="4px solid var(--accent)";
+  $("#chosen").innerHTML=`<span class="card" style="font-size:18px"><span class="e" style="font-size:30px">${c.e}</span>${S.stage===3?c.s:c.t}</span>`;
+  $("#bats").innerHTML=ADV.map(a=>`<button class="batbtn" data-l="${a.lvl}">${batHTML(a.lvl,true)}<span>${a.w}</span></button>`).join("");
+  $("#bats").hidden=false; $("#frame").hidden=true; $("#sayRow").hidden=true; $("#fb2").textContent="Choose a battery 🔋";
+  $$("#bats .batbtn").forEach(b=>b.onclick=()=>pickAdv(+b.dataset.l));
+}
+function sentence(){ const a=ADV[S.adv], c=S.pick;
+  if(S.stage===2) return `${a.me} ${c.t}.`;
+  const verb = a.lvl===1 ? c.t.replace("tidy your room","tidy the room") : c.s;
+  return `My robot ${a.it} ${verb}.`; }
+function renderFrame(){
+  const a=ADV[S.adv], c=S.pick, f=$("#frame");
+  if(!S.frameOn){ f.innerHTML=`<span style="color:var(--muted);font-size:18px">🙈 Без рамки: скажи сама!</span>`; return; }
+  if(S.stage===2){
+    f.innerHTML=`<span class="slot"><small>кто</small>I</span><span class="slot"><small>как часто</small>${a.lvl===1?"don't often":a.w}</span><span class="slot"><small>что делаю</small>${c.t}</span>.`;
+  } else {
+    const verb = a.lvl===1 ? c.t.replace("tidy your room","tidy the room") : (/^does\b/.test(c.s) ? c.s.replace(/^does/,"do<b>es</b>") : /^tidies\b/.test(c.s) ? c.s.replace(/^tidies/,"tid<b>ies</b>") : c.s.replace(/^(\w+)s\b/,"$1<b>s</b>"));
+    f.innerHTML=`<span class="slot"><small>кто</small>My robot</span><span class="slot"><small>как часто</small>${a.it}</span><span class="slot s"><small>${a.lvl===1?"без -s!":"глагол + s"}</small>${verb}</span>.`;
+  }
+}
+function pickAdv(l){
+  S.adv=l; $$("#bats .batbtn").forEach(b=>b.style.background=+b.dataset.l===l?"var(--lemon)":"");
+  renderFrame(); $("#frame").hidden=false; $("#sayRow").hidden=false;
+  $("#fb2").textContent="Say it! 🗣️"; $("#fb2").className="fb";
+  $("#rule3").classList.remove("glow");
+}
+function done(free){
+  if(!S.pick||S.adv===null) return;
+  if(S.stage===2){ free?S.meFree++:S.meFrame++; } else { free?S.botFree++:S.botFrame++; }
+  const card=S.placed[S.pick.id]; card.classList.add("used"); card.querySelector(".bat").innerHTML=batHTML(S.adv);
+  card.style.outline=""; star();
+  $("#fb2").textContent=(free?"Wow, без рамки! ⭐ ":"Great! ")+"Choose another job 👇"; $("#fb2").className="fb ok";
+  const n=S.stage===2?S.meFrame+S.meFree:S.botFrame+S.botFree;
+  if(S.stage===2 && n===3 && S.frameOn){ S.frameOn=false; $("#frameBtn").textContent="🧩 Рамка: выкл"; $("#fb2").textContent="3 sentences! Now try without the frame 💪"; }
+  S.pick=null; S.adv=null; $("#bats").hidden=true; $("#frame").hidden=true; $("#sayRow").hidden=true; $("#chosen").innerHTML="";
+  if(S.stage===2 && n>=5) $("#fb2").textContent="5 sentences! 🎉 Нажми «⏭ Дальше» для робота или 🏁 Итог.";
+}
+
+/* ---- end ---- */
+function showEnd(){
+  const m=Math.max(1,Math.round((Date.now()-S.t0)/60000));
+  $("#stats").innerHTML=[[`${S.first} / ${S.tries||CH.length}`,"комнат с первого раза"],[S.meFrame,"о себе по рамке"],[S.meFree,"о себе без рамки"],[S.botFrame+S.botFree,"о роботе (-s)"],[S.rules,"раз подсвечено правило"],[m+" мин","время"]]
+    .map(x=>`<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("");
+  $("#endModal").hidden=false;
+}
+
+/* ---- wiring ---- */
+$$(".room").forEach(r=>r.addEventListener("click",()=>roomClick(r)));
+$("#sayBtn").onclick=()=>S.cur&&say(S.cur.t,true);
+$("#showBtn").onclick=()=>{ const p=$("#phrase"); p.classList.toggle("blur"); $("#showBtn").textContent=p.classList.contains("blur")?"👁 Текст":"🙈 Скрыть"; };
+$("#goBtn").onclick=()=>{ $("#startModal").hidden=true; lv(); S.queue=shuffle(CH.slice()); S.t0=Date.now(); next1(); };
+$("#nextStage").onclick=()=>{ if(S.stage<3) toStage(S.stage+1); };
+$("#endBtn").onclick=showEnd;
+$("#endClose").onclick=()=>$("#endModal").hidden=true;
+$("#frameBtn").onclick=()=>{ S.frameOn=!S.frameOn; $("#frameBtn").textContent=S.frameOn?"🧩 Рамка":"🧩 Рамка: выкл"; if(S.adv!==null) renderFrame(); };
+$("#okFrame").onclick=()=>done(false);
+$("#okFree").onclick=()=>done(true);
+$("#modelBtn").onclick=()=>{ if(S.pick&&S.adv!==null) say(sentence(),true); };
+$("#oopsBtn").onclick=()=>{
+  S.rules++; sHmm();
+  if(S.stage===3){ $("#rule3").classList.add("glow"); $("#fb2").textContent="Посмотри на правило и скажи ещё раз 🙂"; }
+  else { S.frameOn=true; renderFrame(); $("#frameBtn").textContent="🧩 Рамка"; $("#fb2").textContent="Посмотри на рамку и скажи ещё раз 🙂"; }
+  $("#fb2").className="fb warn";
+};
+</script>
+</body>
+</html>
