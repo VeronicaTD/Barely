@@ -154,6 +154,7 @@ button.q{cursor:pointer;font:inherit;color:var(--text)} button.q:hover{border-co
       <span class="pill" id="stStars">⭐ 0</span>
       <span class="pill" id="stQ">❓ 0</span>
       <button class="pill btn" id="aiBtn">🤖 AI: on</button>
+      <button class="pill btn" id="voiceBtn" title="Голос робота">🤖 Голос: робот</button>
       <button class="pill btn" id="logBtn" title="Что говорил робот">📜 Что сказал робот</button>
       <button class="pill btn" id="endBtn">🏁 Итог</button>
     </div>
@@ -265,60 +266,60 @@ const EXTRA = {
 };
 
 const BOTS = [
-  {id:"bolt", name:"Bolt", pr:"he", voice:"m", pitch:.45, rate:.88, es:{p:18,s:140,ring:38}, body:"#9fb3c8", eye:"#39d0ff", glow:"#7a2d1f", planet:"#ff7a45",
-   hi:"Beep boop! Hello, Earthling! I'm new on your planet. Please interview me!",
+  {id:"bolt", name:"Bolt", pr:"he", voice:"m", pitch:.45, rate:.88, es:{p:35,s:115,ring:40}, body:"#9fb3c8", eye:"#39d0ff", glow:"#7a2d1f", planet:"#ff7a45",
+   hi:"Hello! I'm a robot. Ask me, please!",
    facts:{
-    name:"My name is Bolt. Beep!",
-    live:"I live on Mars, in a big red crater.",
-    eat:"I eat batteries. Crunchy batteries for breakfast, lunch and dinner!",
-    getup:"I get up at four o'clock in the morning. My alarm is a volcano.",
-    bed:"I go to bed at midnight. Robots sleep in the fridge. It's cool!",
-    weekend:"At the weekend I dance on the Moon with aliens.",
-    from:"I'm from Mars. It's red and very dusty.",
-    drink:"I drink oil. Mmm, delicious!",
-    like:"I like playing football with aliens. The ball is a small asteroid.",
-    age:"I'm three hundred years old. I'm a very young robot!",
-    can:"I can fly, but I can't swim. I go rusty!",
-    friends:"My best friend is a toaster. He's very warm.",
-    school:"I go to Robot School. My favourite subject is Maths.",
-    how:"I'm fine, thank you! My battery is full."},
-   report:[/mars|crater/,/batter/,/four|4/,/midnight|fridge/,/dance|moon|alien/,/bolt/]},
-  {id:"zizi", name:"Zizi", pr:"she", voice:"f", pitch:1.7, rate:.9, es:{p:92,s:155,ring:75}, body:"#e4a6d8", eye:"#ffcf3f", glow:"#4b2a7a", planet:"#c9c9d6",
-   hi:"Bzzzt! Hi, hi! I'm a robot from space. I love reporters. Ask me anything!",
+    name:"My name is Bolt.",
+    live:"I live on Mars.",
+    eat:"I eat batteries!",
+    getup:"I get up at four o'clock.",
+    bed:"I go to bed at twelve o'clock.",
+    weekend:"I play football at the weekend.",
+    from:"I'm from Mars.",
+    drink:"I drink oil.",
+    like:"I like football.",
+    age:"I'm three hundred!",
+    can:"I can fly!",
+    friends:"My friend is a cat.",
+    school:"I go to robot school.",
+    how:"I'm fine, thank you!"},
+   report:[/mars/,/batter/,/four|\b4\b/,/twelve|12/,/football/,/bolt/]},
+  {id:"zizi", name:"Zizi", pr:"she", voice:"f", pitch:1.7, rate:.9, es:{p:70,s:120,ring:60}, body:"#e4a6d8", eye:"#ffcf3f", glow:"#4b2a7a", planet:"#c9c9d6",
+   hi:"Hi! I'm a robot. Ask me questions!",
    facts:{
-    name:"My name is Zizi. Z-I-Z-I!",
-    live:"I live on the Moon, in a silver house.",
-    eat:"I eat screws and nuts. Yummy!",
-    getup:"I get up at midnight. I love the dark!",
-    bed:"I go to bed at twelve o'clock in the afternoon.",
-    weekend:"At the weekend I play video games with my robot cat.",
-    from:"I'm from the Moon. It's quiet and grey.",
-    drink:"I drink electricity with ice.",
-    like:"I like singing. Listen: beep-beep-la-la!",
-    age:"I'm ninety-nine years old.",
-    can:"I can sing and I can dance, but I can't cook.",
-    friends:"I've got a robot cat. Her name is Wi-Fi.",
-    school:"I don't go to school. I download my lessons!",
-    how:"I'm great! Bzzzt!"},
-   report:[/moon|silver/,/screw|nut/,/midnight/,/twelve|12|afternoon/,/game|cat/,/zizi/]},
-  {id:"gizmo", name:"Gizmo", pr:"he", voice:"m", pitch:.8, rate:.92, es:{p:50,s:145,ring:52}, body:"#8fd6a8", eye:"#ff6b6b", glow:"#12506a", planet:"#4cc2ff",
-   hi:"Blip blop! Hello! I'm a robot. I come from very, very deep water. Interview me, please!",
+    name:"My name is Zizi.",
+    live:"I live on the Moon.",
+    eat:"I eat pizza!",
+    getup:"I get up at nine o'clock.",
+    bed:"I go to bed at ten o'clock.",
+    weekend:"I dance at the weekend.",
+    from:"I'm from the Moon.",
+    drink:"I drink milk.",
+    like:"I like singing.",
+    age:"I'm ten.",
+    can:"I can sing!",
+    friends:"My friend is a dog.",
+    school:"I don't go to school!",
+    how:"I'm happy, thank you!"},
+   report:[/moon/,/pizza/,/nine|\b9\b/,/\bten\b|10/,/danc/,/zizi/]},
+  {id:"gizmo", name:"Gizmo", pr:"he", voice:"m", pitch:.8, rate:.92, es:{p:50,s:115,ring:50}, body:"#8fd6a8", eye:"#ff6b6b", glow:"#12506a", planet:"#4cc2ff",
+   hi:"Hello! I'm a robot. Ask me, please!",
    facts:{
-    name:"My name is Gizmo. Blip!",
-    live:"I live under the sea, in a yellow submarine.",
-    eat:"I eat old phones. Old phones are my favourite food!",
-    getup:"I get up at seven o'clock, like you!",
-    bed:"I go to bed at six o'clock in the evening. I'm always tired.",
-    weekend:"At the weekend I clean the ocean. It's my job.",
-    from:"I'm from the Pacific Ocean.",
-    drink:"I drink sea water. It's very salty!",
-    like:"I like swimming with sharks. They're my friends.",
-    age:"I'm fifty years old.",
-    can:"I can swim very fast, but I can't fly.",
-    friends:"My best friend is a shark. His name is Bob.",
-    school:"I go to Fish School. I'm the only robot there!",
-    how:"I'm OK. A bit wet. Blip!"},
-   report:[/sea|submarine|ocean/,/phone/,/seven|7/,/six|6|evening/,/clean|ocean/,/gizmo/]}
+    name:"My name is Gizmo.",
+    live:"I live in the sea.",
+    eat:"I eat phones!",
+    getup:"I get up at seven o'clock.",
+    bed:"I go to bed at six o'clock.",
+    weekend:"I swim at the weekend.",
+    from:"I'm from the sea.",
+    drink:"I drink water.",
+    like:"I like swimming.",
+    age:"I'm fifty.",
+    can:"I can swim!",
+    friends:"My friend is a fish.",
+    school:"I go to fish school!",
+    how:"I'm OK, thank you!"},
+   report:[/\bsea\b/,/phone/,/seven|\b7\b/,/\bsix\b|\b6\b/,/swim/,/gizmo/]}
 ];
 const NEED_REPORT = 3;
 /* ========================================== */
@@ -417,6 +418,7 @@ function voiceFor(g){
 }
 const spoken = t=>t.replace(/\bBeep boop\b/gi,"Beep. Boop").replace(/Bzzzt?/g,"Bzz").replace(/\blives\b/gi,"livs").replace(/\blive\b/gi,"liv").replace(/Wi-Fi/g,"Why-fy").replace(/Z-I-Z-I/,"Z, I, Z, I");
 /* ---- robot voice: eSpeak (WASM) + ring-modulator effect; browser voice as fallback ---- */
+let VMODE="robot"; try{ VMODE=localStorage.getItem("rb_voice")||"robot"; }catch(e){}
 const ES_URL="https://cdn.jsdelivr.net/npm/espeak-ng@1.0.2/dist/";
 let ES=null, ESmod=null, ESwasm=null, ESfail=false, curSrc=null;
 async function esLoad(){
@@ -428,7 +430,7 @@ async function esLoad(){
   return ES;
 }
 async function esWav(text,b){
-  const inst=await ESmod({arguments:["-v","en-gb","-p",String(b.es.p),"-s",String(Math.round(b.es.s*(S.slow?.8:1))),"-w","/o.wav",text],
+  const inst=await ESmod({arguments:["-v","en-gb","-g","4","-p",String(b.es.p),"-s",String(Math.round(b.es.s*(S.slow?.8:1))),"-w","/o.wav",text],
     print:()=>{}, printErr:()=>{},
     instantiateWasm:(imp,ok)=>{ WebAssembly.instantiate(ESwasm,imp).then(i=>ok(i,ESwasm)); return {}; }});
   return inst.FS.readFile("/o.wav").buffer;
@@ -438,14 +440,14 @@ async function robotPlay(text,b,tok){
   const buf=await AC.decodeAudioData(await esWav(text,b));
   if(tok!==S.tok) return null;
   const src=AC.createBufferSource(); src.buffer=buf; curSrc=src;
-  const out=AC.createGain(); out.gain.value=1.6;
-  const dry=AC.createGain(); dry.gain.value=.45;
-  const ring=AC.createGain(); ring.gain.value=0;
+  const out=AC.createGain(); out.gain.value=1.5;
+  const dry=AC.createGain(); dry.gain.value=1;
+  const ring=AC.createGain(); ring.gain.value=0; const ringMix=AC.createGain(); ringMix.gain.value=.3;
   const osc=AC.createOscillator(); osc.type="sine"; osc.frequency.value=b.es.ring; osc.connect(ring.gain);
-  const dl=AC.createDelay(); dl.delayTime.value=.011; const fbk=AC.createGain(); fbk.gain.value=.45;
+  const dl=AC.createDelay(); dl.delayTime.value=.011; const fbk=AC.createGain(); fbk.gain.value=.15; const dlMix=AC.createGain(); dlMix.gain.value=.25;
   const an=AC.createAnalyser(); an.fftSize=256;
-  src.connect(dry).connect(out); src.connect(ring).connect(out);
-  out.connect(dl); dl.connect(fbk).connect(dl); dl.connect(an); out.connect(an); an.connect(AC.destination);
+  src.connect(dry).connect(out); src.connect(ring).connect(ringMix).connect(out);
+  out.connect(dl); dl.connect(fbk).connect(dl); dl.connect(dlMix).connect(an); out.connect(an); an.connect(AC.destination);
   osc.start();
   const d=new Uint8Array(an.fftSize), rs=[...document.querySelectorAll("#mouth rect")];
   clearInterval(mouthT); mouthT=setInterval(()=>{ an.getByteTimeDomainData(d); let m=0; for(const v of d) m=Math.max(m,Math.abs(v-128));
@@ -461,12 +463,12 @@ function say(text, done){
   try{ curSrc&&curSrc.stop(); }catch(e){} speechSynthesis&&speechSynthesis.cancel();
   setTimeout(fin, 4000+text.length*130);
   (async()=>{
-    if(await esLoad()){ try{ const r=await robotPlay(spoken(text),b,tok); if(r!==null) fin(); return; }catch(e){ console.warn(e); } }
+    if(VMODE==="robot" && await esLoad()){ try{ const r=await robotPlay(spoken(text),b,tok); if(r!==null) fin(); return; }catch(e){ console.warn(e); } }
     if(tok!==S.tok) return;
     mouth(true);
     if(!("speechSynthesis" in window)){ setTimeout(fin,800+text.length*60); return; }
     const u=new SpeechSynthesisUtterance(spoken(text)); const v=voiceFor(b.voice); if(v) u.voice=v; u.lang=v?v.lang:"en-GB";
-    u.pitch=b.pitch; u.rate=S.slow?b.rate*.8:b.rate; u.onend=fin; u.onerror=fin; speechSynthesis.speak(u);
+    u.pitch=VMODE==="robot"?b.pitch:1; u.rate=S.slow?.65:.8; u.onend=fin; u.onerror=fin; speechSynthesis.speak(u);
   })();
 }
 
@@ -547,9 +549,9 @@ async function aiAnswer(q, topic){
   const b=S.b;
   const sys=`You are ${b.name}, a funny friendly robot who has just landed on Earth. A Russian 7th-grade girl (English A1) is a reporter and interviews you.
 YOUR FACTS (always stay true to them): ${JSON.stringify(b.facts)}
-Rules: answer her question in 1-2 VERY short, simple sentences (max 18 words), Present Simple, words a beginner knows. Answer with a full sentence that mirrors her question (Where do you live? -> I live...). Be funny and robotic, sometimes add a sound like "Beep!" or "Bzzt!". If the question is not about your facts, invent a funny answer that fits your character. Never correct her English. Never ask her questions. Never mention AI. Output only the answer.`;
+Rules: she understands very little by ear. Answer in ONE very short sentence, 3-7 words, Present Simple, only the most basic A1 words (like a children's first English book). Mirror her question: "Where do you live?" -> "I live on Mars." No sounds like beep, no jokes that need hard words, no extra sentences. If the question is not about your facts, give a short simple answer in character. Never correct her English. Never ask her questions. Never mention AI. Output only the answer.`;
   const contents=[...S.hist,{role:"user",parts:[{text:q}]}];
-  const j=await gem({systemInstruction:{parts:[{text:sys}]},contents,generationConfig:{temperature:.9,maxOutputTokens:80}});
+  const j=await gem({systemInstruction:{parts:[{text:sys}]},contents,generationConfig:{temperature:.9,maxOutputTokens:40}});
   const txt=j.candidates[0].content.parts.map(p=>p.text||"").join("").trim().replace(/^["']|["']$/g,"");
   if(!txt) throw new Error("empty");
   S.hist.push({role:"user",parts:[{text:q}]},{role:"model",parts:[{text:txt}]});
@@ -642,14 +644,14 @@ async function handle(raw){
   addLog("You",raw,"me"); $("#mySub").innerHTML="<span>"+raw+"</span>";
   if(S.stage==="ask") return handleQ(raw);
   if(S.stage==="report") return handleRep(raw);
-  if(S.stage==="final"){ star(); say(pick(["Wow! Thank you, reporter! Beep boop! Bye!","Interesting! On my planet robots do all the jobs at home! Bye!"]),()=>{ S.stage="done"; setMic(); fb("Отлично! Жми 🏁 Итог или NEXT ▶","ok"); }); }
+  if(S.stage==="final"){ star(); say(pick(["Thank you! Bye-bye!","Cool! Thank you! Bye!"]),()=>{ S.stage="done"; setMic(); fb("Отлично! Жми 🏁 Итог или NEXT ▶","ok"); }); }
 }
 async function handleQ(raw, forced, qid){
   const err = forced?null:checkQ(raw);
   if(err){
     S.errNow=true; sHmm(); $("#bot").classList.remove("glitch"); void $("#bot").offsetWidth; $("#bot").classList.add("glitch");
     glow(err.glow||[err.k], err.why); fb("Посмотри на карточку и спроси ещё раз 🙂","warn");
-    say(pick(["Bzzzt? Does not compute. Again, please!","Beep? Error in my ears. Say it again!","Hmm? Robot is confused. One more time!"]));
+    say(pick(["Beep? Again, please!","Sorry? Again, please!"]));
     return;
   }
   clearGlow(); S.q++; $("#stQ").textContent="❓ "+S.q;
@@ -663,14 +665,14 @@ async function handleQ(raw, forced, qid){
   if(S.aiOn){ S.busy=true; setMic(); $("#botSub").className="sub"; $("#botSub").innerHTML="<span>⚙️ …</span>";
     try{ ans=await aiAnswer(raw, topic); aiPill(); }catch(e){ aiPill("err"); }
     S.busy=false; }
-  if(!ans) ans = topic ? S.b.facts[topic] : pick(["Beep! Good question! I don't know. I'm only a robot!","Bzzt! That's a secret!"]);
+  if(!ans) ans = topic ? S.b.facts[topic] : pick(["I don't know!","It's a secret!"]);
   renderAsk();
   say(ans, ()=>{ if(S.asked.size>=QS.length && S.stage==="ask") setTimeout(()=>{ if(S.stage==="ask") toReport(); },400); });
 }
 function toReport(){
   S.stage="report"; clearGlow(); document.querySelector('.card[data-k="s"]').hidden=false; renderReport(); setMic();
   $("#botTag").textContent="🤖 "+S.b.name;
-  say(`Thank you, reporter! Now tell your teacher about me!`);
+  say("Thank you! Now tell your teacher about me.");
 }
 function handleRep(raw, forced){
   const err=forced?null:checkReport(raw);
@@ -686,7 +688,7 @@ function handleRep(raw, forced){
     S.stage="final"; setMic();
     $("#tLbl").textContent="Step 3 · Robot's question"; $("#tGoal").textContent="Answer the robot!"; $("#tQs").innerHTML='<span class="q">🏠 I usually / sometimes / never…</span>';
     $("#frame").innerHTML=""; $("#tRu").textContent="Робот спрашивает тебя о домашних делах";
-    say("You are a great reporter! Now my question: do you help at home?");
+    say("Good job! My question: do you help at home?");
   }
 }
 const SAMPLE={name:"What is your name?",live:"Where do you live?",eat:"What do you eat?",getup:"What time do you get up?",bed:"What time do you go to bed?",weekend:"What do you do at the weekend?"};
@@ -742,6 +744,9 @@ $("#okBtn").onclick=teacherOK;
 $("#kbBtn").onclick=()=>{ $("#typing").classList.toggle("on"); $("#typeIn").focus(); };
 $("#typing").onsubmit=e=>{ e.preventDefault(); const v=$("#typeIn").value.trim(); if(v){ $("#typeIn").value=""; handle(v); } };
 $("#aiBtn").onclick=()=>{ S.aiOn=!S.aiOn; try{ localStorage.setItem("rb_ai",S.aiOn?"1":"0"); }catch(e){} aiPill(); };
+function vPill(){ $("#voiceBtn").textContent=VMODE==="robot"?"🤖 Голос: робот":"🗣️ Голос: обычный"; }
+$("#voiceBtn").onclick=()=>{ VMODE=VMODE==="robot"?"clear":"robot"; try{ localStorage.setItem("rb_voice",VMODE); }catch(e){} vPill(); if(S.last&&!S.speaking) say(S.last); };
+vPill();
 $("#logBtn").onclick=()=>{ $("#log").hidden=!$("#log").hidden; };
 $("#logClose").onclick=()=>{ $("#log").hidden=true; };
 $("#endBtn").onclick=()=>showEnd(false);
