@@ -79,7 +79,9 @@ body.tm #kbBtn{display:none}
 .profile div{margin:2px 0}
 
 /* helper cards */
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cards{display:flex;gap:10px;flex-wrap:wrap}
+.cards .card{flex:1 1 300px}
+.card h5{font-size:19px!important}
 .card{background:var(--panel);border:2px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;transition:.2s;position:relative}
 .card h5{margin:0;font-size:17px;font-weight:800;color:var(--accent2)}
 .card p{margin:4px 0 0;font-size:14px;color:var(--muted);line-height:1.35}
@@ -97,6 +99,7 @@ body.tm #kbBtn{display:none}
 .ru{color:var(--muted);font-size:13px;margin-top:8px}
 .qs{display:flex;flex-wrap:wrap;gap:6px}
 .q{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:15px}
+button.q{cursor:pointer;font:inherit;color:var(--text)} button.q:hover{border-color:var(--accent2)}
 .q.done{border-color:var(--ok);color:var(--ok)}
 .q.done::before{content:"✓ "}
 .frame{display:none;margin-top:10px;gap:6px;flex-wrap:wrap;align-items:center}
@@ -119,7 +122,7 @@ body.tm #kbBtn{display:none}
 .typing input{flex:1;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font:inherit;min-width:0}
 .fb{font-size:15px;min-height:22px;font-weight:500;color:var(--muted)}
 .fb.ok{color:var(--ok)} .fb.warn{color:var(--warn)}
-.log{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;max-height:160px;overflow:auto;font-size:14px;line-height:1.5}
+.log{position:fixed;right:16px;top:60px;width:min(420px,calc(100vw - 32px));z-index:40;box-shadow:var(--shadow);max-height:60vh!important;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;max-height:160px;overflow:auto;font-size:14px;line-height:1.5}
 .log p{margin:2px 0}.log .sys{color:var(--muted);font-size:12px}.log .who{font-weight:700;color:var(--accent)}.log .me .who{color:var(--accent2)}
 
 /* overlays */
@@ -138,7 +141,7 @@ body.tm #kbBtn{display:none}
 .starpop.on{transform:translate(-50%,-50%) scale(1)}
 
 @media (max-width:860px){
-  .stage,.dock{grid-template-columns:1fr} .cards{grid-template-columns:1fr 1fr}
+  .stage,.dock{grid-template-columns:1fr}
   body.tm .dock{grid-template-columns:1fr}
 }
 </style>
@@ -151,7 +154,7 @@ body.tm #kbBtn{display:none}
       <span class="pill" id="stStars">⭐ 0</span>
       <span class="pill" id="stQ">❓ 0</span>
       <button class="pill btn" id="aiBtn">🤖 AI: on</button>
-      <button class="pill btn" id="logBtn">📜 Лог</button>
+      <button class="pill btn" id="logBtn" title="Что говорил робот">📜 Что сказал робот</button>
       <button class="pill btn" id="endBtn">🏁 Итог</button>
     </div>
   </div>
@@ -181,9 +184,6 @@ body.tm #kbBtn{display:none}
   </div>
 
   <div class="cards" id="cards">
-    <div class="card" data-k="be"><h5>AM / IS / ARE</h5><p><i>What <b>is</b> your name?</i><br><i>Where <b>are</b> you from?</i></p><div class="why" id="why-be"></div></div>
-    <div class="card" data-k="do"><h5>DO / DOES</h5><p><i>Where <b>do</b> you live?</i><br>you → do · he/she/it → does</p><div class="why" id="why-do"></div></div>
-    <div class="card" data-k="can"><h5>CAN</h5><p><i>What <b>can</b> you do?</i></p><div class="why" id="why-can"></div></div>
     <div class="card" data-k="order"><h5>❓ + помощник + you + глагол</h5><p><i>What time | do | you | get up?</i><br>Один помощник на вопрос</p><div class="why" id="why-order"></div></div>
     <div class="card" data-k="s" hidden><h5>he / she / it + глагол-S</h5><p><i>It live<b>s</b> on Mars.</i><br><i>It doesn't eat… (без -s)</i></p><div class="why" id="why-s"></div></div>
   </div>
@@ -212,7 +212,7 @@ body.tm #kbBtn{display:none}
     </div>
   </div>
 
-  <div class="log" id="log" hidden><p class="sys">Interview log</p></div>
+  <div class="log" id="log" hidden><p class="sys" style="display:flex;justify-content:space-between"><b>📜 Что говорили (подсказка учителю)</b><button id="logClose" style="background:none;font-size:16px">✕</button></p></div>
 </div>
 
 <div class="modal" id="start">
@@ -228,6 +228,10 @@ body.tm #kbBtn{display:none}
     <button class="go" id="goBtn">🎤 Start: camera + microphone</button>
     <button class="b" id="tmBtn" style="width:100%;margin-top:10px;font-size:16px;padding:13px">👩‍🏫 Режим учителя: игра у меня, ученик говорит в Zoom</button>
     <div class="warn" id="warn"></div>
+    <div id="mediaBox" hidden style="margin-top:14px;background:var(--panel2);border-radius:14px;padding:12px 14px;line-height:1.6">
+      <div id="mCam"></div><div id="mMic"></div>
+      <div class="row" style="margin-top:10px"><button class="b" id="mRetry">🔄 Проверить ещё раз</button><button class="go" id="mOk" style="flex:1;width:auto" hidden>▶ Начать</button></div>
+    </div>
   </div>
 </div>
 
@@ -261,7 +265,7 @@ const EXTRA = {
 };
 
 const BOTS = [
-  {id:"bolt", name:"Bolt", pr:"he", voice:"m", pitch:.45, rate:.88, body:"#9fb3c8", eye:"#39d0ff", glow:"#7a2d1f", planet:"#ff7a45",
+  {id:"bolt", name:"Bolt", pr:"he", voice:"m", pitch:.45, rate:.88, es:{p:18,s:140,ring:38}, body:"#9fb3c8", eye:"#39d0ff", glow:"#7a2d1f", planet:"#ff7a45",
    hi:"Beep boop! Hello, Earthling! I'm new on your planet. Please interview me!",
    facts:{
     name:"My name is Bolt. Beep!",
@@ -279,7 +283,7 @@ const BOTS = [
     school:"I go to Robot School. My favourite subject is Maths.",
     how:"I'm fine, thank you! My battery is full."},
    report:[/mars|crater/,/batter/,/four|4/,/midnight|fridge/,/dance|moon|alien/,/bolt/]},
-  {id:"zizi", name:"Zizi", pr:"she", voice:"f", pitch:1.7, rate:.9, body:"#e4a6d8", eye:"#ffcf3f", glow:"#4b2a7a", planet:"#c9c9d6",
+  {id:"zizi", name:"Zizi", pr:"she", voice:"f", pitch:1.7, rate:.9, es:{p:92,s:155,ring:75}, body:"#e4a6d8", eye:"#ffcf3f", glow:"#4b2a7a", planet:"#c9c9d6",
    hi:"Bzzzt! Hi, hi! I'm a robot from space. I love reporters. Ask me anything!",
    facts:{
     name:"My name is Zizi. Z-I-Z-I!",
@@ -297,7 +301,7 @@ const BOTS = [
     school:"I don't go to school. I download my lessons!",
     how:"I'm great! Bzzzt!"},
    report:[/moon|silver/,/screw|nut/,/midnight/,/twelve|12|afternoon/,/game|cat/,/zizi/]},
-  {id:"gizmo", name:"Gizmo", pr:"he", voice:"m", pitch:.8, rate:.92, body:"#8fd6a8", eye:"#ff6b6b", glow:"#12506a", planet:"#4cc2ff",
+  {id:"gizmo", name:"Gizmo", pr:"he", voice:"m", pitch:.8, rate:.92, es:{p:50,s:145,ring:52}, body:"#8fd6a8", eye:"#ff6b6b", glow:"#12506a", planet:"#4cc2ff",
    hi:"Blip blop! Hello! I'm a robot. I come from very, very deep water. Interview me, please!",
    facts:{
     name:"My name is Gizmo. Blip!",
@@ -368,14 +372,36 @@ const sWin=()=>{beep(660,.1,0,"sine",.08);beep(880,.1,.1,"sine",.08);beep(1320,.
 const sHmm=()=>{beep(300,.12,0,"triangle",.06);beep(240,.16,.14,"triangle",.06)};
 
 /* ---------- camera ---------- */
-async function startCam(){
-  const box=$("#camOff"), msg=$("#camMsg");
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ box.style.display="grid"; msg.textContent="Откройте игру в Google Chrome."; return; }
-  try{ const st=await navigator.mediaDevices.getUserMedia({video:true,audio:false}); $("#cam").srcObject=st; box.style.display="none"; }
-  catch(e){ box.style.display="grid";
-    msg.textContent = e.name==="NotReadableError" ? "Камера занята другой программой (Zoom, Telegram). Выключите её там и нажмите «Попробовать снова»."
-      : e.name==="NotAllowedError" ? "Доступ к камере запрещён: 🔒 слева от адреса → Камера → Разрешить."
-      : "Камера не включилась. Можно играть без неё."; }
+/* one permission prompt for camera + mic; the mic stream is kept, so no new prompts later */
+let MIC=null;
+function mediaMsg(e,what){
+  return e.name==="NotReadableError"||e.name==="TrackStartError" ? what+" занят(а) другой программой (Zoom, Telegram). Выключи там и нажми «Проверить ещё раз»."
+    : e.name==="NotAllowedError" ? "Доступ запрещён: нажми 🔒 слева от адреса сайта → "+what+" → Разрешить, потом обнови страницу (F5)."
+    : e.name==="NotFoundError" ? what+" не найден(а)." : what+": ошибка ("+e.name+").";
+}
+async function startMedia(){
+  const res={cam:false, mic:false, camErr:"", micErr:""};
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ res.camErr=res.micErr="Открой игру в Google Chrome."; return res; }
+  if(!window.isSecureContext){ res.camErr=res.micErr="Открой игру по ссылке https://veronicatd.github.io/…"; return res; }
+  let st=null;
+  try{ st=await navigator.mediaDevices.getUserMedia({video:true,audio:{echoCancellation:true,noiseSuppression:true}}); }
+  catch(e){
+    // camera busy (Zoom) or denied: try the two separately so at least the mic works
+    try{ MIC=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}); res.mic=true; }catch(e2){ res.micErr=mediaMsg(e2,"Микрофон"); }
+    try{ const v=await navigator.mediaDevices.getUserMedia({video:true}); $("#cam").srcObject=v; res.cam=true; }catch(e3){ res.camErr=mediaMsg(e3,"Камера"); }
+  }
+  if(st){ $("#cam").srcObject=new MediaStream(st.getVideoTracks()); MIC=new MediaStream(st.getAudioTracks()); res.cam=res.mic=true; }
+  $("#camOff").style.display=res.cam?"none":"grid"; $("#camMsg").textContent=res.camErr;
+  return res;
+}
+async function startCam(){ const r=await startMedia(); showMedia(r); return r; }
+function showMedia(r){
+  $("#mediaBox").hidden=false;
+  $("#mCam").textContent=(r.cam?"✅":"❌")+" Камера"+(r.camErr?" — "+r.camErr:"");
+  $("#mMic").textContent=(r.mic?"✅":"❌")+" Микрофон"+(r.micErr?" — "+r.micErr:"");
+  $("#mOk").hidden=false;
+  $("#mOk").textContent = r.mic ? "▶ Начать" : "▶ Начать без микрофона (набирать текст ⌨️)";
+  if(!r.mic){ EAR="none"; }
 }
 
 /* ---------- speech ---------- */
@@ -389,20 +415,59 @@ function voiceFor(g){
   const okName=v=>re.test(v.name)&&!(g==="f"&&/\bmale/i.test(v.name)&&!/female/i.test(v.name));
   return gb.find(okName)||gb[0]||VOICES.find(okName)||VOICES[0];
 }
-const spoken = t=>t.replace(/\blives\b/gi,"livs").replace(/\blive\b/gi,"liv").replace(/Wi-Fi/g,"Why-fy").replace(/Z-I-Z-I/,"Z, I, Z, I");
+const spoken = t=>t.replace(/\bBeep boop\b/gi,"Beep. Boop").replace(/Bzzzt?/g,"Bzz").replace(/\blives\b/gi,"livs").replace(/\blive\b/gi,"liv").replace(/Wi-Fi/g,"Why-fy").replace(/Z-I-Z-I/,"Z, I, Z, I");
+/* ---- robot voice: eSpeak (WASM) + ring-modulator effect; browser voice as fallback ---- */
+const ES_URL="https://cdn.jsdelivr.net/npm/espeak-ng@1.0.2/dist/";
+let ES=null, ESmod=null, ESwasm=null, ESfail=false, curSrc=null;
+async function esLoad(){
+  if(ES||ESfail) return ES;
+  try{
+    const [m, bin]=await Promise.all([import(ES_URL+"espeak-ng.js"), fetch(ES_URL+"espeak-ng.wasm").then(r=>{ if(!r.ok) throw 0; return r.arrayBuffer(); })]);
+    ESmod=m.default; ESwasm=await WebAssembly.compile(bin); ES=true;
+  }catch(e){ ESfail=true; console.warn("espeak",e); }
+  return ES;
+}
+async function esWav(text,b){
+  const inst=await ESmod({arguments:["-v","en-gb","-p",String(b.es.p),"-s",String(Math.round(b.es.s*(S.slow?.8:1))),"-w","/o.wav",text],
+    print:()=>{}, printErr:()=>{},
+    instantiateWasm:(imp,ok)=>{ WebAssembly.instantiate(ESwasm,imp).then(i=>ok(i,ESwasm)); return {}; }});
+  return inst.FS.readFile("/o.wav").buffer;
+}
+async function robotPlay(text,b,tok){
+  AC = AC || new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") await AC.resume();
+  const buf=await AC.decodeAudioData(await esWav(text,b));
+  if(tok!==S.tok) return null;
+  const src=AC.createBufferSource(); src.buffer=buf; curSrc=src;
+  const out=AC.createGain(); out.gain.value=1.6;
+  const dry=AC.createGain(); dry.gain.value=.45;
+  const ring=AC.createGain(); ring.gain.value=0;
+  const osc=AC.createOscillator(); osc.type="sine"; osc.frequency.value=b.es.ring; osc.connect(ring.gain);
+  const dl=AC.createDelay(); dl.delayTime.value=.011; const fbk=AC.createGain(); fbk.gain.value=.45;
+  const an=AC.createAnalyser(); an.fftSize=256;
+  src.connect(dry).connect(out); src.connect(ring).connect(out);
+  out.connect(dl); dl.connect(fbk).connect(dl); dl.connect(an); out.connect(an); an.connect(AC.destination);
+  osc.start();
+  const d=new Uint8Array(an.fftSize), rs=[...document.querySelectorAll("#mouth rect")];
+  clearInterval(mouthT); mouthT=setInterval(()=>{ an.getByteTimeDomainData(d); let m=0; for(const v of d) m=Math.max(m,Math.abs(v-128));
+    rs.forEach((r,i)=>{ const h=4+Math.min(18,m/4)*(0.6+0.4*Math.abs(Math.sin(Date.now()/90+i))); r.setAttribute("height",h); r.setAttribute("y",115-h/2); }); },50);
+  return new Promise(res=>{ src.onended=()=>{ osc.stop(); res(true); }; src.start(); });
+}
 function say(text, done){
   S.last=text; addLog(S.b?S.b.name:"", text, "them");
   const sub=$("#botSub"); sub.className="sub blur"; sub.innerHTML="<span>"+text+"</span>"; $("#showBtn").textContent="👁 Текст";
-  S.speaking=true; setMic(); mouth(true); sBlip();
-  const tok=++S.tok;
+  S.speaking=true; setMic(); sBlip();
+  const tok=++S.tok, b=S.b||BOTS[0];
   const fin=()=>{ if(!S.speaking||tok!==S.tok) return; S.speaking=false; mouth(false); setMic(); tmFlush(); done&&done(); };
-  if(!("speechSynthesis" in window)){ setTimeout(fin,800+text.length*60); return; }
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(spoken(text)), b=S.b||{voice:"m",pitch:.6,rate:.9};
-  const v=voiceFor(b.voice); if(v) u.voice=v; u.lang=v?v.lang:"en-GB";
-  u.pitch=b.pitch; u.rate=S.slow?b.rate*.8:b.rate; u.onend=fin; u.onerror=fin;
-  setTimeout(fin, 3000+text.length*120);
-  speechSynthesis.speak(u);
+  try{ curSrc&&curSrc.stop(); }catch(e){} speechSynthesis&&speechSynthesis.cancel();
+  setTimeout(fin, 4000+text.length*130);
+  (async()=>{
+    if(await esLoad()){ try{ const r=await robotPlay(spoken(text),b,tok); if(r!==null) fin(); return; }catch(e){ console.warn(e); } }
+    if(tok!==S.tok) return;
+    mouth(true);
+    if(!("speechSynthesis" in window)){ setTimeout(fin,800+text.length*60); return; }
+    const u=new SpeechSynthesisUtterance(spoken(text)); const v=voiceFor(b.voice); if(v) u.voice=v; u.lang=v?v.lang:"en-GB";
+    u.pitch=b.pitch; u.rate=S.slow?b.rate*.8:b.rate; u.onend=fin; u.onerror=fin; speechSynthesis.speak(u);
+  })();
 }
 
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -414,6 +479,7 @@ function setMic(){
   $("#micHint").innerHTML = listening?"Listening… (click to stop)": S.busy?"Robot is thinking…": S.speaking?"Listen…":"Click and speak<br>(or press Space)";
 }
 function listen(){
+  if(EAR==="none"){ $("#typing").classList.add("on"); $("#typeIn").focus(); return; }
   if(EAR==="ai") return aiListen();
   if(listening){ rec&&rec.stop(); return; }
   rec=new SR(); rec.lang="en-GB"; rec.interimResults=true; rec.continuous=false;
@@ -429,7 +495,7 @@ function listen(){
 let REC=null;
 async function aiListen(){
   if(REC){ REC.stop(); return; }
-  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}); }
+  let stream; try{ stream = (MIC && MIC.getAudioTracks().some(t=>t.readyState==="live")) ? MIC : (MIC=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})); }
   catch(e){ fb("Микрофон не включился: 🔒 слева от адреса → Микрофон → Разрешить","warn"); return; }
   const ctx=new (window.AudioContext||window.webkitAudioContext)(), src=ctx.createMediaStreamSource(stream), proc=ctx.createScriptProcessor(4096,1,1);
   const chunks=[]; let spoke=false, quiet=0, t0=performance.now(), done=false;
@@ -440,7 +506,7 @@ async function aiListen(){
     if((spoke&&quiet&&now-quiet>1400)||now-t0>12000||(!spoke&&now-t0>7000)) finish(); };
   src.connect(proc); proc.connect(ctx.destination);
   async function finish(){
-    if(done) return; done=true; REC=null; proc.disconnect(); src.disconnect(); stream.getTracks().forEach(t=>t.stop());
+    if(done) return; done=true; REC=null; proc.disconnect(); src.disconnect();
     const rate=ctx.sampleRate; ctx.close(); listening=false;
     if(!spoke){ setMic(); $("#mySub").innerHTML=""; fb("I didn't hear anything. Try again!","warn"); return; }
     $("#mySub").innerHTML="<span>⏳ …</span>"; S.busy=true; setMic();
@@ -520,6 +586,7 @@ function checkReport(raw){
   return null;
 }
 function glow(list, why){
+  list=[S.stage==="report"?"s":"order"];
   clearGlow(); list.forEach(k=>{ const c=document.querySelector(`.card[data-k="${k}"]`); if(c){ c.hidden=false; c.classList.add("glow"); } });
   const w=$("#why-"+list[list.length-1]); if(w) w.textContent="💡 "+why;
 }
@@ -535,8 +602,9 @@ function renderAsk(){
   const left=QS.filter(q=>!S.asked.has(q.id)).length;
   $("#tLbl").textContent="Step 1 · Interview";
   $("#tGoal").textContent = left?`Ask the robot questions (${QS.length-left} / ${QS.length})`:"All done! Ask more or go on ▶";
-  $("#tQs").innerHTML=QS.map(q=>`<span class="q ${S.asked.has(q.id)?"done":""}">${q.icon} ${q.cue}</span>`).join("");
-  $("#tRu").textContent="Построй вопрос сам(а) по ключевым словам. Можно задавать и свои вопросы ⭐";
+  $("#tQs").innerHTML=QS.map(q=>`<button class="q ${S.asked.has(q.id)?"done":""}" data-q="${q.id}" title="Учитель: засчитать этот вопрос">${q.icon} ${q.cue}</button>`).join("");
+  $("#tQs").querySelectorAll("button[data-q]").forEach(el=>el.onclick=()=>countQ(el.dataset.q));
+  $("#tRu").textContent="Построй вопрос сам(а) по ключевым словам. Учитель: нажми на карточку вопроса, чтобы засчитать его.";
   const nq=QS.find(q=>!S.asked.has(q.id))||QS[1];
   const w=nq.cue.split(" · ");
   $("#frame").innerHTML=`<span class="slot"><small>вопрос</small>${cap(w[0])}</span><span class="slot"><small>помощник</small>${nq.id==="name"?"is":"do"}</span><span class="slot"><small>кто</small>${nq.id==="name"?"your":"you"}</span><span class="slot"><small>${nq.id==="name"?"что":"глагол"}</small>${w.slice(1).join(" ")}</span><span class="slot">?</span>`;
@@ -551,7 +619,7 @@ function renderReport(){
 
 function nextBot(){
   if(S.b && S.stage!=="idle") showEnd(true);
-  speechSynthesis&&speechSynthesis.cancel(); S.tok++; S.speaking=false; S.busy=false; mouth(false);
+  speechSynthesis&&speechSynthesis.cancel(); try{ curSrc&&curSrc.stop(); }catch(e){} S.tok++; S.speaking=false; S.busy=false; mouth(false);
   if(!S.queue.length) S.queue=BOTS.map(b=>b.id).sort(()=>Math.random()-.5);
   const nid=S.queue.shift(); S.b=BOTS.find(b=>b.id===nid);
   Object.assign(S,{asked:new Set(),q:0,first:0,fixed:0,frames:0,rep:0,repSet:new Set(),errNow:false,hist:[],t0:Date.now()});
@@ -576,7 +644,7 @@ async function handle(raw){
   if(S.stage==="report") return handleRep(raw);
   if(S.stage==="final"){ star(); say(pick(["Wow! Thank you, reporter! Beep boop! Bye!","Interesting! On my planet robots do all the jobs at home! Bye!"]),()=>{ S.stage="done"; setMic(); fb("Отлично! Жми 🏁 Итог или NEXT ▶","ok"); }); }
 }
-async function handleQ(raw, forced){
+async function handleQ(raw, forced, qid){
   const err = forced?null:checkQ(raw);
   if(err){
     S.errNow=true; sHmm(); $("#bot").classList.remove("glitch"); void $("#bot").offsetWidth; $("#bot").classList.add("glitch");
@@ -587,7 +655,7 @@ async function handleQ(raw, forced){
   clearGlow(); S.q++; $("#stQ").textContent="❓ "+S.q;
   if(S.errNow){ S.fixed++; fb("You fixed it yourself! 💪","ok"); } else { S.first++; fb("Great question!","ok"); }
   S.errNow=false;
-  const t=norm(raw), q=QS.find(x=>x.re.test(t));
+  const t=norm(raw), q=qid?QS.find(x=>x.id===qid):QS.find(x=>x.re.test(t));
   let topic=q?q.id:Object.keys(EXTRA).find(k=>EXTRA[k].test(t));
   if(q && !S.asked.has(q.id)){ S.asked.add(q.id); star(); }
   if(topic==="name") $("#botTag").textContent="🤖 "+S.b.name;
@@ -621,9 +689,14 @@ function handleRep(raw, forced){
     say("You are a great reporter! Now my question: do you help at home?");
   }
 }
+const SAMPLE={name:"What is your name?",live:"Where do you live?",eat:"What do you eat?",getup:"What time do you get up?",bed:"What time do you go to bed?",weekend:"What do you do at the weekend?"};
+function countQ(id){
+  if(S.stage!=="ask"||S.speaking||S.busy) return;
+  addLog("","✅ Teacher: «"+QS.find(q=>q.id===id).cue+"» counted","sys"); handleQ(SAMPLE[id],true,id);
+}
 function teacherOK(){
   if(S.speaking||S.busy) return;
-  if(S.stage==="ask"){ const v=($("#tmIn").value||"").trim(); addLog("","✅ Teacher: question counted","sys"); handleQ(v||"What is your name",true); }
+  if(S.stage==="ask"){ const n=QS.find(q=>!S.asked.has(q.id)); if(n) countQ(n.id); else toReport(); }
   else if(S.stage==="report"){ addLog("","✅ Teacher: sentence counted","sys"); handleRep("",true); }
   else if(S.stage==="final"){ handle("ok"); }
 }
@@ -645,7 +718,7 @@ function noiseRun(on){ clearInterval(noiseT); if(!on) return;
 
 /* teacher mode */
 let TM=false, tmPending="";
-function teacherMode(){ TM=true; document.body.classList.add("tm"); $("#meTag").textContent="🎙️ Student"; $("#start").hidden=true; loadVoices(); nextBot(); setTimeout(()=>$("#tmIn").focus(),300); }
+function teacherMode(){ TM=true; document.body.classList.add("tm"); $("#meTag").textContent="🎙️ Student"; $("#start").hidden=true; loadVoices(); $("#botTag").textContent="⏳ loading voice…"; esLoad().then(()=>{ nextBot(); setTimeout(()=>$("#tmIn").focus(),300); }); return; setTimeout(()=>$("#tmIn").focus(),300); }
 function tmFlush(){ if(tmPending && !S.speaking && !S.busy){ const v=tmPending; tmPending=""; $("#tmNote").textContent="Ученик говорит в Zoom, вы набираете фразу слово в слово."; handle(v); } }
 $("#tmForm").onsubmit=e=>{ e.preventDefault(); const v=$("#tmIn").value.trim(); if(!v) return; $("#tmIn").value="";
   if(S.speaking||S.busy){ tmPending=v; $("#tmNote").textContent="⏳ Отправлю, как только робот договорит…"; } else handle(v); };
@@ -653,9 +726,11 @@ $("#tmIn").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.p
 
 /* wiring */
 if(!SR) $("#warn").textContent="Для распознавания речи лучше открыть игру в Google Chrome. Можно и набирать текст ⌨️";
-$("#goBtn").onclick=async()=>{ $("#start").hidden=true; await startCam();
-  try{ const s=await navigator.mediaDevices.getUserMedia({audio:true}); s.getTracks().forEach(t=>t.stop()); }catch(e){}
-  loadVoices(); nextBot(); };
+$("#goBtn").onclick=async()=>{ $("#goBtn").textContent="⏳ Браузер спросит разрешение: нажми «Разрешить»"; esLoad(); const r=await startCam();
+  $("#goBtn").hidden=true; if(r.cam&&r.mic) $("#mOk").click(); };
+$("#mRetry").onclick=async()=>{ if(EAR==="none") EAR=SR?"browser":"ai"; await startCam(); };
+$("#mOk").onclick=async()=>{ $("#start").hidden=true;
+  loadVoices(); await esLoad(); nextBot(); };
 $("#tmBtn").onclick=teacherMode;
 $("#camRetry").onclick=startCam;
 $("#nextBtn").onclick=()=>{ nextBot(); if(TM) setTimeout(()=>$("#tmIn").focus(),100); };
@@ -668,6 +743,7 @@ $("#kbBtn").onclick=()=>{ $("#typing").classList.toggle("on"); $("#typeIn").focu
 $("#typing").onsubmit=e=>{ e.preventDefault(); const v=$("#typeIn").value.trim(); if(v){ $("#typeIn").value=""; handle(v); } };
 $("#aiBtn").onclick=()=>{ S.aiOn=!S.aiOn; try{ localStorage.setItem("rb_ai",S.aiOn?"1":"0"); }catch(e){} aiPill(); };
 $("#logBtn").onclick=()=>{ $("#log").hidden=!$("#log").hidden; };
+$("#logClose").onclick=()=>{ $("#log").hidden=true; };
 $("#endBtn").onclick=()=>showEnd(false);
 $("#endClose").onclick=()=>{ $("#endModal").hidden=true; };
 document.addEventListener("keydown",e=>{ if(e.code==="Space" && !TM && !/INPUT|TEXTAREA/.test(document.activeElement.tagName) && !$("#micBtn").disabled){ e.preventDefault(); listen(); } });
