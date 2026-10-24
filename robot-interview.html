@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interview the Robot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&family=Silkscreen&display=swap" rel="stylesheet">
+<style>
+[hidden]{display:none!important}
+:root{
+  --bg:#0f1424; --panel:#171e33; --panel2:#1f2843; --line:#2c3758;
+  --text:#eef2ff; --muted:#9aa6c7; --accent:#39d0ff; --accent2:#ffcf3f;
+  --ok:#3ddc84; --warn:#ffb03a; --r:18px; --r-sm:12px;
+  --shadow:0 2px 8px rgba(0,0,0,.25),0 12px 30px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Rubik,system-ui,sans-serif;min-height:100dvh}
+body{background:radial-gradient(1200px 600px at 80% -10%,#1d2a55 0%,transparent 60%),var(--bg)}
+button{font-family:inherit;cursor:pointer;border:0;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{max-width:1280px;margin:0 auto;padding:14px 16px 24px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{font-family:Silkscreen,monospace;font-size:22px;letter-spacing:.5px}
+.logo b{color:var(--accent);font-weight:400}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:14px;font-weight:500}
+.pill.btn:hover{border-color:var(--accent)}
+#aiBtn.on{border-color:var(--ok);color:var(--ok)} #aiBtn.err{border-color:var(--warn);color:var(--warn)}
+
+/* stage */
+.stage{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pane{position:relative;border-radius:var(--r);overflow:hidden;background:#0b0f1c;aspect-ratio:4/3;border:1px solid var(--line);box-shadow:var(--shadow)}
+.pane video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
+.camoff{position:absolute;inset:0;display:none;place-items:center;text-align:center;color:var(--muted);line-height:1.5;padding:20px;background:radial-gradient(circle at 50% 40%,#1f2843,#0b0f1c)}
+.camoff .face{font-size:60px;display:block;margin-bottom:6px}
+.tag{position:absolute;left:12px;bottom:12px;color:#fff;background:rgba(0,0,0,.55);padding:6px 11px;border-radius:9px;font-size:14px;font-weight:500;z-index:6}
+.sub{position:absolute;left:50%;transform:translateX(-50%);bottom:52px;width:calc(100% - 32px);max-width:560px;text-align:center;z-index:7}
+.sub span{color:#fff;background:rgba(8,10,20,.8);padding:5px 10px;border-radius:8px;font-size:19px;line-height:1.7;box-decoration-break:clone;-webkit-box-decoration-break:clone;transition:filter .25s}
+.sub.blur span{filter:blur(7px);user-select:none}
+.sub.me span{color:#bdefff}
+.subbtns{position:absolute;right:12px;bottom:12px;z-index:8;display:flex;gap:6px}
+.subbtns button{background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:6px 10px;font-size:13px}
+.subbtns button:hover{border-color:var(--accent)}
+
+/* teacher mode */
+.tm-panel{display:none}
+body.tm .pane.me video,body.tm #camOff,body.tm #mySub{display:none!important}
+body.tm .tm-panel{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;padding:18px 18px 54px;background:var(--panel)}
+.tm-lbl{font-weight:800;font-size:18px}
+.tm-panel textarea{flex:1;min-height:80px;resize:none;border:2px solid var(--line);border-radius:14px;padding:14px;font:inherit;font-size:22px;line-height:1.35;background:var(--panel2);color:var(--text)}
+.tm-panel textarea:focus{outline:none;border-color:var(--accent)}
+.tm-note{font-size:13px;color:var(--muted);line-height:1.4}
+body.tm .micwrap{display:none}
+body.tm .dock{grid-template-columns:1fr 1fr}
+body.tm #kbBtn{display:none}
+
+/* robot room */
+.space{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 120%,var(--glow,#2a3f8f) 0%,#0b0f1c 70%)}
+.stars{position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 10% 20%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 30% 70%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 70% 30%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 85% 60%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 55% 12%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 18% 85%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 92% 15%,#fff 50%,transparent 51%);animation:tw 3s ease-in-out infinite alternate}
+@keyframes tw{to{opacity:.55}}
+.planet{position:absolute;right:7%;top:9%;width:17%;aspect-ratio:1;border-radius:50%;background:var(--planet,#ff7a45);box-shadow:inset -10px -8px 0 rgba(0,0,0,.25)}
+.bot{position:absolute;left:50%;bottom:-3%;height:88%;transform:translateX(-50%);z-index:2;animation:float 3.2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+.bot .eye{animation:blink 4s infinite;transform-origin:center;transform-box:fill-box}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.bot .ant{animation:ant 1s steps(2) infinite}
+@keyframes ant{50%{opacity:.35}}
+.bot .mouth rect{transition:height .08s,y .08s}
+.bot.glitch{animation:glitch .35s steps(2) 2}
+@keyframes glitch{0%{transform:translateX(-52%)}50%{transform:translateX(-48%) skewX(4deg)}100%{transform:translateX(-50%)}}
+.noise{position:absolute;inset:0;z-index:9;display:none;place-items:center;background:#111}
+.noise canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.noise p{position:relative;font-family:Silkscreen,monospace;font-size:18px;background:rgba(0,0,0,.65);padding:10px 18px;border-radius:12px}
+.noise.on{display:grid}
+.profile{position:absolute;left:12px;top:12px;z-index:7;background:rgba(10,14,28,.88);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-size:14px;max-width:58%;opacity:0;transform:translateY(-6px);transition:.3s;pointer-events:none}
+.profile.on{opacity:1;transform:none}
+.profile h4{margin:0 0 4px;font-size:12px;color:var(--accent);font-family:Silkscreen,monospace;font-weight:400}
+.profile div{margin:2px 0}
+
+/* helper cards */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;transition:.2s;position:relative}
+.card h5{margin:0;font-size:17px;font-weight:800;color:var(--accent2)}
+.card p{margin:4px 0 0;font-size:14px;color:var(--muted);line-height:1.35}
+.card p i{color:var(--text);font-style:normal}
+.card .why{display:none;margin-top:6px;font-size:14px;color:#fff;font-weight:500}
+.card.glow{border-color:var(--warn);box-shadow:0 0 0 4px rgba(255,176,58,.25),0 0 28px rgba(255,176,58,.45);animation:pulse 1s ease-in-out infinite alternate}
+.card.glow .why{display:block}
+@keyframes pulse{to{box-shadow:0 0 0 7px rgba(255,176,58,.12),0 0 34px rgba(255,176,58,.6)}}
+
+/* dock */
+.dock{display:grid;grid-template-columns:1fr auto 1fr;gap:12px}
+.task{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.task .lbl{font-size:12px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.task .goal{font-size:20px;font-weight:700;margin:6px 0 8px;line-height:1.25}
+.ru{color:var(--muted);font-size:13px;margin-top:8px}
+.qs{display:flex;flex-wrap:wrap;gap:6px}
+.q{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:15px}
+.q.done{border-color:var(--ok);color:var(--ok)}
+.q.done::before{content:"✓ "}
+.frame{display:none;margin-top:10px;gap:6px;flex-wrap:wrap;align-items:center}
+.frame.on{display:flex}
+.slot{border:2px dashed var(--accent);border-radius:10px;padding:6px 10px;font-size:15px;min-width:52px;text-align:center}
+.slot small{display:block;font-size:11px;color:var(--muted)}
+.micwrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.mic{width:96px;height:96px;border-radius:50%;background:var(--accent);color:#04202b;font-size:38px;display:grid;place-items:center;position:relative;box-shadow:0 8px 24px rgba(57,208,255,.35)}
+.mic:disabled{background:#2c3758;color:#6b7699;cursor:not-allowed;box-shadow:none}
+.mic.on::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:3px solid var(--accent);animation:ring 1s ease-out infinite}
+@keyframes ring{from{transform:scale(.9);opacity:1}to{transform:scale(1.25);opacity:0}}
+.mich{font-size:13px;color:var(--muted);text-align:center;max-width:170px}
+.side{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.b{background:var(--panel);border-radius:var(--r-sm);padding:11px 14px;font-size:15px;font-weight:500;border:1px solid var(--line)}
+.b:hover{border-color:var(--accent)}
+.b.next{background:var(--accent);color:#04202b;font-weight:800;font-size:18px;flex:1;border-color:var(--accent)}
+.typing{display:none;gap:6px}
+.typing.on{display:flex}
+.typing input{flex:1;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font:inherit;min-width:0}
+.fb{font-size:15px;min-height:22px;font-weight:500;color:var(--muted)}
+.fb.ok{color:var(--ok)} .fb.warn{color:var(--warn)}
+.log{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;max-height:160px;overflow:auto;font-size:14px;line-height:1.5}
+.log p{margin:2px 0}.log .sys{color:var(--muted);font-size:12px}.log .who{font-weight:700;color:var(--accent)}.log .me .who{color:var(--accent2)}
+
+/* overlays */
+.modal{position:fixed;inset:0;background:rgba(4,6,14,.82);display:grid;place-items:center;z-index:50;padding:16px}
+.mcard{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px;max-width:560px;width:100%;box-shadow:var(--shadow)}
+.mcard h1{margin:0 0 10px;font-family:Silkscreen,monospace;font-weight:400;font-size:30px}
+.mcard h1 b{color:var(--accent);font-weight:400}
+.mcard ol{line-height:1.6;padding-left:20px;margin:10px 0 16px}
+.go{width:100%;background:var(--accent);color:#04202b;font-weight:800;font-size:18px;padding:14px;border-radius:14px}
+.warn{color:var(--warn);font-size:14px;margin-top:10px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stat{background:var(--panel2);border-radius:14px;padding:12px}
+.stat b{display:block;font-size:30px;color:var(--accent2)}
+.stat span{font-size:13px;color:var(--muted)}
+.starpop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);font-size:90px;z-index:60;pointer-events:none;transition:.3s}
+.starpop.on{transform:translate(-50%,-50%) scale(1)}
+
+@media (max-width:860px){
+  .stage,.dock{grid-template-columns:1fr} .cards{grid-template-columns:1fr 1fr}
+  body.tm .dock{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="logo">Interview the <b>Robot</b></div>
+    <div class="stats">
+      <span class="pill" id="stStars">⭐ 0</span>
+      <span class="pill" id="stQ">❓ 0</span>
+      <button class="pill btn" id="aiBtn">🤖 AI: on</button>
+      <button class="pill btn" id="logBtn">📜 Лог</button>
+      <button class="pill btn" id="endBtn">🏁 Итог</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="pane me">
+      <video id="cam" autoplay playsinline muted></video>
+      <div class="camoff" id="camOff"><div><span class="face">🎙️</span>Reporter on air!<br><small id="camMsg" style="display:block;max-width:360px;margin:6px auto 10px"></small><button class="b" id="camRetry">📷 Попробовать снова</button></div></div>
+      <form class="tm-panel" id="tmForm">
+        <div class="tm-lbl">👩‍🏫 Student says:</div>
+        <textarea id="tmIn" rows="3" placeholder="Наберите фразу ученика слово в слово, с ошибками. Enter = отправить" autocomplete="off"></textarea>
+        <div class="row"><button class="b next" type="submit">Send ↵</button></div>
+        <div class="tm-note" id="tmNote">Ученик говорит в Zoom, вы набираете. Робот отвечает голосом: в Zoom включите «Совместное использование звука».</div>
+      </form>
+      <div class="sub me" id="mySub"></div>
+      <div class="tag" id="meTag">🎙️ Reporter</div>
+    </div>
+    <div class="pane partner">
+      <div class="space" id="space"><div class="stars"></div><div class="planet" id="planet"></div></div>
+      <svg class="bot" id="bot" viewBox="0 0 200 260" aria-label="Robot"></svg>
+      <div class="profile" id="profile"></div>
+      <div class="sub blur" id="botSub"></div>
+      <div class="subbtns"><button id="repBtn">🔁 Ещё раз</button><button id="showBtn">👁 Текст</button></div>
+      <div class="tag" id="botTag">???</div>
+      <div class="noise" id="noise"><canvas id="noiseCv" width="160" height="120"></canvas><p>Incoming call from space…</p></div>
+    </div>
+  </div>
+
+  <div class="cards" id="cards">
+    <div class="card" data-k="be"><h5>AM / IS / ARE</h5><p><i>What <b>is</b> your name?</i><br><i>Where <b>are</b> you from?</i></p><div class="why" id="why-be"></div></div>
+    <div class="card" data-k="do"><h5>DO / DOES</h5><p><i>Where <b>do</b> you live?</i><br>you → do · he/she/it → does</p><div class="why" id="why-do"></div></div>
+    <div class="card" data-k="can"><h5>CAN</h5><p><i>What <b>can</b> you do?</i></p><div class="why" id="why-can"></div></div>
+    <div class="card" data-k="order"><h5>❓ + помощник + you + глагол</h5><p><i>What time | do | you | get up?</i><br>Один помощник на вопрос</p><div class="why" id="why-order"></div></div>
+    <div class="card" data-k="s" hidden><h5>he / she / it + глагол-S</h5><p><i>It live<b>s</b> on Mars.</i><br><i>It doesn't eat… (без -s)</i></p><div class="why" id="why-s"></div></div>
+  </div>
+
+  <div class="dock">
+    <div class="task">
+      <div class="lbl" id="tLbl">Mission</div>
+      <div class="goal" id="tGoal">Press NEXT to get a call</div>
+      <div class="qs" id="tQs"></div>
+      <div class="frame" id="frame"></div>
+      <div class="ru" id="tRu"></div>
+    </div>
+    <div class="micwrap">
+      <button class="mic" id="micBtn" aria-label="Speak">🎤</button>
+      <div class="mich" id="micHint">Click and speak<br>(or press Space)</div>
+    </div>
+    <div class="side">
+      <div class="row"><button class="b next" id="nextBtn">NEXT ▶</button></div>
+      <div class="row">
+        <button class="b" id="frameBtn">🧩 Рамка</button>
+        <button class="b" id="okBtn" title="Учитель: засчитать">✅ Засчитать</button>
+        <button class="b" id="kbBtn" aria-label="Type instead">⌨️</button>
+      </div>
+      <form class="typing" id="typing"><input id="typeIn" placeholder="Type your question..." autocomplete="off"><button class="b">↵</button></form>
+      <div class="fb" id="fb"></div>
+    </div>
+  </div>
+
+  <div class="log" id="log" hidden><p class="sys">Interview log</p></div>
+</div>
+
+<div class="modal" id="start">
+  <div class="mcard">
+    <h1>Interview the <b>Robot</b></h1>
+    <p style="color:var(--muted);margin:0">A robot has just landed on Earth. You are a reporter!</p>
+    <ol>
+      <li>Press <b>NEXT</b>. A robot calls you.</li>
+      <li>Look at the key words and <b>build a question</b> yourself: <i>Where do you live?</i></li>
+      <li>Listen to the answer. The robot is very funny!</li>
+      <li>At the end, tell your teacher about the robot: <i>It lives… It eats…</i></li>
+    </ol>
+    <button class="go" id="goBtn">🎤 Start: camera + microphone</button>
+    <button class="b" id="tmBtn" style="width:100%;margin-top:10px;font-size:16px;padding:13px">👩‍🏫 Режим учителя: игра у меня, ученик говорит в Zoom</button>
+    <div class="warn" id="warn"></div>
+  </div>
+</div>
+
+<div class="modal" id="endModal" hidden>
+  <div class="mcard">
+    <h1>Interview <b>over</b></h1>
+    <div class="statgrid" id="statGrid"></div>
+    <div class="row"><button class="go" id="endClose" style="flex:1">Продолжить</button></div>
+  </div>
+</div>
+<div class="starpop" id="starPop">⭐</div>
+
+<script>
+const AI_PROXY = "https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";
+const AI_MODEL = "gemini-2.5-flash-lite";
+
+/* ================= CONTENT ================= */
+// Questions for the mission: key words only, the student builds the question.
+const QS = [
+  {id:"name",    icon:"🏷️", cue:"what · name",              re:/name|who are you/},
+  {id:"live",    icon:"📍", cue:"where · live",             re:/\blive\b/},
+  {id:"eat",     icon:"🍽️", cue:"what · eat",               re:/\beat\b|food/},
+  {id:"getup",   icon:"⏰", cue:"what time · get up",        re:/get up|wake/},
+  {id:"bed",     icon:"🌙", cue:"what time · go to bed",     re:/go to bed|to sleep|\bsleep\b/},
+  {id:"weekend", icon:"🎮", cue:"what · do · at the weekend", re:/weekend|saturday|sunday|free time/}
+];
+// Extra topics the robot can answer (bonus questions)
+const EXTRA = {
+  from:/where.*from|which planet/, drink:/drink/, like:/like|love|hobb|favourite/, age:/how old/,
+  can:/\bcan you\b|what can/, friends:/friend|pet|family/, school:/school|learn|study/, how:/how are you/
+};
+
+const BOTS = [
+  {id:"bolt", name:"Bolt", pr:"he", voice:"m", pitch:.45, rate:.88, body:"#9fb3c8", eye:"#39d0ff", glow:"#7a2d1f", planet:"#ff7a45",
+   hi:"Beep boop! Hello, Earthling! I'm new on your planet. Please interview me!",
+   facts:{
+    name:"My name is Bolt. Beep!",
+    live:"I live on Mars, in a big red crater.",
+    eat:"I eat batteries. Crunchy batteries for breakfast, lunch and dinner!",
+    getup:"I get up at four o'clock in the morning. My alarm is a volcano.",
+    bed:"I go to bed at midnight. Robots sleep in the fridge. It's cool!",
+    weekend:"At the weekend I dance on the Moon with aliens.",
+    from:"I'm from Mars. It's red and very dusty.",
+    drink:"I drink oil. Mmm, delicious!",
+    like:"I like playing football with aliens. The ball is a small asteroid.",
+    age:"I'm three hundred years old. I'm a very young robot!",
+    can:"I can fly, but I can't swim. I go rusty!",
+    friends:"My best friend is a toaster. He's very warm.",
+    school:"I go to Robot School. My favourite subject is Maths.",
+    how:"I'm fine, thank you! My battery is full."},
+   report:[/mars|crater/,/batter/,/four|4/,/midnight|fridge/,/dance|moon|alien/,/bolt/]},
+  {id:"zizi", name:"Zizi", pr:"she", voice:"f", pitch:1.7, rate:.9, body:"#e4a6d8", eye:"#ffcf3f", glow:"#4b2a7a", planet:"#c9c9d6",
+   hi:"Bzzzt! Hi, hi! I'm a robot from space. I love reporters. Ask me anything!",
+   facts:{
+    name:"My name is Zizi. Z-I-Z-I!",
+    live:"I live on the Moon, in a silver house.",
+    eat:"I eat screws and nuts. Yummy!",
+    getup:"I get up at midnight. I love the dark!",
+    bed:"I go to bed at twelve o'clock in the afternoon.",
+    weekend:"At the weekend I play video games with my robot cat.",
+    from:"I'm from the Moon. It's quiet and grey.",
+    drink:"I drink electricity with ice.",
+    like:"I like singing. Listen: beep-beep-la-la!",
+    age:"I'm ninety-nine years old.",
+    can:"I can sing and I can dance, but I can't cook.",
+    friends:"I've got a robot cat. Her name is Wi-Fi.",
+    school:"I don't go to school. I download my lessons!",
+    how:"I'm great! Bzzzt!"},
+   report:[/moon|silver/,/screw|nut/,/midnight/,/twelve|12|afternoon/,/game|cat/,/zizi/]},
+  {id:"gizmo", name:"Gizmo", pr:"he", voice:"m", pitch:.8, rate:.92, body:"#8fd6a8", eye:"#ff6b6b", glow:"#12506a", planet:"#4cc2ff",
+   hi:"Blip blop! Hello! I'm a robot. I come from very, very deep water. Interview me, please!",
+   facts:{
+    name:"My name is Gizmo. Blip!",
+    live:"I live under the sea, in a yellow submarine.",
+    eat:"I eat old phones. Old phones are my favourite food!",
+    getup:"I get up at seven o'clock, like you!",
+    bed:"I go to bed at six o'clock in the evening. I'm always tired.",
+    weekend:"At the weekend I clean the ocean. It's my job.",
+    from:"I'm from the Pacific Ocean.",
+    drink:"I drink sea water. It's very salty!",
+    like:"I like swimming with sharks. They're my friends.",
+    age:"I'm fifty years old.",
+    can:"I can swim very fast, but I can't fly.",
+    friends:"My best friend is a shark. His name is Bob.",
+    school:"I go to Fish School. I'm the only robot there!",
+    how:"I'm OK. A bit wet. Blip!"},
+   report:[/sea|submarine|ocean/,/phone/,/seven|7/,/six|6|evening/,/clean|ocean/,/gizmo/]}
+];
+const NEED_REPORT = 3;
+/* ========================================== */
+
+const $ = s=>document.querySelector(s);
+const pick = a=>a[Math.floor(Math.random()*a.length)];
+const norm = s=>s.toLowerCase().replace(/[’`]/g,"'").replace(/[^a-z0-9' ]+/g," ").replace(/\s+/g," ").trim();
+const cap = s=>s?s[0].toUpperCase()+s.slice(1):s;
+
+let S = {stage:"idle", b:null, asked:new Set(), queue:[], last:"", speaking:false, busy:false, tok:0,
+  stars:0, q:0, first:0, fixed:0, frames:0, rep:0, repSet:new Set(), errNow:false, t0:0, hist:[], aiOn:true};
+try{ S.aiOn = localStorage.getItem("rb_ai")!=="0"; }catch(e){}
+
+/* ---------- robot svg ---------- */
+function drawBot(b){
+  $("#bot").innerHTML = `
+  <line x1="100" y1="14" x2="100" y2="44" stroke="#ccd" stroke-width="5"/>
+  <circle class="ant" cx="100" cy="12" r="9" fill="${b.eye}"/>
+  <rect x="40" y="40" width="120" height="96" rx="24" fill="${b.body}" stroke="#2a3350" stroke-width="5"/>
+  <rect x="54" y="56" width="92" height="44" rx="14" fill="#141a2e"/>
+  <circle class="eye" cx="78" cy="78" r="11" fill="${b.eye}"/>
+  <circle class="eye" cx="122" cy="78" r="11" fill="${b.eye}"/>
+  <g class="mouth" id="mouth">${[0,1,2,3,4].map(i=>`<rect x="${70+i*13}" y="112" width="8" height="6" rx="3" fill="#141a2e"/>`).join("")}</g>
+  <rect x="26" y="74" width="14" height="30" rx="6" fill="#ccd"/><rect x="160" y="74" width="14" height="30" rx="6" fill="#ccd"/>
+  <rect x="86" y="136" width="28" height="14" fill="#ccd"/>
+  <rect x="44" y="150" width="112" height="110" rx="20" fill="${b.body}" stroke="#2a3350" stroke-width="5"/>
+  <rect x="68" y="170" width="64" height="40" rx="10" fill="#141a2e"/>
+  <circle cx="84" cy="190" r="6" fill="#3ddc84"/><circle cx="100" cy="190" r="6" fill="${b.eye}"/><circle cx="116" cy="190" r="6" fill="#ff6b6b"/>
+  <rect x="14" y="160" width="26" height="70" rx="12" fill="${b.body}" stroke="#2a3350" stroke-width="5"/>
+  <rect x="160" y="160" width="26" height="70" rx="12" fill="${b.body}" stroke="#2a3350" stroke-width="5"/>`;
+  $("#space").style.setProperty("--glow",b.glow); $("#planet").style.setProperty("--planet",b.planet);
+}
+let mouthT;
+function mouth(on){
+  clearInterval(mouthT); const rs=[...document.querySelectorAll("#mouth rect")];
+  if(!on){ rs.forEach(r=>{r.setAttribute("height",6); r.setAttribute("y",112);}); return; }
+  mouthT=setInterval(()=>rs.forEach(r=>{const h=4+Math.random()*16; r.setAttribute("height",h); r.setAttribute("y",115-h/2);}),90);
+}
+
+/* ---------- sounds ---------- */
+let AC;
+function beep(f,d=.1,t=0,type="square",v=.035){ try{
+  AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(), g=AC.createGain(); o.type=type; o.frequency.value=f;
+  g.gain.setValueAtTime(v,AC.currentTime+t); g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+t+d);
+  o.connect(g).connect(AC.destination); o.start(AC.currentTime+t); o.stop(AC.currentTime+t+d+.02);
+}catch(e){} }
+const sBlip=()=>{beep(880,.06);beep(1320,.06,.08)};
+const sCall=()=>{[440,660,880,660].forEach((f,i)=>beep(f,.1,i*.15))};
+const sWin=()=>{beep(660,.1,0,"sine",.08);beep(880,.1,.1,"sine",.08);beep(1320,.22,.2,"sine",.08)};
+const sHmm=()=>{beep(300,.12,0,"triangle",.06);beep(240,.16,.14,"triangle",.06)};
+
+/* ---------- camera ---------- */
+async function startCam(){
+  const box=$("#camOff"), msg=$("#camMsg");
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ box.style.display="grid"; msg.textContent="Откройте игру в Google Chrome."; return; }
+  try{ const st=await navigator.mediaDevices.getUserMedia({video:true,audio:false}); $("#cam").srcObject=st; box.style.display="none"; }
+  catch(e){ box.style.display="grid";
+    msg.textContent = e.name==="NotReadableError" ? "Камера занята другой программой (Zoom, Telegram). Выключите её там и нажмите «Попробовать снова»."
+      : e.name==="NotAllowedError" ? "Доступ к камере запрещён: 🔒 слева от адреса → Камера → Разрешить."
+      : "Камера не включилась. Можно играть без неё."; }
+}
+
+/* ---------- speech ---------- */
+let VOICES=[];
+function loadVoices(){ VOICES=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)); }
+if("speechSynthesis" in window){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
+function voiceFor(g){
+  const F=/female|libby|sonia|kate|serena|hazel|susan|emma|google uk english female|maisie/i;
+  const M=/\bmale|daniel|george|ryan|arthur|oliver|thomas|google uk english male/i;
+  const gb=VOICES.filter(v=>/GB/i.test(v.lang)), re=g==="f"?F:M;
+  const okName=v=>re.test(v.name)&&!(g==="f"&&/\bmale/i.test(v.name)&&!/female/i.test(v.name));
+  return gb.find(okName)||gb[0]||VOICES.find(okName)||VOICES[0];
+}
+const spoken = t=>t.replace(/\blives\b/gi,"livs").replace(/\blive\b/gi,"liv").replace(/Wi-Fi/g,"Why-fy").replace(/Z-I-Z-I/,"Z, I, Z, I");
+function say(text, done){
+  S.last=text; addLog(S.b?S.b.name:"", text, "them");
+  const sub=$("#botSub"); sub.className="sub blur"; sub.innerHTML="<span>"+text+"</span>"; $("#showBtn").textContent="👁 Текст";
+  S.speaking=true; setMic(); mouth(true); sBlip();
+  const tok=++S.tok;
+  const fin=()=>{ if(!S.speaking||tok!==S.tok) return; S.speaking=false; mouth(false); setMic(); tmFlush(); done&&done(); };
+  if(!("speechSynthesis" in window)){ setTimeout(fin,800+text.length*60); return; }
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(spoken(text)), b=S.b||{voice:"m",pitch:.6,rate:.9};
+  const v=voiceFor(b.voice); if(v) u.voice=v; u.lang=v?v.lang:"en-GB";
+  u.pitch=b.pitch; u.rate=S.slow?b.rate*.8:b.rate; u.onend=fin; u.onerror=fin;
+  setTimeout(fin, 3000+text.length*120);
+  speechSynthesis.speak(u);
+}
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let EAR = SR ? "browser" : "ai"; try{ if(localStorage.getItem("rb_ear")==="ai") EAR="ai"; }catch(e){}
+let rec=null, listening=false;
+function setMic(){
+  const can=!S.speaking&&!S.busy&&["ask","report","final"].includes(S.stage);
+  $("#micBtn").disabled=!can; $("#micBtn").classList.toggle("on",listening);
+  $("#micHint").innerHTML = listening?"Listening… (click to stop)": S.busy?"Robot is thinking…": S.speaking?"Listen…":"Click and speak<br>(or press Space)";
+}
+function listen(){
+  if(EAR==="ai") return aiListen();
+  if(listening){ rec&&rec.stop(); return; }
+  rec=new SR(); rec.lang="en-GB"; rec.interimResults=true; rec.continuous=false;
+  let fin="", broken=false;
+  rec.onresult=e=>{ let im=""; for(const r of e.results){ if(r.isFinal) fin=r[0].transcript; else im+=r[0].transcript; }
+    $("#mySub").innerHTML="<span>"+(fin||im)+"</span>"; };
+  rec.onerror=e=>{ if(e.error==="no-speech"){ fb("I didn't hear anything. Try again!","warn"); return; }
+    if(e.error==="aborted") return;
+    broken=true; EAR="ai"; try{ localStorage.setItem("rb_ear","ai"); }catch(x){} fb("Переключаюсь на другое распознавание… Нажмите 🎤 ещё раз","ok"); };
+  rec.onend=()=>{ listening=false; setMic(); if(fin&&!broken) handle(fin); };
+  try{ rec.start(); listening=true; setMic(); fb(""); }catch(e){}
+}
+let REC=null;
+async function aiListen(){
+  if(REC){ REC.stop(); return; }
+  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}}); }
+  catch(e){ fb("Микрофон не включился: 🔒 слева от адреса → Микрофон → Разрешить","warn"); return; }
+  const ctx=new (window.AudioContext||window.webkitAudioContext)(), src=ctx.createMediaStreamSource(stream), proc=ctx.createScriptProcessor(4096,1,1);
+  const chunks=[]; let spoke=false, quiet=0, t0=performance.now(), done=false;
+  REC={stop:()=>finish()}; listening=true; setMic(); $("#mySub").innerHTML="<span>🎙️ …</span>";
+  proc.onaudioprocess=ev=>{ const d=ev.inputBuffer.getChannelData(0); chunks.push(new Float32Array(d));
+    let s=0; for(let i=0;i<d.length;i+=8) s+=d[i]*d[i]; const rms=Math.sqrt(s/(d.length/8)), now=performance.now();
+    if(rms>.02){ spoke=true; quiet=0; } else if(spoke&&!quiet) quiet=now;
+    if((spoke&&quiet&&now-quiet>1400)||now-t0>12000||(!spoke&&now-t0>7000)) finish(); };
+  src.connect(proc); proc.connect(ctx.destination);
+  async function finish(){
+    if(done) return; done=true; REC=null; proc.disconnect(); src.disconnect(); stream.getTracks().forEach(t=>t.stop());
+    const rate=ctx.sampleRate; ctx.close(); listening=false;
+    if(!spoke){ setMic(); $("#mySub").innerHTML=""; fb("I didn't hear anything. Try again!","warn"); return; }
+    $("#mySub").innerHTML="<span>⏳ …</span>"; S.busy=true; setMic();
+    try{
+      const j=await gem({systemInstruction:{parts:[{text:"You transcribe short speech of a Russian teenager learning English (A1-A2). Write exactly the English words they said, KEEPING their grammar mistakes (missing do/does, extra is/are, missing -s). Empty string if nothing clear. Output only the transcript."}]},
+        contents:[{role:"user",parts:[{inlineData:{mimeType:"audio/wav",data:toWav(chunks,rate,16000)}},{text:"Transcribe."}]}],
+        generationConfig:{temperature:0,maxOutputTokens:80}});
+      const txt=j.candidates[0].content.parts.map(p=>p.text||"").join("").replace(/^["'\s]+|["'\s]+$/g,"");
+      S.busy=false; setMic();
+      if(!txt){ $("#mySub").innerHTML=""; fb("Sorry, I didn't catch that. Try again!","warn"); return; }
+      handle(txt);
+    }catch(e){ S.busy=false; setMic(); $("#mySub").innerHTML=""; fb("Не получилось распознать. Ещё раз или наберите ⌨️","warn"); }
+  }
+}
+function toWav(chunks,inRate,outRate){
+  const len=chunks.reduce((a,c)=>a+c.length,0), all=new Float32Array(len); let o=0; for(const c of chunks){ all.set(c,o); o+=c.length; }
+  const ratio=inRate/outRate, n=Math.floor(len/ratio), pcm=new Int16Array(n);
+  for(let i=0;i<n;i++){ const v=Math.max(-1,Math.min(1,all[Math.floor(i*ratio)])); pcm[i]=v<0?v*0x8000:v*0x7fff; }
+  const buf=new ArrayBuffer(44+pcm.length*2), dv=new DataView(buf), w=(p,s)=>{for(let i=0;i<s.length;i++) dv.setUint8(p+i,s.charCodeAt(i));};
+  w(0,"RIFF"); dv.setUint32(4,36+pcm.length*2,true); w(8,"WAVE"); w(12,"fmt "); dv.setUint32(16,16,true); dv.setUint16(20,1,true);
+  dv.setUint16(22,1,true); dv.setUint32(24,outRate,true); dv.setUint32(28,outRate*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true);
+  w(36,"data"); dv.setUint32(40,pcm.length*2,true); new Int16Array(buf,44).set(pcm);
+  let bin=""; const u=new Uint8Array(buf); for(let i=0;i<u.length;i+=0x8000) bin+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
+  return btoa(bin);
+}
+
+/* ---------- AI ---------- */
+async function gem(body){
+  const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),15000);
+  try{
+    const r=await fetch(AI_PROXY+"?forceFunctionRegion=us-east-1",{method:"POST",headers:{"Content-Type":"application/json"},signal:ctl.signal,body:JSON.stringify(body)});
+    const j=await r.json(); if(!r.ok) throw new Error((j.error&&j.error.message)||r.status); return j;
+  } finally{ clearTimeout(to); }
+}
+function aiPill(st){ const b=$("#aiBtn"); b.className="pill btn"+(st==="err"?" err":S.aiOn?" on":"");
+  b.textContent = st==="err"?"🤖 AI: нет связи":S.aiOn?"🤖 AI: on":"🤖 AI: off"; }
+async function aiAnswer(q, topic){
+  const b=S.b;
+  const sys=`You are ${b.name}, a funny friendly robot who has just landed on Earth. A Russian 7th-grade girl (English A1) is a reporter and interviews you.
+YOUR FACTS (always stay true to them): ${JSON.stringify(b.facts)}
+Rules: answer her question in 1-2 VERY short, simple sentences (max 18 words), Present Simple, words a beginner knows. Answer with a full sentence that mirrors her question (Where do you live? -> I live...). Be funny and robotic, sometimes add a sound like "Beep!" or "Bzzt!". If the question is not about your facts, invent a funny answer that fits your character. Never correct her English. Never ask her questions. Never mention AI. Output only the answer.`;
+  const contents=[...S.hist,{role:"user",parts:[{text:q}]}];
+  const j=await gem({systemInstruction:{parts:[{text:sys}]},contents,generationConfig:{temperature:.9,maxOutputTokens:80}});
+  const txt=j.candidates[0].content.parts.map(p=>p.text||"").join("").trim().replace(/^["']|["']$/g,"");
+  if(!txt) throw new Error("empty");
+  S.hist.push({role:"user",parts:[{text:q}]},{role:"model",parts:[{text:txt}]});
+  return txt;
+}
+
+/* ---------- grammar check (no "wrong", just a card) ---------- */
+const WH=/^(what time|what|where|when|who|why|which|how old|how many|how)\b/;
+const VERB="live|eat|drink|get|go|like|love|do|play|have|sleep|watch|speak|wear|make|read|study|learn|work|come|want|need|clean|dance|sing|swim|fly|wake|listen";
+function checkQ(raw){
+  const t=norm(raw);
+  if(/^(do|are|can) you\b/.test(t)) return /^do you \w+s\b/.test(t)&&new RegExp(`^do you (${VERB})s\\b`).test(t)?{k:"do",why:"После do глагол без -s"}:null;
+  if(!WH.test(t)) return {k:"order", why:"Начни со слова-вопроса: What / Where / What time…"};
+  const be=/\b(am|is|are|'s|'re)\b/.test(t.replace(/\bwhat's\b/,"what is")), aux=/\b(do|does|can)\b/.exec(t);
+  const isVerb=new RegExp(`\\byou\\s+(${VERB})s?\\b`).test(t);
+  // two helpers: "Where are you live?"
+  if(/\b(is|are)\b/.test(t) && aux && aux[1]!=="can" && !/\bdo\b.*\bdo\b/.test(t) && !/\bwhat (is|are) .* do\b/.test(t)) return {k:"order", glow:["be","do"], why:"Два помощника! Оставь один: do ИЛИ are."};
+  if(/\b(is|are)\s+you\s+(?!from\b|ok\b|fine\b|happy\b|a\b|an\b|new\b|old\b|tired\b)/.test(t) && isVerb) return {k:"do", glow:["be","do"], why:"С глаголом нужен DO: Where do you live?"};
+  if(/\bdoes you\b/.test(t)) return {k:"do", why:"you → DO (does — для he / she / it)"};
+  if(/\byou (do|does)\b/.test(t) && !/\b(do|does|can) you\b/.test(t)) return {k:"order", why:"Порядок: Where | do | you | live?"};
+  if(/\b(do|does|can) you \w+s\b/.test(t) && new RegExp(`\\b(do|does|can) you (${VERB})s\\b`).test(t)) return {k:"do", why:"После do / does глагол без -s: do you live"};
+  if(isVerb && !aux && !be) return {k:"do", why:"Нужен помощник DO: Where do you live?"};
+  if(!isVerb && !aux && !be && !/\byour\b/.test(t)) return {k:"order", why:"Где помощник? What | do | you | eat?"};
+  return null;
+}
+function checkReport(raw){
+  const t=norm(raw), b=S.b, nm=b.name.toLowerCase();
+  const subj=`(it|he|she|${nm}|the robot)`;
+  if(new RegExp(`\\b${subj} (don't|do not)\\b`).test(t)) return {k:"do", why:"he / she / it → DOESN'T"};
+  if(new RegExp(`\\b${subj} (is|are) (${VERB})s?\\b`).test(t)) return {k:"s", glow:["be","s"], why:"Два помощника! It lives — без is."};
+  if(new RegExp(`\\bdoesn'?t (${VERB})s\\b`).test(t)) return {k:"s", why:"После doesn't глагол без -s"};
+  if(new RegExp(`\\b${subj} (${VERB})\\b`).test(t)) return {k:"s", why:"he / she / it + -S: It lives…"};
+  if(!new RegExp(`\\b${subj}\\b`).test(t)) return {k:"s", why:"Начни с It / He / She…"};
+  return null;
+}
+function glow(list, why){
+  clearGlow(); list.forEach(k=>{ const c=document.querySelector(`.card[data-k="${k}"]`); if(c){ c.hidden=false; c.classList.add("glow"); } });
+  const w=$("#why-"+list[list.length-1]); if(w) w.textContent="💡 "+why;
+}
+function clearGlow(){ document.querySelectorAll(".card").forEach(c=>c.classList.remove("glow")); }
+
+/* ---------- flow ---------- */
+function fb(t,c=""){ const f=$("#fb"); f.textContent=t; f.className="fb "+c; }
+function addLog(who,text,cls){ const p=document.createElement("p"); p.className=cls;
+  p.innerHTML = cls==="sys"?text:`<span class="who">${who}:</span> ${text}`; $("#log").appendChild(p); $("#log").scrollTop=1e6; }
+function star(){ S.stars++; $("#stStars").textContent="⭐ "+S.stars; sWin(); const p=$("#starPop"); p.classList.add("on"); setTimeout(()=>p.classList.remove("on"),700); }
+
+function renderAsk(){
+  const left=QS.filter(q=>!S.asked.has(q.id)).length;
+  $("#tLbl").textContent="Step 1 · Interview";
+  $("#tGoal").textContent = left?`Ask the robot questions (${QS.length-left} / ${QS.length})`:"All done! Ask more or go on ▶";
+  $("#tQs").innerHTML=QS.map(q=>`<span class="q ${S.asked.has(q.id)?"done":""}">${q.icon} ${q.cue}</span>`).join("");
+  $("#tRu").textContent="Построй вопрос сам(а) по ключевым словам. Можно задавать и свои вопросы ⭐";
+  const nq=QS.find(q=>!S.asked.has(q.id))||QS[1];
+  const w=nq.cue.split(" · ");
+  $("#frame").innerHTML=`<span class="slot"><small>вопрос</small>${cap(w[0])}</span><span class="slot"><small>помощник</small>${nq.id==="name"?"is":"do"}</span><span class="slot"><small>кто</small>${nq.id==="name"?"your":"you"}</span><span class="slot"><small>${nq.id==="name"?"что":"глагол"}</small>${w.slice(1).join(" ")}</span><span class="slot">?</span>`;
+}
+function renderReport(){
+  $("#tLbl").textContent="Step 2 · Tell your teacher";
+  $("#tGoal").textContent=`What do you know about ${S.b.name}? (${S.rep} / ${NEED_REPORT})`;
+  $("#tQs").innerHTML=[`${cap(S.b.pr)} lives…`,`${cap(S.b.pr)} eats…`,`${cap(S.b.pr)} gets up…`,`${cap(S.b.pr)} goes to bed…`].map(x=>`<span class="q">${x}</span>`).join("");
+  $("#frame").innerHTML=`<span class="slot"><small>кто</small>It / ${cap(S.b.pr)}</span><span class="slot"><small>глагол + S</small>lives</span><span class="slot"><small>где / что</small>on Mars</span>`;
+  $("#tRu").textContent="Расскажи о роботе 3 предложения. Не забудь -s!";
+}
+
+function nextBot(){
+  if(S.b && S.stage!=="idle") showEnd(true);
+  speechSynthesis&&speechSynthesis.cancel(); S.tok++; S.speaking=false; S.busy=false; mouth(false);
+  if(!S.queue.length) S.queue=BOTS.map(b=>b.id).sort(()=>Math.random()-.5);
+  const nid=S.queue.shift(); S.b=BOTS.find(b=>b.id===nid);
+  Object.assign(S,{asked:new Set(),q:0,first:0,fixed:0,frames:0,rep:0,repSet:new Set(),errNow:false,hist:[],t0:Date.now()});
+  $("#stQ").textContent="❓ 0"; clearGlow(); document.querySelector('.card[data-k="s"]').hidden=true;
+  $("#frame").classList.remove("on"); $("#profile").classList.remove("on");
+  $("#botSub").innerHTML=""; $("#mySub").innerHTML=""; fb("");
+  S.stage="connecting"; setMic();
+  $("#noise").classList.add("on"); noiseRun(true); sCall();
+  $("#tLbl").textContent="Connecting"; $("#tGoal").textContent="Incoming call…"; $("#tQs").innerHTML=""; $("#tRu").textContent="";
+  setTimeout(()=>{
+    $("#noise").classList.remove("on"); noiseRun(false); drawBot(S.b); $("#botTag").textContent="🤖 ???";
+    addLog("","📡 New call: a robot","sys");
+    S.stage="ask"; renderAsk();
+    say(S.b.hi);
+  },1600);
+}
+
+async function handle(raw){
+  if(S.speaking||S.busy) return;
+  addLog("You",raw,"me"); $("#mySub").innerHTML="<span>"+raw+"</span>";
+  if(S.stage==="ask") return handleQ(raw);
+  if(S.stage==="report") return handleRep(raw);
+  if(S.stage==="final"){ star(); say(pick(["Wow! Thank you, reporter! Beep boop! Bye!","Interesting! On my planet robots do all the jobs at home! Bye!"]),()=>{ S.stage="done"; setMic(); fb("Отлично! Жми 🏁 Итог или NEXT ▶","ok"); }); }
+}
+async function handleQ(raw, forced){
+  const err = forced?null:checkQ(raw);
+  if(err){
+    S.errNow=true; sHmm(); $("#bot").classList.remove("glitch"); void $("#bot").offsetWidth; $("#bot").classList.add("glitch");
+    glow(err.glow||[err.k], err.why); fb("Посмотри на карточку и спроси ещё раз 🙂","warn");
+    say(pick(["Bzzzt? Does not compute. Again, please!","Beep? Error in my ears. Say it again!","Hmm? Robot is confused. One more time!"]));
+    return;
+  }
+  clearGlow(); S.q++; $("#stQ").textContent="❓ "+S.q;
+  if(S.errNow){ S.fixed++; fb("You fixed it yourself! 💪","ok"); } else { S.first++; fb("Great question!","ok"); }
+  S.errNow=false;
+  const t=norm(raw), q=QS.find(x=>x.re.test(t));
+  let topic=q?q.id:Object.keys(EXTRA).find(k=>EXTRA[k].test(t));
+  if(q && !S.asked.has(q.id)){ S.asked.add(q.id); star(); }
+  if(topic==="name") $("#botTag").textContent="🤖 "+S.b.name;
+  let ans=null;
+  if(S.aiOn){ S.busy=true; setMic(); $("#botSub").className="sub"; $("#botSub").innerHTML="<span>⚙️ …</span>";
+    try{ ans=await aiAnswer(raw, topic); aiPill(); }catch(e){ aiPill("err"); }
+    S.busy=false; }
+  if(!ans) ans = topic ? S.b.facts[topic] : pick(["Beep! Good question! I don't know. I'm only a robot!","Bzzt! That's a secret!"]);
+  renderAsk();
+  say(ans, ()=>{ if(S.asked.size>=QS.length && S.stage==="ask") setTimeout(()=>{ if(S.stage==="ask") toReport(); },400); });
+}
+function toReport(){
+  S.stage="report"; clearGlow(); document.querySelector('.card[data-k="s"]').hidden=false; renderReport(); setMic();
+  $("#botTag").textContent="🤖 "+S.b.name;
+  say(`Thank you, reporter! Now tell your teacher about me!`);
+}
+function handleRep(raw, forced){
+  const err=forced?null:checkReport(raw);
+  if(err){ S.errNow=true; sHmm(); glow(err.glow||[err.k],err.why); fb("Посмотри на карточку и скажи ещё раз 🙂","warn"); return; }
+  clearGlow();
+  const t=norm(raw); const hit=S.b.report.findIndex(r=>r.test(t));
+  if(!forced && hit<0){ fb(`Hmm… did ${S.b.name} say that? 🔁 Послушай ещё раз`,"warn"); return; }
+  if(hit>=0 && S.repSet.has(hit) && !forced){ fb("You said that already! Something new?","warn"); return; }
+  S.repSet.add(hit>=0?hit:"t"+S.rep); S.rep++; S.errNow=false; star(); fb("Yes! That's right!","ok"); renderReport();
+  if(S.rep>=NEED_REPORT){
+    const b=S.b, p=$("#profile");
+    p.innerHTML=`<h4>${b.name}'s file</h4><div>📍 ${b.facts.live}</div><div>🍽️ ${b.facts.eat}</div>`; p.classList.add("on");
+    S.stage="final"; setMic();
+    $("#tLbl").textContent="Step 3 · Robot's question"; $("#tGoal").textContent="Answer the robot!"; $("#tQs").innerHTML='<span class="q">🏠 I usually / sometimes / never…</span>';
+    $("#frame").innerHTML=""; $("#tRu").textContent="Робот спрашивает тебя о домашних делах";
+    say("You are a great reporter! Now my question: do you help at home?");
+  }
+}
+function teacherOK(){
+  if(S.speaking||S.busy) return;
+  if(S.stage==="ask"){ const v=($("#tmIn").value||"").trim(); addLog("","✅ Teacher: question counted","sys"); handleQ(v||"What is your name",true); }
+  else if(S.stage==="report"){ addLog("","✅ Teacher: sentence counted","sys"); handleRep("",true); }
+  else if(S.stage==="final"){ handle("ok"); }
+}
+function showEnd(silent){
+  const b=S.b; if(!b) return;
+  const mins=Math.max(1,Math.round((Date.now()-S.t0)/60000));
+  const line=`🤖 ${b.name}: вопросов ${S.q} (с первого раза ${S.first}, исправила сама ${S.fixed}), рамка ${S.frames} раз, предложений о роботе ${S.rep}, ~${mins} мин`;
+  addLog("",line,"sys"); if(silent) return;
+  $("#statGrid").innerHTML=[[S.q,"вопросов задано"],[S.first,"с первого раза"],[S.fixed,"исправила сама"],[S.frames,"раз открыта рамка"],[S.rep,"предложений о роботе"],[mins+" мин","время"]]
+    .map(x=>`<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("");
+  $("#endModal").hidden=false;
+}
+
+/* noise */
+let noiseT;
+function noiseRun(on){ clearInterval(noiseT); if(!on) return;
+  const cv=$("#noiseCv"), x=cv.getContext("2d"), d=x.createImageData(160,120);
+  noiseT=setInterval(()=>{ for(let i=0;i<d.data.length;i+=4){ const v=Math.random()*255; d.data[i]=d.data[i+1]=d.data[i+2]=v; d.data[i+3]=255; } x.putImageData(d,0,0); },60); }
+
+/* teacher mode */
+let TM=false, tmPending="";
+function teacherMode(){ TM=true; document.body.classList.add("tm"); $("#meTag").textContent="🎙️ Student"; $("#start").hidden=true; loadVoices(); nextBot(); setTimeout(()=>$("#tmIn").focus(),300); }
+function tmFlush(){ if(tmPending && !S.speaking && !S.busy){ const v=tmPending; tmPending=""; $("#tmNote").textContent="Ученик говорит в Zoom, вы набираете фразу слово в слово."; handle(v); } }
+$("#tmForm").onsubmit=e=>{ e.preventDefault(); const v=$("#tmIn").value.trim(); if(!v) return; $("#tmIn").value="";
+  if(S.speaking||S.busy){ tmPending=v; $("#tmNote").textContent="⏳ Отправлю, как только робот договорит…"; } else handle(v); };
+$("#tmIn").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); $("#tmForm").requestSubmit(); } });
+
+/* wiring */
+if(!SR) $("#warn").textContent="Для распознавания речи лучше открыть игру в Google Chrome. Можно и набирать текст ⌨️";
+$("#goBtn").onclick=async()=>{ $("#start").hidden=true; await startCam();
+  try{ const s=await navigator.mediaDevices.getUserMedia({audio:true}); s.getTracks().forEach(t=>t.stop()); }catch(e){}
+  loadVoices(); nextBot(); };
+$("#tmBtn").onclick=teacherMode;
+$("#camRetry").onclick=startCam;
+$("#nextBtn").onclick=()=>{ nextBot(); if(TM) setTimeout(()=>$("#tmIn").focus(),100); };
+$("#micBtn").onclick=listen;
+$("#repBtn").onclick=()=>{ if(S.last&&!S.speaking){ S.slow=true; const l=S.last; S.tok++; say(l); S.slow=false; } };
+$("#showBtn").onclick=()=>{ const s=$("#botSub"); s.classList.toggle("blur"); $("#showBtn").textContent=s.classList.contains("blur")?"👁 Текст":"🙈 Скрыть"; };
+$("#frameBtn").onclick=()=>{ const f=$("#frame"); f.classList.toggle("on"); if(f.classList.contains("on")) S.frames++; };
+$("#okBtn").onclick=teacherOK;
+$("#kbBtn").onclick=()=>{ $("#typing").classList.toggle("on"); $("#typeIn").focus(); };
+$("#typing").onsubmit=e=>{ e.preventDefault(); const v=$("#typeIn").value.trim(); if(v){ $("#typeIn").value=""; handle(v); } };
+$("#aiBtn").onclick=()=>{ S.aiOn=!S.aiOn; try{ localStorage.setItem("rb_ai",S.aiOn?"1":"0"); }catch(e){} aiPill(); };
+$("#logBtn").onclick=()=>{ $("#log").hidden=!$("#log").hidden; };
+$("#endBtn").onclick=()=>showEnd(false);
+$("#endClose").onclick=()=>{ $("#endModal").hidden=true; };
+document.addEventListener("keydown",e=>{ if(e.code==="Space" && !TM && !/INPUT|TEXTAREA/.test(document.activeElement.tagName) && !$("#micBtn").disabled){ e.preventDefault(); listen(); } });
+if(/[?&#]teacher/.test(location.href)) setTimeout(teacherMode,0);
+aiPill();
+</script>
+</body>
+</html>
