@@ -48,6 +48,9 @@ input{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(
 .chip.on{background:var(--pen);border-color:var(--pen);color:#2A1206;box-shadow:0 0 14px #ff8a1f88}
 .chip.done{border-color:var(--ok);color:var(--ok);box-shadow:0 0 8px #8be04e55}
 .chip.on.done{color:var(--card)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.mnav,.gear{display:none}
+.lvlsel{font:inherit;font-family:var(--f-head);font-weight:700;font-size:14px;color:var(--ink);background:var(--card);border:2px solid var(--pen);border-radius:999px;padding:6px 10px;min-width:0;flex:1;max-width:100%}
 .tool{font-size:14px;padding:6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--card)}
 .tool.on{border-color:var(--pen);background:var(--pen-soft)}
 
@@ -163,7 +166,21 @@ table.dt{width:100%;border-collapse:separate;border-spacing:6px}
   @keyframes fly{0%{transform:translate(0,0)}25%{transform:translate(30vw,-30px)}50%{transform:translate(60vw,20px)}75%{transform:translate(90vw,-20px)}100%{transform:translate(calc(100vw + 120px),0)}}
   @keyframes glow{50%{filter:drop-shadow(0 0 14px #ff8a1f)}}
 }
-@media (max-width:620px){.chips{order:3;flex-basis:100%}.brand{flex:1}.moon{width:64px;height:64px;opacity:.5}.pk{font-size:30px}.pk.r{display:none}}
+@media (max-width:620px){
+  .top{gap:8px;flex-wrap:wrap;padding-block:8px}
+  .brand{font-size:22px;flex:none}.brand .bt{display:none}
+  .chips{display:none}
+  .mnav{display:flex;gap:6px;align-items:center;flex:1;min-width:0}
+  .arrow{font-size:22px;line-height:1;padding:4px 12px;flex:none}
+  .gear{display:block;flex:none;font-size:18px;padding:4px 10px}
+  .tools{display:none;flex-basis:100%}
+  .top.open .tools{display:flex}
+  .top.open .gear{border-color:var(--pen);background:var(--pen-soft)}
+  main{margin-top:14px}
+  .nav{position:sticky;bottom:0;z-index:4;background:var(--paper);margin-inline:-4px;padding:10px 4px calc(10px + env(safe-area-inset-bottom,0px));border-top:2px solid var(--line)}
+  .nav .btn{flex:1;padding:12px 10px}
+  .pk{display:none}
+.moon{width:64px;height:64px;opacity:.5}.pk{font-size:30px}.pk.r{display:none}}
 @media (max-width:520px){.doors{grid-template-columns:1fr 1fr}.door{padding:14px 6px;font-size:14px}.clock{font-size:28px}}
 @media (prefers-reduced-motion:no-preference){.chip,.w,.door{transition:background .15s,border-color .15s,outline-color .15s}}
 </style>
@@ -172,11 +189,19 @@ table.dt{width:100%;border-collapse:separate;border-spacing:6px}
 <body>
 <div class="deco" aria-hidden="true"><div class="moon"></div><span class="bat b1">🦇</span><span class="bat b2">🦇</span><span class="bat b3">🦇</span><span class="pk l">🎃</span><span class="pk r">🕸️</span></div>
 <div class="top">
-  <div class="brand">🎃 Урок <b>рекордов 2</b></div>
+  <div class="brand">🎃 <span class="bt">Урок <b>рекордов 2</b></span></div>
   <div class="chips" id="chips"></div>
-  <button class="tool" id="hints">✨ подсказки</button>
-  <button class="tool" id="tts">🔊 голос</button>
-  <button class="tool" id="tch">учитель</button>
+  <div class="mnav">
+    <button class="tool arrow" id="mprev" aria-label="Предыдущий уровень">‹</button>
+    <select id="lvlsel" class="lvlsel" aria-label="Уровень"></select>
+    <button class="tool arrow" id="mnext" aria-label="Следующий уровень">›</button>
+  </div>
+  <button class="tool gear" id="gear" aria-label="Настройки" aria-expanded="false">⚙</button>
+  <div class="tools" id="tools">
+    <button class="tool" id="hints">✨ подсказки</button>
+    <button class="tool" id="tts">🔊 голос</button>
+    <button class="tool" id="tch">учитель</button>
+  </div>
 </div>
 <main id="app"></main>
 
@@ -450,11 +475,14 @@ L.push({t:'Цифра дня',m:'3 мин',lead:'Все цифры урока в
 const doneLevel=i=>{const k='L'+(i+1);if(i===2)return Object.values(R.L3||{}).filter(Boolean).length>=10;
   if(i===5)return LADDERS.some((_,j)=>(R['L6_'+j]||[])[0]!=null);if(i===7)return (R.L8t||[]).some(x=>x!=null);if(i===11)return false;
   return Array.isArray(R[k])&&R[k].some(x=>x!=null)};
-function refreshChips(){const c=$('#chips');c.innerHTML='';L.forEach((l,i)=>c.append(h('button',{class:'chip'+(i===cur?' on':'')+(doneLevel(i)?' done':''),title:l.t,onclick:()=>go(i)},String(i+1))))}
+function refreshChips(){const c=$('#chips');c.innerHTML='';L.forEach((l,i)=>c.append(h('button',{class:'chip'+(i===cur?' on':'')+(doneLevel(i)?' done':''),title:l.t,onclick:()=>go(i)},String(i+1))));
+  const sel=$('#lvlsel');sel.innerHTML='';L.forEach((l,i)=>{const o=h('option',{value:String(i)},`${doneLevel(i)?'✓ ':''}${i+1}. ${l.t}`);if(i===cur)o.selected=true;sel.append(o)})}
+$('#lvlsel').onchange=e=>go(+e.target.value);$('#mprev').onclick=()=>go(cur-1);$('#mnext').onclick=()=>go(cur+1);
+$('#gear').onclick=()=>{const t=document.querySelector('.top');const o=t.classList.toggle('open');$('#gear').setAttribute('aria-expanded',String(o))};
 function render(){const app=$('#app');app.innerHTML='';const l=L[cur];
   app.append(h('div',{class:'head'},h('span',{class:'lvl'},`Уровень ${cur+1} из ${L.length}`),h('span',{class:'mins'},l.m)),h('h1',{},l.t),h('p',{class:'lead'},l.lead),...l.r());
   const prev=h('button',{class:'btn ghost',disabled:cur===0?'':null,onclick:()=>go(cur-1)},'← назад');
-  const next=h('button',{class:'btn',disabled:cur===L.length-1?'':null,onclick:()=>go(cur+1)},'следующий уровень →');
+  const next=h('button',{class:'btn',disabled:cur===L.length-1?'':null,onclick:()=>go(cur+1)},'дальше →');
   app.append(h('div',{class:'nav'},prev,next));syncTools();refreshChips()}
 function go(n){if(n<0||n>=L.length)return;if('speechSynthesis'in window)speechSynthesis.cancel();cur=n;store.set('cur',n);render();window.scrollTo(0,0)}
 
