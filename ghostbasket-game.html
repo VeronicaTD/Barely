@@ -104,6 +104,24 @@ button:focus-visible{outline:3px solid var(--slime);outline-offset:3px}
 @keyframes drift2{50%{transform:translate(-36px,-30px) rotate(-6deg)}}
 @keyframes drift3{50%{transform:translate(20px,-44px) rotate(4deg)}}
 
+/* story */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.sslot{position:relative;aspect-ratio:1;border:3px dashed var(--line);border-radius:16px;display:flex;align-items:center;justify-content:center;gap:2px;background:#1B0F33}
+.sslot.filled{border:3px solid var(--ok);background:var(--okbg)}
+.sn{position:absolute;top:4px;left:8px;font-family:"Grandstander",sans-serif;font-weight:800;font-size:16px;color:var(--pumpkin)}
+.spool{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.scard{aspect-ratio:1;border:3px solid var(--line);border-radius:16px;background:#1B0F33;display:flex;align-items:center;justify-content:center;gap:2px;padding:4px}
+.scard:hover:not(:disabled){border-color:var(--pumpkin)}
+.scard.placed{opacity:.15}
+.sa,.sb{font-size:clamp(22px,6.5vw,40px);line-height:1}
+.sb{margin-top:18px}
+/* memory */
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mcard{position:relative;aspect-ratio:3/4;border:0;border-radius:16px;background:linear-gradient(160deg,#5B3A86,#2B1648);box-shadow:inset 0 0 0 3px #7B5CD6;font-size:clamp(34px,9vw,52px);transition:transform .25s}
+.mcard .mface{display:none}
+.mcard.up{background:#FFF4E6;transform:rotateY(180deg) scaleX(-1)}
+.mcard.up .mback{display:none}.mcard.up .mface{display:inline}
+.mcard.match{box-shadow:0 0 0 4px var(--ok),0 0 24px rgba(139,224,78,.6)}
 /* spell */
 .slots{display:flex;justify-content:center;gap:6px;margin:6px 0 18px}
 .slot{width:clamp(40px,11vw,62px);height:70px;border-bottom:4px solid var(--pumpkin);display:grid;place-items:center;font-family:"Grandstander",sans-serif;font-weight:800;font-size:38px}
@@ -157,8 +175,8 @@ const BASKET = `<svg class="bk" viewBox="0 0 120 110" aria-hidden="true">
 
 const ROUNDS = [
   {id:'words', name:'Listen',     e:'👂', f:440},
-  {id:'doors', name:'Doors',      e:'🚪', f:493.88},
-  {id:'catch', name:'Catch',      e:'🧺', f:554.37},
+  {id:'story', name:'Story',      e:'🎬', f:493.88},
+  {id:'memory',name:'Memory',     e:'🃏', f:554.37},
   {id:'spell', name:'Spell it',   e:'🎃', f:659.25}
 ];
 
@@ -169,6 +187,10 @@ const WORDS = [
 ];
 const ROOMS = [
   {en:'kitchen', e:'🍳'}, {en:'bathroom', e:'🛁'}, {en:'bedroom', e:'🛏️'}, {en:'sunroom', e:'☀️'}, {en:'garden', e:'🌳'}
+];
+const STORY = [
+  [{a:'👨', b:'🏠'}, {a:'👵', b:'👵'}, {a:'👨', b:'🍪'}, {a:'🧺', b:'👻'}],
+  [{a:'🧺', b:'👻'}, {a:'👨', b:'🛁'}, {a:'👩', b:'🧺'}, {a:'👩', b:'🏃‍♀️'}]
 ];
 const SPELL = [{en:'sun', e:'☀️'}, {en:'bed', e:'🛏️'}, {en:'mum', e:'👩'}, {en:'door', e:'🚪'}, {en:'ghost', e:'👻'}];
 
@@ -279,8 +301,8 @@ function win(r, card, fb, next, text) {
 
 function startRound(r) {
   if (r.id === 'words') runWords(r);
-  else if (r.id === 'doors') runDoors(r);
-  else if (r.id === 'catch') runCatch(r);
+  else if (r.id === 'story') runStory(r);
+  else if (r.id === 'memory') runMemory(r);
   else runSpell(r);
 }
 
@@ -303,54 +325,60 @@ function runWords(r) {
   render();
 }
 
-/* 2. haunted doors: hear the room, open the right door, ghostbasket pops out */
-function runDoors(r) {
-  const items = shuffle(ROOMS).slice(0, 5);
+/* 2. story: put the pictures in order */
+function runStory(r) {
   let i = 0, errors = 0;
   const render = () => {
-    const rm = items[i], opts = shuffle([rm, ...shuffle(ROOMS.filter(x => x !== rm)).slice(0, 3)]);
-    const {card, fb, next} = shell(r, i, items.length, `
-      <div class="prompt"><div class="emoji">🧺❓</div>${listenBtns(rm.en)}</div>
-      <div class="doors">${opts.map(o => `<button class="door" data-v="${o.en}">
-        <div class="inside"><span class="re">${o.e}</span><span class="rl">${o.en}</span></div>
-        <div class="panel"><span class="re">${o.e}</span><span class="rl">${o.en}</span></div>
-        <div class="pop">${GHOST}</div></button>`).join('')}</div>`, rm.en);
-    const btns = [...card.querySelectorAll('.door')];
-    btns.forEach(b => b.addEventListener('click', () => {
-      if (b.disabled) return;
-      if (b.dataset.v === rm.en) {
-        btns.forEach(x => x.disabled = true); b.classList.add('open');
-        tone(180, 0, .3, .2, 'sawtooth'); whoo(.4); setTimeout(() => speak('Whoooo!'), 1300);
-        win(r, card, fb, next, `${rm.e} ${rm.en}`);
-      } else { errors++; hint(card, firstLetter(rm.en)); }
+    const set = STORY[i].map((sc, k) => ({...sc, k}));
+    const shown = shuffle(set);
+    if (shown.every((x, k) => x.k === k)) shown.reverse();
+    const {card, fb, next} = shell(r, i, STORY.length, `
+      <div class="strip">${set.map((_, k) => `<div class="sslot"><span class="sn">${k + 1}</span></div>`).join('')}</div>
+      <div class="spool">${shown.map((sc, idx) => `<button class="scard" data-s="${idx}" aria-label="picture"><span class="sa">${sc.a}</span><span class="sb">${sc.b}</span></button>`).join('')}</div>`);
+    const slots = [...card.querySelectorAll('.sslot')];
+    let step = 0;
+    card.querySelectorAll('.scard').forEach(b => b.addEventListener('click', () => {
+      if (step >= set.length || b.disabled) return;
+      const sc = shown[+b.dataset.s];
+      if (sc.k === step) {
+        b.disabled = true; b.classList.add('placed');
+        slots[step].innerHTML = `<span class="sn">${step + 1}</span><span class="sa">${sc.a}</span><span class="sb">${sc.b}</span>`;
+        slots[step].classList.add('filled');
+        tone(r.f * [1, 1.12, 1.25, 1.5][step], 0, .35); step++;
+        card.querySelector('.hintcard').hidden = true;
+        if (step === set.length) { whoo(.2); win(r, card, fb, next, '🎬'); }
+      } else { errors++; hint(card, step === 0 ? 'Что было в самом начале? 🤔' : 'А что было потом? 🤔'); }
     }));
-    next.addEventListener('click', () => { i++; i < items.length ? render() : finish(r, errors); });
+    next.addEventListener('click', () => { i++; i < STORY.length ? render() : finish(r, errors); });
   };
   render();
 }
 
-/* 3. catch the flying ghostbasket */
-function runCatch(r) {
-  const items = shuffle(WORDS).slice(0, 6);
-  const spots = [[8, 30], [38, 150], [66, 40]];
-  let i = 0, errors = 0;
-  const render = () => {
-    const w = items[i], opts = shuffle([w, ...shuffle(WORDS.filter(x => x !== w)).slice(0, 2)]);
-    const {card, fb, next} = shell(r, i, items.length, `
-      <div class="prompt">${listenBtns(w.en)}</div>
-      <div class="sky">${opts.map((o, k) => `<button class="flyer f${k + 1}" style="left:${spots[k][0]}%;top:${spots[k][1]}px" data-v="${o.en}" aria-label="ghost">${BASKET}<span class="pic">${o.e}</span></button>`).join('')}</div>`, w.en);
-    const btns = [...card.querySelectorAll('.flyer')];
-    btns.forEach(b => b.addEventListener('click', () => {
-      if (b.disabled) return;
-      if (b.dataset.v === w.en) {
-        btns.forEach(x => x.disabled = true); b.classList.add('gone'); whoo(0, 360, 620, .8, .15);
-        setTimeout(() => speak(w.en), 500);
-        win(r, card, fb, next, `${w.e} ${w.en}`);
-      } else { errors++; hint(card, firstLetter(w.en)); }
-    }));
-    next.addEventListener('click', () => { i++; i < items.length ? render() : finish(r, errors); });
-  };
-  render();
+/* 3. memory: find the pairs, every card says its word */
+function runMemory(r) {
+  const words = shuffle(WORDS).slice(0, 4);
+  const cards = shuffle(words.concat(words).map((w, k) => ({...w, id: k})));
+  let open = [], found = 0, misses = 0, lock = false;
+  const {card, fb, next} = shell(r, 0, 1, `
+    <div class="mem">${cards.map((c, idx) => `<button class="mcard" data-m="${idx}" aria-label="card"><span class="mback">🎃</span><span class="mface">${c.e}</span></button>`).join('')}</div>`);
+  next.textContent = 'Done ✓';
+  const els = [...card.querySelectorAll('.mcard')];
+  els.forEach(el => el.addEventListener('click', () => {
+    if (lock || el.classList.contains('up')) return;
+    const c = cards[+el.dataset.m];
+    el.classList.add('up'); speak(c.en); open.push(el);
+    if (open.length < 2) return;
+    const [x, y] = open; open = [];
+    if (cards[+x.dataset.m].en === cards[+y.dataset.m].en) {
+      setTimeout(() => { x.classList.add('match'); y.classList.add('match'); tone(r.f); tone(r.f * 1.5, .1); }, 400);
+      found++;
+      if (found === words.length) setTimeout(() => { whoo(); win(r, card, fb, next, '🃏'); }, 700);
+    } else {
+      misses++; lock = true;
+      setTimeout(() => { x.classList.remove('up'); y.classList.remove('up'); lock = false; }, 1300);
+    }
+  }));
+  next.addEventListener('click', () => finish(r, Math.max(0, misses - 4)));
 }
 
 /* 4. spell it */
