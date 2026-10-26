@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ghostbasket — игра после серии</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grandstander:wght@600;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECE6FA; --ink:#2A1F4D; --card:#FFFFFF; --muted:#5E5385; --line:#D3C8EE;
+  --ok:#2E9E5B; --okbg:#DDF5E6; --bump:#C9BCEB;
+  --roof:#5B3F94; --wall:#F6E7CB; --wallline:#D9C29A; --win:#2D2A5E; --glow:#FFD45C;
+  --pumpkin:#F0862A; --r1:#F0862A; --r2:#7B5CD6; --r3:#2F9C8F; --r4:#D2477A; --r5:#3E86D4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#17142E; --ink:#F0ECFF; --card:#241E45; --muted:#B4AAD8; --line:#3A3166; --okbg:#1B4632; --bump:#3D3470; --wall:#3B3266; --wallline:#544889; --win:#120F28; }
+}
+:root[data-theme="dark"]{ --bg:#17142E; --ink:#F0ECFF; --card:#241E45; --muted:#B4AAD8; --line:#3A3166; --okbg:#1B4632; --bump:#3D3470; --wall:#3B3266; --wallline:#544889; --win:#120F28; }
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+.hintcard{margin:14px 0 0;padding:12px 14px;border-radius:14px;background:#FFF4CC;color:#3A2E00;border:3px solid var(--glow);font-weight:800;display:flex;gap:10px;align-items:center}
+.hintcard.pulse{animation:shake .45s}
+.btnrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px;line-height:1.45}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:"Grandstander","Comic Sans MS","Trebuchet MS",sans-serif;font-weight:800;font-size:clamp(38px,8vw,60px);line-height:1;margin:14px 0 6px}
+.sub{color:var(--muted);margin:0 0 18px;font-weight:700}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--pumpkin);outline-offset:3px}
+
+/* house */
+.scene-home{position:relative;max-width:540px;margin:0 auto 10px}
+.roof{height:clamp(70px,16vw,110px);background:var(--roof);clip-path:polygon(50% 0,100% 100%,0 100%);margin:0 -14px}
+.walls{background:var(--wall);border:4px solid var(--wallline);border-top:0;padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.room{position:relative;border:0;border-radius:12px;background:var(--win);color:#fff;padding:10px 6px 8px;min-height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:inset 0 0 0 4px rgba(255,255,255,.12);transition:transform .12s}
+.room:hover{transform:translateY(-2px)}
+.room .re{font-size:34px;line-height:1}
+.room .rn{font-weight:800;font-size:clamp(13px,3.3vw,16px);text-align:center;line-height:1.15}
+.room .rs{font-size:13px;min-height:1.1em}
+.room .rnum{position:absolute;top:6px;left:8px;font-family:"Grandstander",sans-serif;font-weight:800;font-size:15px;opacity:.7}
+.room.done{background:var(--glow);color:#2A1F4D;box-shadow:0 0 24px rgba(255,212,92,.6)}
+.door{display:flex;align-items:flex-end;justify-content:center}
+.door span{display:block;width:62%;height:100%;min-height:118px;background:#8B5A2B;border-radius:40px 40px 4px 4px;position:relative}
+.door span::after{content:"";position:absolute;right:16%;top:55%;width:9px;height:9px;border-radius:50%;background:var(--glow)}
+.ghost-float{position:absolute;right:-6px;top:20px;width:clamp(64px,16vw,92px);animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-4deg)}}
+.done-note{text-align:center;font-weight:700;color:var(--muted);margin:14px 0 0}
+.final{display:none;margin:16px auto 0;background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:14px 26px;font-weight:800}
+.final.show{display:block}
+
+/* round */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.back{background:transparent;border:2px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:800}
+.prog{font-weight:800;color:var(--muted)}
+.rtitle{font-family:"Grandstander",sans-serif;font-weight:800;font-size:28px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.rtitle i{font-style:normal;font-size:30px}
+.task{color:var(--muted);font-weight:700;margin:0 0 14px}
+.card{position:relative;background:var(--card);border-radius:22px;padding:22px 18px;border:3px solid var(--line);overflow:hidden}
+.card.bumped{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes fade{0%,55%{opacity:1}100%{opacity:0}}
+.prompt{text-align:center;margin-bottom:18px}
+.big{font-family:"Grandstander",sans-serif;font-weight:800;font-size:clamp(30px,7vw,46px);line-height:1.1}
+.emoji{font-size:52px;line-height:1}
+.quote{font-size:clamp(20px,4.6vw,26px);font-weight:800;line-height:1.3}
+.say{margin-top:10px;background:transparent;border:2px solid var(--line);border-radius:999px;padding:8px 18px;font-weight:800;font-size:18px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opts.three{grid-template-columns:repeat(3,1fr)}
+.opt{position:relative;background:var(--bg);border:3px solid var(--line);border-radius:16px;padding:12px 8px;font-weight:800;font-size:18px;min-height:64px}
+.opt:hover:not(:disabled){border-color:var(--c)}
+.opt.pic{font-size:clamp(44px,12vw,62px);min-height:110px;line-height:1}
+.opt.roomopt{min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.opt.roomopt .re{font-size:38px;line-height:1}
+.opt.roomopt .rl{font-size:18px}
+.opt.roomopt svg{position:absolute;right:6px;bottom:6px;width:44px}
+.opt.yn{font-size:24px;min-height:80px}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}
+.opt.no{opacity:.45}
+.opt:disabled{cursor:default}
+.fb{min-height:1.5em;margin:14px 2px 0;font-weight:700}
+.fb b{color:var(--ok)}
+.next{display:none;margin:16px 0 0 auto;background:var(--c);color:#fff;border:0;border-radius:999px;padding:12px 26px;font-weight:800;font-size:18px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.2)}
+.next.show{display:block}
+/* order */
+.scenes{display:grid;gap:10px}
+.scene{display:flex;align-items:center;gap:14px;text-align:left;background:var(--bg);border:3px solid var(--line);border-radius:16px;padding:12px 14px;font-weight:800;font-size:18px}
+.scene .se{font-size:38px;line-height:1}
+.scene .badge{margin-left:auto;width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:"Grandstander",sans-serif;font-size:22px;color:#fff}
+.scene.done{border-color:var(--ok);background:var(--okbg)}
+.scene.done .badge{background:var(--ok)}
+.scene.no{animation:shake .45s}
+/* spell */
+.slots{display:flex;justify-content:center;gap:6px;margin:6px 0 18px}
+.slot{width:clamp(40px,11vw,64px);height:72px;border-bottom:4px solid var(--line);display:grid;place-items:center;font-family:"Grandstander",sans-serif;font-weight:800;font-size:40px}
+.letters{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.letter{width:clamp(46px,12vw,64px);height:clamp(46px,12vw,64px);border-radius:16px;border:3px solid var(--line);background:var(--bg);font-family:"Grandstander",sans-serif;font-weight:800;font-size:32px}
+.letter:disabled{opacity:.25}
+/* result */
+.res{text-align:center}
+.res .stars{font-size:44px;letter-spacing:6px}
+.res .next{display:block;margin:20px auto 0}
+.res svg{width:110px;margin:0 auto;display:block;animation:bob 2.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){ .card.bumped,.scene.no,.ghost-float,.res svg{animation:none} }
+</style>
+</head>
+<body>
+<main class="wrap" id="app"></main>
+
+<script>
+/* original ghost-basket drawing: laundry basket with peeking eyes */
+const GHOST = `<svg viewBox="0 0 120 110" aria-hidden="true">
+  <ellipse cx="60" cy="104" rx="40" ry="5" fill="rgba(0,0,0,.15)"/>
+  <path d="M14 40 L106 40 L96 98 Q60 104 24 98 Z" fill="#E9F1FA" stroke="#9FB3C8" stroke-width="3"/>
+  <g stroke="#B9C8D8" stroke-width="3">
+    <line x1="30" y1="48" x2="35" y2="94"/><line x1="46" y1="48" x2="48" y2="97"/><line x1="60" y1="48" x2="60" y2="98"/>
+    <line x1="74" y1="48" x2="72" y2="97"/><line x1="90" y1="48" x2="85" y2="94"/>
+    <line x1="20" y1="62" x2="100" y2="62"/><line x1="23" y1="78" x2="97" y2="78"/>
+  </g>
+  <rect x="8" y="32" width="104" height="12" rx="6" fill="#F7FBFF" stroke="#9FB3C8" stroke-width="3"/>
+  <rect x="44" y="50" width="32" height="12" rx="6" fill="#2A1F4D"/>
+  <circle cx="53" cy="56" r="3.2" fill="#fff"/><circle cx="67" cy="56" r="3.2" fill="#fff"/>
+  <path d="M60 12 q8 6 0 12 q-8 6 0 12" fill="none" stroke="#B4AAD8" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+</svg>`;
+
+const ROUNDS = [
+  {id:'words', name:'Kitchen',  ru:'Кухня',    e:'🍳', c:'var(--r1)', f:440,    task:'Послушай слово из мультика и нажми на картинку.'},
+  {id:'where', name:'Sunroom',  ru:'Веранда',  e:'☀️', c:'var(--r2)', f:493.88, task:'Где прячется Ghostbasket? Послушай комнату и нажми на неё.'},
+  {id:'order', name:'Bedroom',  ru:'Спальня',  e:'🛏️', c:'var(--r3)', f:554.37, task:'Что было сначала? Нажимай по порядку: 1, 2, 3.'},
+  {id:'yn',    name:'Bathroom', ru:'Ванная',   e:'🛁', c:'var(--r4)', f:659.25, task:'Вспомни мультик: так было?'},
+  {id:'spell', name:'Garden',   ru:'Сад',      e:'🌳', c:'var(--r5)', f:739.99, task:'Нажимай на буквы по порядку.'}
+];
+
+const WORDS = [
+  {en:'house', ru:'дом', e:'🏠'}, {en:'door', ru:'дверь', e:'🚪'}, {en:'window', ru:'окно', e:'🪟'},
+  {en:'ghost', ru:'привидение', e:'👻'}, {en:'basket', ru:'корзина', e:'🧺'}, {en:'granny', ru:'бабушка', e:'👵'},
+  {en:'biscuits', ru:'печенье', e:'🍪'}, {en:'sun', ru:'солнце', e:'☀️'}, {en:'bath', ru:'ванна', e:'🛁'},
+  {en:'bed', ru:'кровать', e:'🛏️'}, {en:'dad', ru:'папа', e:'👨'}, {en:'mum', ru:'мама', e:'👩'}
+];
+
+const ROOMS = [
+  {en:'kitchen', ru:'кухня', e:'🍳'}, {en:'bathroom', ru:'ванная', e:'🛁'}, {en:'bedroom', ru:'спальня', e:'🛏️'},
+  {en:'sunroom', ru:'веранда', e:'☀️'}, {en:'garden', ru:'сад', e:'🌳'}
+];
+
+const ORDER = [
+  [{e:'🏠', t:'Папа показывает маме дом — он его продаёт'}, {e:'👵', t:'Бабушки Janet и Rita прыгают на маму'}, {e:'🍪', t:'Папа бросает бабушкам печенье'}],
+  [{e:'🍳', t:'Маме нравится кухня'}, {e:'🧺', t:'Появляется Ghostbasket: «Whoooo!»'}, {e:'🛁', t:'Папа прячется в ванне'}],
+  [{e:'🧺', t:'Мама поднимает корзину — а там Bingo!'}, {e:'🏡', t:'Мама покупает дом'}, {e:'👻', t:'Папа становится привидением-тачкой'}]
+];
+
+const YN = [
+  {q:'Папа продаёт дом?', h:'Вспомни начало: папа показывает маме дом и говорит «Ta-da!»', e:'🏠', a:true, ex:'Да! Папа играет продавца домов.'},
+  {q:'Bluey и Bingo играют бабушек?', h:'Вспомни: как звали девочек в этой игре? Janet и Rita.', e:'👵', a:true, ex:'Да, это бабушки Janet и Rita.'},
+  {q:'Бабушки хотят уехать из дома?', h:'Вспомни: бабушки кричали «Get out!» и прятали дом от мамы.', e:'🧳', a:false, ex:'Нет, они не хотят уезжать из своего дома.'},
+  {q:'Папа бросил бабушкам печенье?', h:'Вспомни: чем папа отвлёк бабушек? 🍪', e:'🍪', a:true, ex:'Да, и бабушки побежали за печеньем.'},
+  {q:'Ghostbasket — настоящее привидение?', h:'Вспомни: кто был под корзиной, когда мама её подняла?', e:'👻', a:false, ex:'Нет! Под корзиной пряталась Bingo.'},
+  {q:'Мама прыгнула из окна?', h:'Вспомни: мама сказала «I am not jumping out of a window».', e:'🪟', a:false, ex:'Нет, она отказалась прыгать.'},
+  {q:'В конце мама испугалась и убежала?', h:'Вспомни конец: привидение-тачка и «Waaaah!»', e:'🏃‍♀️', a:true, ex:'Да, от привидения-тачки!'}
+];
+
+const SPELL = [
+  {en:'sun', e:'☀️'}, {en:'bed', e:'🛏️'}, {en:'door', e:'🚪'}, {en:'ghost', e:'👻'}
+];
+
+const PRAISE = ['Молодец!', 'Супер!', 'Отлично!', 'Ура!', 'Здорово!', 'Точно!'];
+const praise = () => PRAISE[Math.floor(Math.random() * PRAISE.length)];
+
+/* helpers */
+const app = document.getElementById('app');
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+const results = {};
+
+let actx;
+function ctx() { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx; }
+function tone(f, t = 0, d = 0.6, vol = 0.25, type = 'triangle') {
+  try {
+    const a = ctx(), now = a.currentTime + t;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(vol, now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + d);
+    o.connect(g).connect(a.destination); o.start(now); o.stop(now + d + 0.05);
+  } catch (e) {}
+}
+function whoo(t = 0, low = 300, high = 520, d = 1.1, vol = 0.18) {
+  try {
+    const a = ctx(), now = a.currentTime + t;
+    const o = a.createOscillator(), g = a.createGain(), lfo = a.createOscillator(), lg = a.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(low, now);
+    o.frequency.exponentialRampToValueAtTime(high, now + d * 0.45);
+    o.frequency.exponentialRampToValueAtTime(low * 0.9, now + d);
+    lfo.frequency.value = 6; lg.gain.value = 12; lfo.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(vol, now + 0.15);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + d);
+    o.connect(g).connect(a.destination);
+    o.start(now); lfo.start(now); o.stop(now + d + .05); lfo.stop(now + d + .05);
+  } catch (e) {}
+}
+function bump() { tone(110, 0, .25, .3, 'sine'); tone(90, .12, .25, .3, 'sine'); }
+function speak(text) {
+  try {
+    if (!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const vs = speechSynthesis.getVoices();
+    const v = vs.find(x => /en-GB/i.test(x.lang)) || vs.find(x => /^en/i.test(x.lang));
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : 'en-GB';
+    u.rate = 0.8;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+if ('speechSynthesis' in window) { try { speechSynthesis.getVoices(); } catch (e) {} }
+const starsFor = errors => errors <= 1 ? 3 : errors <= 3 ? 2 : 1;
+
+/* home: the house */
+function home() {
+  const allDone = ROUNDS.every(r => results[r.id]);
+  const room = i => {
+    const r = ROUNDS[i];
+    return `<button class="room ${results[r.id] ? 'done' : ''}" data-i="${i}" aria-label="Комната ${i + 1}: ${r.ru}">
+      <span class="rnum">${i + 1}</span><span class="re">${r.e}</span>
+      <span class="rn">${r.name}</span>
+      <span class="rs">${results[r.id] ? '⭐'.repeat(results[r.id].stars) : ''}</span></button>`;
+  };
+  app.innerHTML = `
+    <h1>Ghostbasket</h1>
+    <p class="sub">Игра после мультика. Это дом с привидением — заходи в любую комнату!</p>
+    <div class="scene-home">
+      <div class="roof"></div>
+      <div class="walls">
+        ${room(2)}${room(3)}${room(1)}
+        ${room(0)}<div class="door"><span></span></div>${room(4)}
+      </div>
+      <div class="ghost-float">${GHOST}</div>
+    </div>
+    <p class="done-note">${allDone ? 'Все окна горят! Дом продан 🏡🎉' : 'Пройди все пять комнат, чтобы в доме зажглись все окна.'}</p>
+    <button class="final ${allDone ? 'show' : ''}" id="final">👻 Позвать привидение</button>`;
+  app.querySelectorAll('.room').forEach(b => b.addEventListener('click', () => {
+    const r = ROUNDS[+b.dataset.i];
+    tone(r.f, 0, .4);
+    setTimeout(() => startRound(r), 180);
+  }));
+  const fin = document.getElementById('final');
+  if (fin) fin.addEventListener('click', () => { whoo(); setTimeout(() => speak('Whoooo! Get out!'), 700); });
+  window.scrollTo(0, 0);
+}
+
+function frame(r, i, n) {
+  return `
+    <div class="top"><button class="back" id="back">В дом</button><span class="prog">${i + 1} / ${n}</span></div>
+    <h2 class="rtitle"><i>${r.e}</i>${r.name} <span style="font-size:18px;color:var(--muted)">— ${r.ru}</span></h2>
+    <p class="task">${r.task}</p>`;
+}
+function shell(r, i, n, inner) {
+  app.innerHTML = frame(r, i, n) + `
+    <div class="card" style="--c:${r.c}">
+      ${inner}
+      <div class="hintcard" hidden aria-live="polite"><span style="font-size:26px">💡</span><span class="ht"></span></div>
+      <div class="fb" aria-live="polite"></div>
+      <button class="next" style="--c:${r.c}">${i + 1 < n ? 'Дальше' : 'Готово'}</button>
+    </div>`;
+  document.getElementById('back').addEventListener('click', home);
+  app.querySelectorAll('[data-show]').forEach(b => b.addEventListener('click', () => {
+    const t = app.querySelector('.hidetext'); if (t) t.hidden = false; b.hidden = true;
+  }));
+  app.querySelectorAll('[data-say]').forEach(b => b.addEventListener('click', () => speak(b.dataset.say)));
+  return {card: app.querySelector('.card'), fb: app.querySelector('.fb'), next: app.querySelector('.next')};
+}
+function oops(card, hint) {
+  card.classList.remove('bumped'); void card.offsetWidth; card.classList.add('bumped'); bump();
+  const h = card.querySelector('.hintcard');
+  if (h && hint) { h.querySelector('.ht').textContent = hint; h.hidden = false; h.classList.remove('pulse'); void h.offsetWidth; h.classList.add('pulse'); }
+}
+function hideHint() { const h = app.querySelector('.hintcard'); if (h) h.hidden = true; }
+const listenBtns = say => `<div class="btnrow"><button class="say" data-say="${esc(say)}">🔊 Послушать ещё раз</button><button class="say" data-show="1">👀 Показать текст</button></div>`;
+const firstLetter = w => `Подсказка: слово начинается на букву «${w[0].toUpperCase()}». Послушай ещё раз 🔊`;
+function success(r, fb, next, text) {
+  tone(r.f); tone(r.f * 1.25, .1); tone(r.f * 1.5, .2);
+  fb.innerHTML = `<b>${praise()}</b> ${text}`;
+  next.classList.add('show'); next.focus();
+}
+
+/* tap the right one, retry until right */
+function runPick(r, items, build) {
+  let i = 0, errors = 0;
+  const render = () => {
+    const it = items[i];
+    const {card, fb, next} = shell(r, i, items.length, build(it));
+    if (it.auto) setTimeout(() => speak(it.auto), 300);
+    const btns = [...app.querySelectorAll('[data-v]')];
+    btns.forEach(b => b.addEventListener('click', () => {
+      if (String(it.answer) === b.dataset.v) {
+        btns.forEach(x => x.disabled = true);
+        b.classList.add('ok'); hideHint();
+        if (it.onOk) it.onOk(b);
+        if (it.sayOk) speak(it.sayOk);
+        success(r, fb, next, esc(it.explain));
+      } else {
+        errors++; oops(card, it.hint);
+      }
+    }));
+    next.addEventListener('click', () => { i++; i < items.length ? render() : finish(r, errors); });
+  };
+  render();
+}
+
+function startRound(r) {
+  if (r.id === 'words') {
+    const items = shuffle(WORDS).slice(0, 7).map(w => ({
+      w, opts: shuffle([w, ...shuffle(WORDS.filter(x => x !== w)).slice(0, 2)]),
+      answer: w.en, auto: w.en, explain: `${w.en} — ${w.ru}`, hint: firstLetter(w.en)
+    }));
+    runPick(r, items, it => `
+      <div class="prompt">
+        <div class="emoji">👂</div>
+        <div class="big hidetext" hidden>${esc(it.w.en)}</div>
+        ${listenBtns(it.w.en)}
+      </div>
+      <div class="opts three">${it.opts.map(o => `<button class="opt pic" data-v="${esc(o.en)}" aria-label="${esc(o.ru)}">${o.e}</button>`).join('')}</div>`);
+  } else if (r.id === 'where') {
+    const order = shuffle(ROOMS).concat(shuffle(ROOMS).slice(0, 1));
+    const items = order.map(rm => {
+      return {
+        rm, answer: rm.en, auto: rm.en, explain: `${rm.en} — ${rm.ru}`, hint: firstLetter(rm.en),
+        opts: shuffle([rm, ...shuffle(ROOMS.filter(x => x !== rm)).slice(0, 3)]),
+        onOk: b => { b.insertAdjacentHTML('beforeend', GHOST); whoo(.1, 320, 560, .9, .14); }
+      };
+    });
+    runPick(r, items, it => `
+      <div class="prompt">
+        <div class="emoji">🧺👀</div>
+        <div class="big hidetext" hidden>${esc(it.rm.en)}</div>
+        ${listenBtns(it.rm.en)}
+      </div>
+      <div class="opts">${it.opts.map(o => `<button class="opt roomopt" data-v="${o.en}"><span class="re">${o.e}</span><span class="rl">${o.en}</span></button>`).join('')}</div>`);
+  } else if (r.id === 'order') {
+    runOrder(r, ORDER);
+  } else if (r.id === 'yn') {
+    const items = shuffle(YN).slice(0, 6).map(y => ({y, answer: y.a, sayOk: y.a ? 'Yes!' : 'No!', explain: y.ex, hint: y.h}));
+    runPick(r, items, it => `
+      <div class="prompt">
+        <div class="emoji">${it.y.e}</div>
+        <div class="quote">${esc(it.y.q)}</div>
+      </div>
+      <div class="opts">
+        <button class="opt yn" data-v="true">👍 Yes</button>
+        <button class="opt yn" data-v="false">👎 No</button>
+      </div>`);
+  } else {
+    runSpell(r, shuffle(SPELL.slice(0, 3)).concat([SPELL[3]]));
+  }
+}
+
+function runOrder(r, items) {
+  let i = 0, errors = 0;
+  const render = () => {
+    const correct = items[i];
+    const shown = shuffle(correct.map((sc, k) => ({...sc, k})));
+    const {card, fb, next} = shell(r, i, items.length, `
+      <div class="scenes">${shown.map((sc, idx) => `<button class="scene" data-s="${idx}"><span class="se">${sc.e}</span><span>${esc(sc.t)}</span><span class="badge"></span></button>`).join('')}</div>`);
+    let step = 0;
+    app.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
+      if (b.classList.contains('done') || step === correct.length) return;
+      const sc = shown[+b.dataset.s];
+      if (sc.k === step) {
+        b.classList.add('done'); b.querySelector('.badge').textContent = step + 1;
+        tone(r.f * [1, 1.25, 1.5][step], 0, .4); step++;
+        hideHint();
+        if (step === correct.length) success(r, fb, next, 'Всё по порядку!');
+      } else {
+        errors++; oops(card, step === 0 ? 'Подсказка: найди, что случилось в самом начале.' : 'Подсказка: а что было сразу после карточки №' + step + '?');
+      }
+    }));
+    next.addEventListener('click', () => { i++; i < items.length ? render() : finish(r, errors); });
+  };
+  render();
+}
+
+function runSpell(r, items) {
+  let i = 0, errors = 0;
+  const render = () => {
+    const it = items[i];
+    const letters = it.en.toUpperCase().split('');
+    let pool = shuffle(letters.map((l, k) => ({l, k})));
+    if (pool.map(p => p.l).join('') === letters.join('')) pool.reverse();
+    const {card, fb, next} = shell(r, i, items.length, `
+      <div class="prompt">
+        <div class="emoji" style="font-size:72px">${it.e}</div>
+        <button class="say" data-say="${esc(it.en)}">🔊 Послушать</button>
+      </div>
+      <div class="slots"></div>
+      <div class="letters"></div>`);
+    const slots = app.querySelector('.slots'), box = app.querySelector('.letters');
+    let chosen = [], done = false;
+    const draw = () => {
+      slots.innerHTML = letters.map((_, k) => `<div class="slot">${chosen[k] ? chosen[k].l : ''}</div>`).join('');
+      box.innerHTML = pool.map((p, idx) => `<button class="letter" data-p="${idx}" ${p.used || done ? 'disabled' : ''}>${p.l}</button>`).join('');
+      box.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => {
+        const p = pool[+b.dataset.p]; p.used = true; chosen.push(p);
+        tone(r.f * (0.9 + chosen.length * 0.1), 0, .25, .15);
+        if (chosen.length === letters.length) check(); else draw();
+      }));
+    };
+    const check = () => {
+      if (chosen.map(p => p.l).join('') === letters.join('')) {
+        done = true; draw(); speak(it.en); hideHint();
+        success(r, fb, next, `${it.en.toUpperCase()} ${it.e}`);
+      } else {
+        errors++; draw(); oops(card, `Подсказка: первая буква — «${letters[0]}». Послушай ещё раз 🔊`);
+        setTimeout(() => { chosen = []; pool.forEach(p => p.used = false); draw(); }, 900);
+      }
+    };
+    draw();
+    setTimeout(() => speak(it.en), 300);
+    next.addEventListener('click', () => { i++; i < items.length ? render() : finish(r, errors); });
+  };
+  render();
+}
+
+function finish(r, errors) {
+  const stars = starsFor(errors);
+  const prev = results[r.id];
+  if (!prev || stars > prev.stars) results[r.id] = {stars};
+  app.innerHTML = `
+    <div class="card res" style="--c:${r.c}">
+      ${GHOST}
+      <h2 class="rtitle" style="justify-content:center"><i>${r.e}</i>${r.name}</h2>
+      <div class="stars">${'⭐'.repeat(stars)}</div>
+      <div class="big">${praise()}</div>
+      <p class="task">В этой комнате зажёгся свет! Выбирай следующую.</p>
+      <button class="next" style="--c:${r.c}" id="toHome">В дом</button>
+    </div>`;
+  whoo(0, 330, 600, .9, .14);
+  document.getElementById('toHome').addEventListener('click', home);
+}
+
+home();
+</script>
+</body>
+</html>
