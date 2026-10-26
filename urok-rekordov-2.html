@@ -6,34 +6,30 @@
 <title>Урок рекордов 2</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Unbounded:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Creepster&family=Unbounded:wght@500;700;800&display=swap">
 <style>
 html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
-/* Layout: тетрадь в клетку; сверху полоса уровней, ниже одна рабочая зона уровня. Открытая дверь — зелёная, закрытая — синяя */
+/* Layout: ночная тетрадь на Хэллоуин — луна, летучие мыши, паутина; сверху полоса уровней-тыкв, ниже одна рабочая зона уровня.
+   Закрытая дверь — тыквенная, открытая — зелёная слизь. Тема одна, тёмная, намеренно. */
 :root{
-  --paper:#F3F6FA; --grid:#DCE5F0; --card:#FFFFFF; --ink:#18223A; --muted:#5B6782;
-  --pen:#2B47C9; --pen-soft:#E3E8FB; --red:#D2402F; --red-soft:#FBE4E0;
-  --ok:#1E8A55; --ok-soft:#DDF3E7; --dg:#C2410C; --dg-soft:#FFE7D6;
-  --magic:#7A3FB8; --magic-soft:#EFE5FA; --line:#C9D4E3; --gold:#B7791F; --gold-soft:#FDF1D8;
+  --paper:#15101F; --grid:#1E1730; --card:#211A33; --ink:#F5EEDC; --muted:#A99BC4;
+  --pen:#FF8A1F; --pen-soft:#3A2414; --red:#FF5468; --red-soft:#3E1522;
+  --ok:#8BE04E; --ok-soft:#1E3316; --dg:#FFD34D; --dg-soft:#3A3010;
+  --magic:#C78BFF; --magic-soft:#2E1F47; --line:#3B2F55; --gold:#E9B95C; --gold-soft:#2B2116;
+  --moon:#F7E7B4;
   --f-word:"Andika","Comic Sans MS",system-ui,sans-serif;
   --f-head:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-spook:"Creepster","Unbounded","Arial Black",system-ui,sans-serif;
   --f-body:"Andika",system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#131A2B; --grid:#1D2740; --card:#1B2438; --ink:#EEF2FA; --muted:#9AA6C2;
-  --pen:#8EA2FF; --pen-soft:#25305A; --red:#FF7B6B; --red-soft:#4A2221;
-  --ok:#5BD69A; --ok-soft:#173A2B; --dg:#FF9F5A; --dg-soft:#47290F;
-  --magic:#C79BFF; --magic-soft:#33224D; --line:#2C3956; --gold:#F2C060; --gold-soft:#3D3115; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --paper:#131A2B; --grid:#1D2740; --card:#1B2438; --ink:#EEF2FA; --muted:#9AA6C2;
-  --pen:#8EA2FF; --pen-soft:#25305A; --red:#FF7B6B; --red-soft:#4A2221;
-  --ok:#5BD69A; --ok-soft:#173A2B; --dg:#FF9F5A; --dg-soft:#47290F;
-  --magic:#C79BFF; --magic-soft:#33224D; --line:#2C3956; --gold:#F2C060; --gold-soft:#3D3115; color-scheme:dark}
 
 *{box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.45;
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-  background-size:24px 24px;
+  background-image:radial-gradient(circle at 50% -20%,#2A1C45 0%,transparent 60%),
+    radial-gradient(1.5px 1.5px at 20px 30px,#fff8 50%,transparent 51%),radial-gradient(1px 1px at 90px 120px,#fff6 50%,transparent 51%),
+    radial-gradient(1.5px 1.5px at 160px 60px,#fff5 50%,transparent 51%),radial-gradient(1px 1px at 230px 170px,#fff7 50%,transparent 51%);
+  background-size:100% 100%,260px 220px,260px 220px,260px 220px,260px 220px;background-attachment:fixed;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
@@ -44,13 +40,13 @@ input{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(
   margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
   border-bottom:2px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.brand{font-family:var(--f-head);font-weight:800;font-size:15px;letter-spacing:.02em;margin-right:4px}
+.brand{font-family:var(--f-spook);font-weight:400;font-size:24px;letter-spacing:.04em;margin-right:4px;color:var(--ink)}
 .brand b{color:var(--pen)}
 .chips{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
 .chip{font-family:var(--f-head);font-weight:700;font-size:13px;width:34px;height:34px;border-radius:50%;
   border:2px solid var(--line);background:var(--card);display:grid;place-items:center;font-variant-numeric:tabular-nums}
-.chip.on{background:var(--pen);border-color:var(--pen);color:var(--card)}
-.chip.done{border-color:var(--ok);color:var(--ok)}
+.chip.on{background:var(--pen);border-color:var(--pen);color:#2A1206;box-shadow:0 0 14px #ff8a1f88}
+.chip.done{border-color:var(--ok);color:var(--ok);box-shadow:0 0 8px #8be04e55}
 .chip.on.done{color:var(--card)}
 .tool{font-size:14px;padding:6px 12px;border-radius:999px;border:2px solid var(--line);background:var(--card)}
 .tool.on{border-color:var(--pen);background:var(--pen-soft)}
@@ -58,13 +54,14 @@ input{font:inherit;color:var(--ink);background:var(--card);border:2px solid var(
 main{max-width:980px;margin:22px auto 0}
 .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
 .lvl{font-family:var(--f-head);font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--pen)}
-h1{font-family:var(--f-head);font-weight:700;font-size:clamp(22px,4vw,32px);margin:0;text-wrap:balance}
+h1{font-family:var(--f-spook);font-weight:400;font-size:clamp(30px,5.4vw,46px);letter-spacing:.03em;margin:0;text-wrap:balance;color:var(--pen);text-shadow:0 0 18px #ff8a1f55}
 .mins{font-size:14px;color:var(--muted)}
 .lead{color:var(--muted);margin:4px 0 16px;max-width:62ch}
-.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;min-width:0}
+.card{position:relative;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;min-width:0;box-shadow:0 8px 24px #0006}
+.card::after{content:"";position:absolute;top:0;right:0;width:46px;height:46px;pointer-events:none;opacity:.35;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 46' fill='none' stroke='%23A99BC4' stroke-width='1'%3E%3Cpath d='M46 0L4 0M46 0L46 42M46 0L12 34M46 0L26 40M46 0L6 18'/%3E%3Cpath d='M34 0Q36 10 46 12M22 0Q26 20 46 24M10 0Q16 30 46 36'/%3E%3C/svg%3E") no-repeat}
 .teacher{background:var(--gold-soft);border:2px dashed var(--gold);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:15px}
 .teacher i{display:block}
-.teacher::before{content:"учитель";display:block;font-family:var(--f-head);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.teacher::before{content:"🕯 учитель";display:block;font-family:var(--f-head);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
 
 .word{font-family:var(--f-word);font-weight:700;font-size:clamp(26px,4.4vw,38px);line-height:1.15;letter-spacing:.02em}
 .me{color:var(--magic);text-decoration:underline wavy;text-underline-offset:6px}
@@ -80,13 +77,13 @@ h1{font-family:var(--f-head);font-weight:700;font-size:clamp(22px,4vw,32px);marg
 .w .n{font-family:var(--f-head);font-size:11px;color:var(--muted);display:block;font-variant-numeric:tabular-nums}
 
 .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.btn{font-family:var(--f-head);font-weight:700;font-size:14px;padding:10px 18px;border-radius:12px;background:var(--pen);color:var(--card)}
+.btn{font-family:var(--f-head);font-weight:700;font-size:14px;padding:10px 18px;border-radius:12px;background:var(--pen);color:#2A1206;box-shadow:0 3px 0 #9A4A08}
 .btn.ghost{background:var(--card);color:var(--pen);border:2px solid var(--pen)}
-.btn.red{background:var(--red)}
-.btn.ok{background:var(--ok)}
+.btn.red{background:var(--red);box-shadow:0 3px 0 #8E1E2E}
+.btn.ok{background:var(--ok);box-shadow:0 3px 0 #3F7A1C}
 .btn:disabled{opacity:.4;cursor:default}
 .clock{font-family:var(--f-head);font-weight:800;font-size:34px;font-variant-numeric:tabular-nums;min-width:4ch}
-.clock.run{color:var(--red)}
+.clock.run{color:var(--red);text-shadow:0 0 12px #ff546888}
 .passes{display:flex;gap:6px;flex-wrap:wrap}
 .pass{font-size:14px;padding:4px 10px;border-radius:999px;background:var(--pen-soft);font-variant-numeric:tabular-nums}
 .pass.best{background:var(--ok-soft);color:var(--ok);font-weight:700}
@@ -96,8 +93,8 @@ h1{font-family:var(--f-head);font-weight:700;font-size:clamp(22px,4vw,32px);marg
 .doors{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .door{border-radius:16px;padding:22px 12px;text-align:center;border:3px solid;font-family:var(--f-head);font-weight:700;font-size:18px}
 .door svg{display:block;margin:0 auto 8px}
-.door.closed{border-color:var(--pen);background:var(--pen-soft);color:var(--pen)}
-.door.open{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.door.closed{border-color:var(--pen);background:var(--pen-soft);color:var(--pen);box-shadow:0 0 18px #ff8a1f33 inset}
+.door.open{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);box-shadow:0 0 18px #8be04e33 inset}
 .door.flash-ok{outline:5px solid var(--ok)}
 .door.flash-bad{outline:5px solid var(--red)}
 .big{font-family:var(--f-word);font-weight:700;font-size:clamp(44px,9vw,76px);text-align:center;min-height:1.3em}
@@ -149,14 +146,33 @@ table.dt{width:100%;border-collapse:separate;border-spacing:6px}
 .nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px}
 .fb{font-family:var(--f-head);font-weight:700;font-size:18px;text-align:center;min-height:1.6em}
 .fb.good{color:var(--ok)} .fb.bad{color:var(--red)}
+/* декор: луна, летучие мыши, тыквы */
+.deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.moon{position:absolute;top:calc(70px + env(safe-area-inset-top,0px));right:max(24px,env(safe-area-inset-right,0px));width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,var(--moon),#E9CF86 60%,#C9A85A);box-shadow:0 0 60px #f7e7b455,0 0 140px #f7e7b422;opacity:.85}
+.moon::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 62% 58%,#0000 0 9px,transparent 10px),radial-gradient(circle at 30% 64%,#c9a85a66 0 7px,transparent 8px),radial-gradient(circle at 58% 28%,#c9a85a55 0 5px,transparent 6px)}
+.bat{position:absolute;font-size:28px;filter:drop-shadow(0 0 4px #000)}
+.b1{top:18%;left:-60px}.b2{top:34%;left:-60px;font-size:20px}.b3{top:9%;left:-60px;font-size:16px}
+.pk{position:absolute;bottom:calc(8px + env(safe-area-inset-bottom,0px));font-size:44px;opacity:.9}
+.pk.l{left:max(10px,env(safe-area-inset-left,0px))}.pk.r{right:max(10px,env(safe-area-inset-right,0px));font-size:34px}
+.top,main{position:relative;z-index:1}.top{z-index:5}
+.big{color:var(--ink);text-shadow:0 0 22px #c78bff44}
+@media (prefers-reduced-motion:no-preference){
+  .b1{animation:fly 22s linear infinite}.b2{animation:fly 30s linear 6s infinite}.b3{animation:fly 26s linear 13s infinite}
+  .pk.l{animation:glow 3.5s ease-in-out infinite}
+  @keyframes fly{0%{transform:translate(0,0)}25%{transform:translate(30vw,-30px)}50%{transform:translate(60vw,20px)}75%{transform:translate(90vw,-20px)}100%{transform:translate(calc(100vw + 120px),0)}}
+  @keyframes glow{50%{filter:drop-shadow(0 0 14px #ff8a1f)}}
+}
+@media (max-width:620px){.chips{order:3;flex-basis:100%}.brand{flex:1}.moon{width:64px;height:64px;opacity:.5}.pk{font-size:30px}.pk.r{display:none}}
 @media (max-width:520px){.doors{grid-template-columns:1fr 1fr}.door{padding:14px 6px;font-size:14px}.clock{font-size:28px}}
 @media (prefers-reduced-motion:no-preference){.chip,.w,.door{transition:background .15s,border-color .15s,outline-color .15s}}
 </style>
 
 </head>
 <body>
+<div class="deco" aria-hidden="true"><div class="moon"></div><span class="bat b1">🦇</span><span class="bat b2">🦇</span><span class="bat b3">🦇</span><span class="pk l">🎃</span><span class="pk r">🕸️</span></div>
 <div class="top">
-  <div class="brand">Урок <b>рекордов 2</b></div>
+  <div class="brand">🎃 Урок <b>рекордов 2</b></div>
   <div class="chips" id="chips"></div>
   <button class="tool" id="hints">✨ подсказки</button>
   <button class="tool" id="tts">🔊 голос</button>
@@ -292,7 +308,7 @@ L.push({t:'Двери на слух',m:'3 мин',lead:'Звучит слово.
       R.L2=[score];R.L2_n=order.length;save();refreshChips();draw();setTimeout(()=>b.classList.remove('flash-ok','flash-bad'),700)};return b};
   const play=h('button',{class:'btn'},'▶ слово');play.onclick=()=>{if(i<order.length)say(order[i],true)};
   const next=h('button',{class:'btn ghost'},'дальше →');
-  next.onclick=()=>{if(!answered&&i<order.length)return;i++;answered=false;big.textContent=i<order.length?'?':'🏁';fb.textContent='';draw();if(i<order.length)setTimeout(()=>say(order[i]),150)};
+  next.onclick=()=>{if(!answered&&i<order.length)return;i++;answered=false;big.textContent=i<order.length?'?':'👻';fb.textContent='';draw();if(i<order.length)setTimeout(()=>say(order[i]),150)};
   const again=h('button',{class:'btn ghost'},'заново');again.onclick=()=>{i=0;score=0;answered=false;big.textContent='?';fb.textContent='';draw()};
   draw();
   return[tline,h('div',{class:'card'},h('div',{class:'bar'},play,next,again,sc),big,fb,h('div',{class:'doors'},mk(false),mk(true)))]}});
@@ -344,7 +360,7 @@ L.push({t:'Лесенки',m:'7 мин',lead:'Меняется одна букв
 
 L.push({t:'Ловим ошибку учителя',m:'3 мин',lead:'Голос читает слово, иногда неправильно. Верно или ошибка?',
  r(){let i=0,score=0,answered=false;const big=h('div',{class:'big'});const fb=h('div',{class:'fb'});const sc=h('div',{class:'score'});const tl=h('div',{class:'teacher'});
-  const draw=()=>{const it=CATCH[i];big.innerHTML=it?mark(it.w):'🏁';sc.textContent=`${Math.min(i+1,CATCH.length)} / ${CATCH.length} · поймала ${score}`;
+  const draw=()=>{const it=CATCH[i];big.innerHTML=it?mark(it.w):'👻';sc.textContent=`${Math.min(i+1,CATCH.length)} / ${CATCH.length} · поймала ${score}`;
     tl.innerHTML='';tl.append(h('i',{},it?(it.bad?`Читай с ошибкой: ${it.tSay||'«'+it.say+'»'}`:`Читай верно: ${it.w}`):'Готово.'))};
   const play=h('button',{class:'btn'},'▶ послушать');play.onclick=()=>{const it=CATCH[i];if(it)say(it.say,true)};
   const ans=bad=>{if(answered||i>=CATCH.length)return;answered=true;const it=CATCH[i];const right=!!it.bad===bad;if(right)score++;
