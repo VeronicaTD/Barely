@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Review Board — Feelings</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+[hidden]{display:none!important}
+:root{--bg:#fff5cf;--ink:#3b2a66;--card:#fff;--a:#8e5cf7;--b:#ffb703;--ok:#3cc47c;--gold:#ffc83d;--lil:#efe6ff}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Baloo 2',system-ui,sans-serif;background:radial-gradient(circle at 15% 10%,#fffbe8 0,transparent 40%),var(--bg);color:var(--ink);min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;flex-wrap:wrap}
+h1{margin:0;font-size:30px;font-weight:800}
+.players{display:flex;gap:10px}
+.pl{background:#fff;border-radius:18px;padding:6px 16px;font-size:20px;font-weight:700;border:4px solid transparent;cursor:pointer;transition:.2s}
+.pl.on{border-color:var(--a);transform:scale(1.07);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.pl b{font-size:26px;margin-left:6px}
+.tools button{font:inherit;font-size:16px;border:0;border-radius:12px;padding:6px 12px;background:#fff;cursor:pointer;margin-left:6px}
+.board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;padding:6px 18px 24px;max-width:1200px;margin:0 auto}
+.cat{background:var(--ink);color:#fff;border-radius:14px;padding:8px 4px;text-align:center;font-weight:700;font-size:15px;line-height:1.15;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cat span{font-size:26px}
+.tile{background:linear-gradient(180deg,#fff,var(--lil));border:0;border-radius:14px;font:inherit;font-size:30px;font-weight:800;color:var(--a);height:76px;cursor:pointer;box-shadow:0 4px 0 #d3c0ff;transition:.15s}
+.tile:hover{transform:translateY(-3px)}
+.tile.done{background:#f1ead2;color:transparent;box-shadow:none;cursor:default}
+.tile.done.win::after{content:"⭐";color:#000;font-size:28px}
+.tile.done.half::after{content:"✨";color:#000;font-size:24px}
+@media(max-width:760px){.board{gap:5px;padding:4px 6px 20px}.cat{font-size:10px;min-height:56px}.cat span{font-size:18px}.tile{font-size:16px;height:52px}h1{font-size:22px}.pl{font-size:15px}}
+.ov{position:fixed;inset:0;background:rgba(59,42,102,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:5}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:26px;width:min(820px,100%);max-height:96vh;overflow:auto;padding:20px 22px;text-align:center;animation:pop .25s;position:relative}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+.mtop{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:18px;color:#8a7d99;padding-right:34px}
+.pts{background:var(--gold);color:var(--ink);border-radius:12px;padding:2px 12px}
+.x{position:absolute;top:14px;right:14px;border:0;background:#eee;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;color:#8a7d99}
+.q{font-size:32px;font-weight:800;margin:10px 0 6px;line-height:1.2}
+.sub{font-size:18px;color:#8a7d99;margin-bottom:8px}
+.pic{min-height:150px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:64px;margin:6px 0}
+.pic svg.big{width:150px;height:150px}
+.pic svg.md{width:110px;height:110px}
+.pic svg.sm{width:80px;height:80px}
+.pic svg.xs{width:62px;height:62px}
+.fig{display:flex;flex-direction:column;align-items:center;font-size:16px;font-weight:700;color:#8a7d99;line-height:1}
+.duo{display:flex;align-items:flex-end;gap:4px;background:var(--lil);border-radius:22px;padding:8px 14px}
+.duo .link{font-size:40px;margin-bottom:34px}
+.scene{display:flex;align-items:flex-end;width:100%;max-width:620px;height:160px;border-bottom:6px solid #e9d38a;padding:0 10px}
+.scene .hand{font-size:42px;margin:0 0 40px 6px}
+.scene .grp{display:flex;gap:2px;margin-left:auto;align-items:flex-end}
+.prop{font-size:64px}
+.words{display:flex;gap:16px;font-size:72px}
+.opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.opt{font:inherit;font-size:24px;font-weight:700;background:#fff8e1;border:3px solid var(--b);border-radius:16px;padding:6px 18px;cursor:pointer;color:var(--ink);transition:.15s}
+.opt:hover{transform:translateY(-2px)}
+.opt.tried{opacity:.45;border-style:dashed;animation:wig .4s}
+.opt.good{background:var(--ok);border-color:var(--ok);color:#fff;transform:scale(1.08)}
+@keyframes wig{25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+.rule{background:var(--lil);border:3px solid var(--a);border-radius:18px;padding:10px 14px;font-size:20px;font-weight:700;margin:8px auto;max-width:640px;line-height:1.35;animation:glow 1.2s ease-in-out 2}
+.rule::before{content:"💡 ";}
+@keyframes glow{50%{box-shadow:0 0 0 8px rgba(142,92,247,.25);transform:scale(1.03)}}
+.ans{font-size:30px;font-weight:800;color:var(--ok);min-height:44px;margin:6px 0}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.btns button{font:inherit;font-size:20px;font-weight:700;border:0;border-radius:16px;padding:10px 20px;cursor:pointer;color:#fff}
+.say{background:#9b8cff}.txt{background:var(--b)}.next{background:var(--ok)}.btn-again{background:var(--a)}
+.end h2{font-size:40px;margin:6px 0}
+.conf{position:fixed;top:-20px;font-size:26px;animation:fall linear forwards;pointer-events:none;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌈 Big Review Board</h1>
+  <div class="players">
+    <div class="pl on" id="p0" title="Click to rename">🦊 <span class="nm">Fox</span><b id="s0">0</b></div>
+    <div class="pl" id="p1" title="Click to rename">🐼 <span class="nm">Panda</span><b id="s1">0</b></div>
+  </div>
+  <div class="tools"><button id="snd">🔊 On</button><button id="reset">↺ New game</button></div>
+</header>
+<div class="board" id="board"></div>
+
+<div class="ov" id="ov"><div class="modal">
+  <button class="x" id="bx" title="Close (tile stays)">✕</button>
+  <div class="mtop"><span id="mcat"></span><span class="pts" id="mpts"></span></div>
+  <div class="q" id="mq" hidden></div>
+  <div class="sub" id="msub"></div>
+  <div class="pic" id="mpic"></div>
+  <div class="opts" id="mopts"></div>
+  <div class="rule" id="mrule" hidden></div>
+  <div class="ans" id="mans"></div>
+  <div class="btns" id="b1">
+    <button class="say" id="bsay">🔊 Listen again</button>
+    <button class="txt" id="btxt">📝 Show text</button>
+  </div>
+  <div class="btns" id="b2" hidden>
+    <button class="next" id="bnext">Next ➜</button>
+  </div>
+</div></div>
+
+<div class="ov" id="endov"><div class="modal end">
+  <h2>🏆</h2><h2 id="endt"></h2><div class="sub" id="ends"></div>
+  <div class="btns"><button class="btn-again" id="again">Play again</button></div>
+</div></div>
+
+<script>
+/* ---------- kid faces (inline SVG) ---------- */
+function K(m,g,cls){
+  var skin={cold:'#d6ecff',angry:'#ffb09c',hot:'#ffc29e',scared:'#f6f0dc'}[m]||'#ffd9b3';
+  var hair=g==='g'?'#c0662b':'#6b3f1d';
+  var D='#3b2a66',s='<svg viewBox="0 0 100 100" class="'+(cls||'big')+'">';
+  function eyes(r){return '<circle cx="39" cy="54" r="'+(r||4)+'" fill="'+D+'"/><circle cx="61" cy="54" r="'+(r||4)+'" fill="'+D+'"/>'}
+  function ln(d,w){return '<path d="'+d+'" fill="none" stroke="'+D+'" stroke-width="'+(w||3)+'" stroke-linecap="round" stroke-linejoin="round"/>'}
+  function drop(x,y,c){return '<path d="M'+x+' '+y+' q-5 8 0 11 q5 -3 0 -11z" fill="'+(c||'#5bb8ff')+'"/>'}
+  var cheeks='<circle cx="31" cy="65" r="5" fill="#ff9fb5" opacity=".7"/><circle cx="69" cy="65" r="5" fill="#ff9fb5" opacity=".7"/>';
+  if(m==='brave')s+='<path d="M24 74 L8 100 L92 100 L76 74Z" fill="#e63946"/>';
+  if(g==='g')s+='<circle cx="17" cy="52" r="11" fill="'+hair+'"/><circle cx="83" cy="52" r="11" fill="'+hair+'"/><circle cx="20" cy="40" r="5" fill="#ff6fa8"/><circle cx="80" cy="40" r="5" fill="#ff6fa8"/>';
+  s+='<circle cx="50" cy="56" r="30" fill="'+skin+'" stroke="#e0a77a" stroke-width="1.5"/>';
+  s+='<path d="M20 52 Q18 22 50 22 Q82 22 80 52 Q74 36 50 36 Q28 36 20 52Z" fill="'+hair+'"/>';
+  switch(m){
+    case'happy':s+=eyes()+ln('M38 66 Q50 80 62 66')+cheeks;break;
+    case'ok':s+=eyes()+ln('M42 68 Q50 74 58 68');break;
+    case'sad':s+=eyes()+ln('M32 46 L44 42')+ln('M68 46 L56 42')+ln('M40 74 Q50 64 60 74')+drop(63,60);break;
+    case'hot':s+=eyes()+'<path d="M40 68 Q50 80 60 68Z" fill="#7a2e2e"/>'+drop(78,34)+drop(24,38)+drop(84,52)+cheeks;break;
+    case'cold':s+=eyes()+ln('M38 70 l4 -3 l4 3 l4 -3 l4 3 l4 -3 l4 3',2.5)+'<rect x="26" y="80" width="48" height="10" rx="5" fill="#5bb8ff"/><rect x="56" y="84" width="10" height="16" rx="3" fill="#3d8fd6"/>';break;
+    case'hungry':s+=eyes()+'<ellipse cx="50" cy="70" rx="9" ry="7" fill="#7a2e2e"/><ellipse cx="50" cy="74" rx="5" ry="3" fill="#ff7aa2"/>'+drop(58,74,'#bfe4ff');break;
+    case'thirsty':s+=eyes(3.5)+ln('M40 68 Q50 65 60 68')+'<ellipse cx="50" cy="74" rx="6" ry="7" fill="#ff7aa2"/>';break;
+    case'tired':s+=ln('M33 55 Q39 59 45 55')+ln('M55 55 Q61 59 67 55')+'<ellipse cx="50" cy="71" rx="4" ry="5" fill="#7a2e2e"/><text x="74" y="30" font-size="14" font-weight="800" fill="#8e5cf7">z</text><text x="84" y="18" font-size="18" font-weight="800" fill="#8e5cf7">Z</text>';break;
+    case'angry':s+=eyes()+ln('M31 44 L45 50',4)+ln('M69 44 L55 50',4)+ln('M40 72 Q50 64 60 72');break;
+    case'scared':s+=ln('M32 42 Q39 37 46 42')+ln('M54 42 Q61 37 68 42')+'<circle cx="39" cy="54" r="7" fill="#fff" stroke="'+D+'" stroke-width="2"/><circle cx="61" cy="54" r="7" fill="#fff" stroke="'+D+'" stroke-width="2"/><circle cx="39" cy="55" r="2.5" fill="'+D+'"/><circle cx="61" cy="55" r="2.5" fill="'+D+'"/><ellipse cx="50" cy="72" rx="6" ry="8" fill="#7a2e2e"/>';break;
+    case'brave':s+=ln('M32 45 L45 48')+ln('M68 45 L55 48')+eyes()+'<path d="M38 65 Q50 78 62 65Z" fill="#fff" stroke="'+D+'" stroke-width="2.5"/>';break;
+    case'nervous':s+='<circle cx="39" cy="54" r="6" fill="#fff" stroke="'+D+'" stroke-width="1.5"/><circle cx="61" cy="54" r="6" fill="#fff" stroke="'+D+'" stroke-width="1.5"/><circle cx="42" cy="54" r="3" fill="'+D+'"/><circle cx="64" cy="54" r="3" fill="'+D+'"/>'+ln('M38 71 q3 -4 6 0 t6 0 t6 0 t6 0',2.5)+drop(80,40);break;
+  }
+  return s+'</svg>';
+}
+function P(e){return '<span class="prop">'+e+'</span>'}
+function WE(m,prop){return '<div class="duo"><div class="fig">'+K(m,'b','md')+'me</div><span class="link">🤝</span><div class="fig">'+K(m,'g','md')+'my friend</div></div>'+(prop?P(prop):'')}
+function THEY(m,prop){return '<div class="scene"><div class="fig">'+K('ok','b','sm')+'me</div><span class="hand">👉</span>'+(prop?'<span class="prop" style="font-size:44px;margin-left:auto">'+prop+'</span>':'')+'<div class="grp"'+(prop?' style="margin-left:6px"':'')+'>'+K(m,'g','xs')+K(m,'b','xs')+K(m,'g','xs')+'</div></div>'}
+function W(){return '<div class="words">'+Array.prototype.join.call(arguments,'')+'</div>'}
+
+var YN2=["Yes, they are.","No, they aren't."],
+    YN4=["Yes, they are.","No, they aren't.","Yes, we are.","No, we aren't."],
+    CHS=['ch 🚂','sh 🤫','th 👅'];
+
+var CATS=[
+{icon:'😊',name:'Feelings words',
+ rule:'Look at the face 👀 and the picture!<br>❄️ = cold · ☀️ = hot · 🍕 = hungry · 🥤 = thirsty<br>👻 = scared · 🐉 + 💪 = brave',
+ qs:[
+ {q:'Which word?',say:'Look at the picture. Which word?',pic:K('happy','g')+P('🎈🎁'),opts:['happy','sad','tired'],a:'happy',full:"She's happy!"},
+ {q:'Which word?',say:'Look at the picture. Which word?',pic:K('cold','b')+P('❄️⛄'),opts:['cold','hot','hungry'],a:'cold',full:"He's cold!"},
+ {q:'Which word?',say:'Look at the picture. Which word?',pic:K('hungry','b')+P('🍕🍔'),opts:['hungry','thirsty','angry'],a:'hungry',full:"He's hungry!"},
+ {q:'Which word?',say:'Look at the picture. Which word?',pic:K('scared','g')+P('👻'),opts:['scared','brave','tired'],a:'scared',full:"She's scared!"},
+ {q:'Which word?',say:'Look at the picture. Which word?',pic:K('brave','b')+P('🐉💪'),opts:['brave','scared','nervous','thirsty'],a:'brave',full:"He's brave!"}]},
+{icon:'👫',name:"We're / They're",
+ rule:"🙋 me + my friend → <b>We're</b> …<br>👉 other people → <b>They're</b> …",
+ qs:[
+ {q:"We're or They're?",say:"Look! We're or they're?",pic:WE('hot','☀️'),opts:["We're hot.","They're hot."],a:"We're hot."},
+ {q:"We're or They're?",say:"Look! We're or they're?",pic:THEY('tired','🛏️'),opts:["They're tired.","We're tired."],a:"They're tired."},
+ {q:"We're or They're?",say:"Look! We're or they're?",pic:THEY('sad'),opts:["They're sad.","We're sad.","They're happy."],a:"They're sad."},
+ {q:"We're or They're?",say:"Look! We're or they're?",pic:WE('thirsty','🥤'),opts:["We're thirsty.","They're thirsty.","We're hungry."],a:"We're thirsty."},
+ {q:"We're or They're?",say:"Look! We're or they're?",pic:THEY('nervous','📝'),opts:["They're nervous.","We're nervous.","They're brave.","We're brave."],a:"They're nervous."}]},
+{icon:'❓',name:'Are they…?',
+ rule:"👉 Are <b>they</b> …? → Yes, they are. / No, they aren't.<br>🙋🤝 Are <b>you</b> (two)? → Yes, we are. / No, we aren't.",
+ qs:[
+ {q:'Are they happy?',pic:THEY('happy'),opts:YN2,a:'Yes, they are.'},
+ {q:'Are they hot?',pic:THEY('cold','❄️'),opts:YN2,a:"No, they aren't.",full:"No, they aren't. They're cold."},
+ {q:'Are you hungry?',pic:WE('hungry','🍕'),opts:["Yes, we are.","No, we aren't.","Yes, they are."],a:'Yes, we are.'},
+ {q:'Are you scared?',pic:WE('brave','👻'),opts:YN4,a:"No, we aren't.",full:"No, we aren't. We're brave."},
+ {q:'Are they angry?',pic:THEY('angry'),opts:YN4,a:'Yes, they are.'}]},
+{icon:'👦👧',name:'Is he / Is she?',
+ rule:"👦 Is <b>he</b> …? → Yes, he is. / No, he isn't.<br>👧 Is <b>she</b> …? → Yes, she is. / No, she isn't.<br>No? Say the feeling: He's nervous.",
+ qs:[
+ {q:'Is he happy?',pic:K('happy','b'),opts:['Yes, he is.',"No, he isn't."],a:'Yes, he is.'},
+ {q:'Is she hot?',pic:K('cold','g')+P('❄️'),opts:['Yes, she is.',"No, she isn't."],a:"No, she isn't.",full:"No, she isn't. She's cold."},
+ {q:'Is he sad?',pic:K('nervous','b')+P('📝'),opts:['Yes, he is.',"No, he isn't. He's nervous.","No, he isn't. He's happy."],a:"No, he isn't. He's nervous."},
+ {q:'Is she tired?',pic:K('tired','g')+P('🛏️'),opts:['Yes, she is.','Yes, he is.',"No, she isn't."],a:'Yes, she is.'},
+ {q:'Is he scared?',pic:K('brave','b')+P('🐉'),opts:['Yes, he is.',"No, he isn't. He's brave.","No, she isn't. She's brave.","No, he isn't. He's tired."],a:"No, he isn't. He's brave."}]},
+{icon:'🔤',name:'ch / sh / th',
+ rule:'🚂 <b>ch</b> — like a train: ch-ch-ch<br>🤫 <b>sh</b> — quiet! shhh<br>👅 <b>th</b> — tongue between your teeth',
+ qs:[
+ {q:'chair · cheese',say:'chair. ... cheese.',sub:'ch, sh or th?',pic:W('🪑','🧀'),opts:CHS,a:'ch 🚂',full:'ch — chair, cheese'},
+ {q:'fish · sheep · shoes',say:'fish. ... sheep. ... shoes.',sub:'ch, sh or th?',pic:W('🐟','🐑','👟'),opts:CHS,a:'sh 🤫',full:'sh — fish, sheep, shoes'},
+ {q:'three · thumb',say:'three. ... thumb.',sub:'ch, sh or th?',pic:W('<b style="color:#8e5cf7">3</b>','👍'),opts:CHS,a:'th 👅',full:'th — three, thumb'},
+ {q:'bath · teeth',say:'bath. ... teeth.',sub:'ch, sh or th? (at the end!)',pic:W('🛁','🦷'),opts:CHS,a:'th 👅',full:'th — bath, teeth'},
+ {q:'teacher',say:'teacher. ... teacher.',sub:'ch, sh or th? (in the middle!)',pic:W('👩‍🏫'),opts:CHS,a:'ch 🚂',full:'ch — teacher'}]},
+{icon:'✂️',name:'Short ↔ long',
+ rule:"<b>'m</b> = am · <b>'re</b> = are · <b>'s</b> = is<br>The ' hides a letter!",
+ qs:[
+ {q:"I'm happy. I'm = ?",say:"I'm happy. Make it long!",pic:K('happy','b'),opts:['I am','You are','He is'],a:'I am',full:"I'm = I am"},
+ {q:"They're sad. They're = ?",say:"They're sad. Make it long!",pic:THEY('sad'),opts:['They are','We are','He is'],a:'They are',full:"They're = They are"},
+ {q:'She is tired. She is = ?',say:'She is tired. Make it short!',pic:K('tired','g'),opts:["She's","He's","We're"],a:"She's",full:"She is = She's"},
+ {q:'We are hungry. We are = ?',say:'We are hungry. Make it short!',pic:WE('hungry'),opts:["We're","You're","They're"],a:"We're",full:"We are = We're"},
+ {q:"You're brave. He's brave. = ?",say:"You're brave. He's brave. Make it long!",pic:K('brave','b','md')+K('brave','b','md'),opts:['You are · He is','We are · He is','You are · She is'],a:'You are · He is',full:"You're = You are · He's = He is"}]}
+];
+
+/* ---------- game ---------- */
+var score=[0,0],turn=0,done={},cur=null,sound=true,ROWS=5,TOTAL=CATS.length*ROWS;
+function $(i){return document.getElementById(i)}
+var gbVoice=null;
+function pickVoice(){if(!window.speechSynthesis)return;var v=speechSynthesis.getVoices();gbVoice=v.filter(function(x){return x.lang==='en-GB'||x.lang==='en_GB'})[0]||null}
+if(window.speechSynthesis){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function speak(t){if(!sound||!window.speechSynthesis)return;try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t.replace(/\blives\b/gi,'livs').replace(/\blive\b/gi,'liv'));u.lang='en-GB';if(gbVoice)u.voice=gbVoice;u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function build(){
+  var b=$('board');b.innerHTML='';
+  CATS.forEach(function(c){b.insertAdjacentHTML('beforeend','<div class="cat"><span>'+c.icon+'</span>'+c.name+'</div>')});
+  for(let r=0;r<ROWS;r++)CATS.forEach(function(c,ci){
+    var k=ci+'-'+r,t=document.createElement('button');t.className='tile';t.textContent=(r+1)*100;
+    if(done[k]){t.classList.add('done',done[k])}else t.onclick=function(){open(ci,r)};
+    b.appendChild(t)});
+}
+function paint(){for(var i=0;i<2;i++){$('s'+i).textContent=score[i];$('p'+i).classList.toggle('on',i===turn)}}
+function open(ci,r){
+  var c=CATS[ci],q=c.qs[r];cur={ci:ci,r:r,q:q,tries:0,solved:false};
+  $('mcat').textContent=c.icon+' '+c.name;$('mpts').textContent=(r+1)*100;
+  $('mq').textContent=q.q;$('mq').hidden=true;
+  $('msub').textContent=q.sub||'';$('msub').hidden=true;
+  $('mpic').innerHTML=q.pic||'';
+  $('mrule').innerHTML=c.rule;$('mrule').hidden=true;
+  $('mans').textContent='';
+  var o=$('mopts');o.innerHTML='';
+  shuffle(q.opts).forEach(function(t){var bt=document.createElement('button');bt.className='opt';bt.textContent=t;bt.onclick=function(){pick(bt,t)};o.appendChild(bt)});
+  $('btxt').hidden=false;$('b1').hidden=false;$('b2').hidden=true;
+  $('ov').classList.add('show');
+  setTimeout(function(){speak(q.say||q.q)},300);
+}
+function pick(bt,t){
+  if(cur.solved)return;
+  if(t===cur.q.a){
+    cur.solved=true;bt.classList.add('good');
+    $('mans').textContent=cur.q.full||cur.q.a;
+    $('mq').hidden=false;$('msub').hidden=false;$('btxt').hidden=true;
+    $('b2').hidden=false;burst(8);
+    speak((cur.q.full||cur.q.a).replace(/[🚂🤫👅·—=]/gu,' , '));
+  }else{
+    cur.tries++;bt.classList.remove('tried');void bt.offsetWidth;bt.classList.add('tried');
+    var rl=$('mrule');rl.hidden=false;rl.style.animation='none';void rl.offsetWidth;rl.style.animation='';
+    speak('Hmm. Look at the card and try again.');
+  }
+}
+$('bsay').onclick=function(){speak(cur.q.say||cur.q.q)};
+$('btxt').onclick=function(){$('mq').hidden=false;$('msub').hidden=false;$('btxt').hidden=true};
+$('bx').onclick=function(){if(window.speechSynthesis)speechSynthesis.cancel();$('ov').classList.remove('show')};
+function finish(){
+  var k=cur.ci+'-'+cur.r,pts=(cur.r+1)*100;
+  if(cur.tries===0){done[k]='win';score[turn]+=pts}else{done[k]='half';score[turn]+=pts/2}
+  turn=1-turn;$('ov').classList.remove('show');build();paint();
+  if(Object.keys(done).length===TOTAL)setTimeout(end,600);
+}
+$('bnext').onclick=finish;
+function nm(i){return $('p'+i).querySelector('.nm').textContent}
+function end(){
+  var t=score[0]===score[1]?'Draw! Great job, both!':(score[0]>score[1]?nm(0):nm(1))+' wins!';
+  $('endt').textContent=t;$('ends').textContent=nm(0)+': '+score[0]+'   '+nm(1)+': '+score[1];
+  $('endov').classList.add('show');burst(40);
+}
+function burst(n){var e=['⭐','🎉','✨','🌟','💛'];for(var i=0;i<n;i++){var d=document.createElement('div');d.className='conf';d.textContent=e[i%5];d.style.left=Math.random()*100+'vw';d.style.animationDuration=(1.5+Math.random()*2)+'s';document.body.appendChild(d);setTimeout(function(x){return function(){x.remove()}}(d),4000)}}
+function reset(){score=[0,0];turn=0;done={};build();paint();$('endov').classList.remove('show')}
+$('reset').onclick=function(){if(confirm('Start a new game?'))reset()};
+$('again').onclick=reset;
+$('snd').onclick=function(){sound=!sound;this.textContent=sound?'🔊 On':'🔇 Off';if(!sound&&window.speechSynthesis)speechSynthesis.cancel()};
+[0,1].forEach(function(i){$('p'+i).onclick=function(e){if(e.detail>1)return;var v=prompt('Name:',nm(i));if(v)$('p'+i).querySelector('.nm').textContent=v.slice(0,14)}});
+build();paint();
+</script>
+</body>
+</html>

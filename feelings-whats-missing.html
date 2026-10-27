@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What's missing? Feelings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+[hidden]{display:none!important}
+:root{
+  --bg:#fbf4e6; --ink:#2b2622; --muted:#7a6f63; --card:#fffdf8; --line:#eadfcb;
+  --sun:#ffb81c; --sun-d:#e09600; --ok:#2fb36b; --blue:#5a8ff0;
+  --curtain:#d6403a; --curtain-d:#a92b27;
+  --r:18px; --r-s:12px;
+  --shadow:0 4px 0 rgba(43,38,34,.12), 0 10px 24px rgba(43,38,34,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;min-height:100dvh;overflow:hidden}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sun-d);outline-offset:2px}
+
+.wrap{height:100dvh;max-width:1400px;margin:0 auto;padding:12px 16px;display:grid;gap:10px 14px;
+  grid-template-columns:1fr 330px;grid-template-rows:auto 1fr}
+header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:'Fredoka';font-weight:700;margin:0;font-size:32px;line-height:1}
+h1 small{display:block;font-size:.45em;color:var(--muted);font-weight:600;margin-top:3px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:9px 14px;font-weight:800;font-size:15px;min-height:44px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.seg{display:flex;background:var(--card);border:2px solid var(--line);border-radius:999px;padding:2px;align-items:center}
+.seg span{font-weight:800;font-size:14px;color:var(--muted);padding:0 6px 0 10px}
+.seg button{border:0;background:none;border-radius:999px;min-width:40px;min-height:38px;font:700 17px 'Fredoka'}
+.seg button[aria-pressed="true"]{background:var(--sun);box-shadow:0 2px 0 var(--sun-d)}
+
+.stars{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
+.stars span{font-size:22px;filter:grayscale(1);opacity:.3;transition:transform .3s}
+.stars span.on{filter:none;opacity:1;transform:scale(1.12)}
+.stars span.half{filter:none;opacity:.55}
+.stars span.cur{opacity:.85;filter:none;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.2)}}
+
+/* ===== сцена-театр ===== */
+.stage{position:relative;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);border:3px solid var(--ink);min-height:0;
+  background:linear-gradient(#ffeec7,#ffe2a6 78%,#d29c5c 78%,#c48a4c)}
+.valance{position:absolute;left:0;right:0;top:0;height:34px;z-index:6;
+  background:repeating-linear-gradient(90deg,var(--curtain) 0 34px,var(--curtain-d) 34px 40px);
+  border-bottom:4px solid #ffb81c;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.grid{position:absolute;left:3%;right:3%;top:52px;bottom:16px;display:grid;gap:14px;align-content:center;justify-content:center}
+.slot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px;
+  background:var(--card);border:3px solid rgba(43,38,34,.14);min-width:0;min-height:0;padding:6px 6px 4px;box-shadow:0 4px 0 rgba(43,38,34,.12)}
+.slot .pic{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+.slot svg{max-width:100%;max-height:100%;width:auto;height:100%}
+.slot.in .pic{animation:popin .45s backwards}
+@keyframes popin{from{transform:scale(0) rotate(-12deg)}}
+.lab{font:700 clamp(15px,2vw,24px) 'Fredoka';line-height:1.15;padding:2px 0 2px;white-space:nowrap}
+.stage.nolabels .lab{visibility:hidden}
+.stage.nolabels .slot.back .lab{visibility:visible}
+.slot .qm{display:none;font:700 clamp(40px,6vw,72px) 'Fredoka';color:var(--sun-d);animation:pulse 1.2s infinite;position:absolute;inset:0;align-items:center;justify-content:center}
+.slot.empty{border-style:dashed;border-color:var(--sun-d);background:rgba(255,255,255,.35);box-shadow:none}
+.slot.empty .pic,.slot.empty .lab{visibility:hidden}
+.slot.empty .qm{display:flex}
+.slot.empty.sil .pic{visibility:visible;filter:brightness(0);opacity:.13}
+.slot.back{border-color:var(--ok);background:#eafbf1}
+.slot.back .pic{animation:popin .5s}
+.slot.here{animation:wiggle .6s 2;border-color:var(--blue)}
+@keyframes wiggle{25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+
+.curtain{position:absolute;top:0;bottom:0;width:51%;z-index:5;transition:transform .7s cubic-bezier(.6,.05,.3,1);
+  background:repeating-linear-gradient(90deg,var(--curtain) 0 22px,var(--curtain-d) 22px 30px,var(--curtain) 30px 44px)}
+.curtain.l{left:0;transform:translateX(-100%);border-right:4px solid var(--curtain-d)}
+.curtain.r{right:0;transform:translateX(100%);border-left:4px solid var(--curtain-d)}
+.stage.closed .curtain{transform:none}
+.eyes{position:absolute;inset:0;z-index:7;display:flex;align-items:center;justify-content:center;
+  font:700 90px 'Fredoka';opacity:0;transition:opacity .3s;pointer-events:none}
+.stage.closed .eyes{opacity:1}
+
+/* ===== панель ===== */
+.side{display:flex;flex-direction:column;gap:10px;min-height:0}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 14px 16px;display:flex;flex-direction:column;gap:12px;text-align:center;flex:1;min-height:0;overflow:auto}
+.tag{align-self:center;font:800 13px 'Nunito';letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+  background:var(--bg);border-radius:999px;padding:4px 12px}
+.q{font:700 30px 'Fredoka';margin:0}
+.q .ru{display:block;font:700 15px 'Nunito';color:var(--muted);margin-top:4px}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{border:0;border-radius:var(--r-s);padding:12px 18px;font:700 19px 'Fredoka';background:var(--sun);min-height:52px;
+  box-shadow:0 4px 0 var(--sun-d);transition:transform .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sun-d)}
+.btn.ghost{background:var(--bg);box-shadow:0 4px 0 var(--line)}
+.btn.ok{background:var(--ok);color:#fff;box-shadow:0 4px 0 #1f8a50}
+.btn.big{font-size:23px;padding:14px 24px;min-height:60px}
+.words{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.words button{border:2px solid var(--line);background:#fff;border-radius:var(--r-s);font:700 17px 'Fredoka';min-height:44px;padding:4px 2px}
+.card:has(.words){gap:8px}
+.card:has(.words) .q{font-size:26px}
+.words button.soft{animation:wiggle .5s;border-color:var(--blue);background:#eef3ff}
+input.ans{font:700 22px 'Fredoka';padding:10px 14px;border:3px solid var(--line);border-radius:var(--r-s);width:100%;text-align:center;background:#fff}
+input.ans.soft{border-color:var(--sun)}
+.hint{background:#fff6dc;border:3px dashed var(--sun);border-radius:var(--r-s);padding:10px 12px;font-weight:800;font-size:16px;
+  display:flex;align-items:center;gap:12px;text-align:left;animation:glow 1.4s 2}
+@keyframes glow{50%{box-shadow:0 0 0 8px rgba(255,184,28,.35)}}
+.hint .sil{width:78px;height:78px;flex:none;filter:brightness(0);opacity:.28}
+.hint .sil svg{width:100%;height:100%}
+.hint b{font:700 28px 'Fredoka';letter-spacing:.12em;display:block}
+.fb{font:700 26px 'Fredoka';min-height:1.2em;margin:0}
+.fb.good{color:var(--ok)} .fb.try{color:var(--sun-d)}
+.end h2{font:700 40px 'Fredoka';margin:0}
+
+/* ===== старт ===== */
+.startScreen{position:fixed;inset:0;z-index:60;background:rgba(43,38,34,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.startBox{background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:28px 32px;text-align:center;display:grid;gap:16px;max-width:520px;width:100%}
+.startBox h2{font:700 44px 'Fredoka';margin:0}
+.startBox p{margin:0;color:var(--muted);font-weight:800}
+.startBox .pics{display:flex;justify-content:center;gap:4px}
+.startBox .pics svg{width:72px;height:72px}
+.startBox .seg{justify-self:center}
+
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+@media (max-width:860px){
+  body{overflow:auto}
+  .wrap{height:auto;grid-template-columns:1fr;grid-template-rows:auto}
+  .stage{aspect-ratio:4/3}
+  .grid{gap:8px}
+  h1{font-size:26px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>What's missing? <small>Feelings</small></h1>
+    <div class="tools">
+      <div class="seg" id="countSeg" role="group" aria-label="Карточек"><span>Карточек:</span>
+        <button data-n="6">6</button><button data-n="7">7</button><button data-n="8">8</button>
+      </div>
+      <button class="chip" id="answerBtn">🗣️ Отвечаем устно</button>
+      <button class="chip" id="labelBtn" aria-pressed="true">🏷️ Слова</button>
+      <button class="chip" id="soundBtn" aria-pressed="true">🔊 Звук</button>
+      <button class="chip" id="restartBtn">↺ Заново</button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="valance"></div>
+    <div class="grid" id="grid"></div>
+    <div class="curtain l"></div><div class="curtain r"></div>
+    <div class="eyes">🙈</div>
+  </div>
+
+  <div class="side">
+    <div class="stars" id="stars"></div>
+    <main class="card" id="card"></main>
+  </div>
+</div>
+
+<div class="startScreen" id="startScreen">
+  <div class="startBox">
+    <div class="pics" id="startPics"></div>
+    <h2>What's missing?</h2>
+    <p>Feelings · Сколько карточек на сцене?</p>
+    <div class="seg" id="countSeg2" role="group" aria-label="Карточек">
+      <button data-n="6">6</button><button data-n="7">7</button><button data-n="8">8</button>
+    </div>
+    <div class="row"><button class="btn big" id="startBtn">Start ▶</button></div>
+  </div>
+</div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ===================== НАСТРОЙКИ (можно править) ===================== */
+const CONFIG = {
+  cards: 6,        // сколько карточек на сцене (6–8), можно менять кнопками
+  roundsCount: 8,  // сколько раундов
+  words: ['happy','sad','hot','cold','hungry','thirsty','tired','angry','scared','brave','nervous'],
+  shuffleAfter: false // true = после занавеса карточки ещё и меняются местами (сложнее)
+};
+/* ===================================================================== */
+
+/* ===================== картинки ===================== */
+const INK = '#2b2622', SKIN = '#ffd3a8', HAIR = '#7a4a26', SHIRT = '#5a8ff0';
+const CX = 60, CY = 56, R = 30;
+const S = `stroke="${INK}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"`;
+
+function kid(o){
+  const skin = o.skin || SKIN;
+  const body = `<path d="M24 120q0-30 36-30t36 30z" fill="${o.shirt||SHIRT}" ${S}/>`;
+  const head = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${skin}" ${S}/>
+    <circle cx="29" cy="${CY+2}" r="6" fill="${skin}" ${S}/><circle cx="91" cy="${CY+2}" r="6" fill="${skin}" ${S}/>
+    <circle cx="${CX}" cy="${CY}" r="${R-1.5}" fill="${skin}"/>`;
+  const hair = o.hat ? '' : `<path d="M31 52q-2-28 29-28t29 28q-6-10-14-12q-4 7-15 7t-17-7q-8 3-12 12z" fill="${HAIR}" ${S}/>`;
+  const cheeks = o.cheeks===false ? '' : `<circle cx="42" cy="68" r="5" fill="${o.cheekC||'#ff9a8a'}" opacity=".6"/><circle cx="78" cy="68" r="5" fill="${o.cheekC||'#ff9a8a'}" opacity=".6"/>`;
+  return (o.back||'') + body + (o.mid||'') + head + hair + (o.hat||'') + cheeks + (o.brows||'') + (o.eyes||EYES.dot) + (o.mouth||'') + (o.front||'');
+}
+const EYES = {
+  dot:`<circle cx="49" cy="56" r="4.2" fill="${INK}"/><circle cx="71" cy="56" r="4.2" fill="${INK}"/><circle cx="50.5" cy="54.5" r="1.4" fill="#fff"/><circle cx="72.5" cy="54.5" r="1.4" fill="#fff"/>`,
+  happy:`<path d="M43 58q6-8 12 0M65 58q6-8 12 0" fill="none" ${S}/>`,
+  closed:`<path d="M43 56q6 5 12 0M65 56q6 5 12 0" fill="none" ${S}/><path d="M44 62q5 2 10 0M66 62q5 2 10 0" fill="none" stroke="#b98fd0" stroke-width="2" stroke-linecap="round"/>`,
+  wide:`<circle cx="49" cy="55" r="7" fill="#fff" ${S}/><circle cx="71" cy="55" r="7" fill="#fff" ${S}/><circle cx="49" cy="56" r="3" fill="${INK}"/><circle cx="71" cy="56" r="3" fill="${INK}"/>`,
+  side:`<circle cx="49" cy="56" r="4.2" fill="${INK}"/><circle cx="71" cy="56" r="4.2" fill="${INK}"/><circle cx="47.5" cy="54.5" r="1.4" fill="#fff"/><circle cx="69.5" cy="54.5" r="1.4" fill="#fff"/>`
+};
+const BROWS = {
+  sad:`<path d="M42 46l11 4M78 46l-11 4" fill="none" ${S}/>`,
+  angry:`<path d="M41 45l13 6M79 45l-13 6" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`,
+  up:`<path d="M42 44q7-5 13 0M65 44q7-5 13 0" fill="none" ${S}/>`,
+  worried:`<path d="M42 48q6-5 12-2M78 48q-6-5-12-2" fill="none" ${S}/>`
+};
+const drop = (x,y,s=1,c='#7cc4ff') => `<path d="M${x} ${y}q${-5*s} ${7*s} 0 ${10*s}q${5*s}-${3*s} 0-${10*s}z" fill="${c}" stroke="${INK}" stroke-width="1.8"/>`;
+
+const ART = {
+  happy: kid({
+    back:`<g fill="#ffb81c" stroke="${INK}" stroke-width="2"><path d="M14 22l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z"/><path d="M104 14l2.5 5.5 6 .7-4.4 4 1.2 6-5.3-3-5.3 3 1.2-6-4.4-4 6-.7z"/></g>
+      <path d="M100 44c-3-4-10-1-6 5l6 6 6-6c4-6-3-9-6-5z" fill="#ff6b8a" stroke="${INK}" stroke-width="2"/>`,
+    eyes:EYES.happy, cheekC:'#ff7a8a',
+    mouth:`<path d="M45 68q15 18 30 0z" fill="#c0392b" ${S}/><path d="M53 76q7 5 14 0q-7-4-14 0z" fill="#ff8fa3"/>`
+  }),
+  sad: kid({
+    back:`<path d="M84 24a9 9 0 0 1 17-4a8 8 0 0 1 10 8a7 7 0 0 1-3 13h-22a8 8 0 0 1-2-17z" fill="#b7c3d1" stroke="${INK}" stroke-width="2"/>
+      <path d="M90 46l-2 6M98 46l-2 6M106 46l-2 6" stroke="#5a8ff0" stroke-width="2.5" stroke-linecap="round"/>`,
+    brows:BROWS.sad, cheeks:false,
+    mouth:`<path d="M49 79q11-10 22 0" fill="none" ${S}/>`,
+    front: drop(44,61,1.2) + drop(76,63,1)
+  }),
+  hot: kid({
+    back:`<g stroke="#e09600" stroke-width="3" stroke-linecap="round"><path d="M102 4v6M102 34v6M84 22h6M114 22h6M89 9l4 4M111 31l4 4M115 9l-4 4M93 31l-4 4"/></g>
+      <circle cx="102" cy="22" r="10" fill="#ffd23f" stroke="${INK}" stroke-width="2"/>`,
+    skin:'#ffbf9a', cheekC:'#ff4f3f', brows:BROWS.worried,
+    mouth:`<path d="M50 72q10 6 20 0" fill="none" ${S}/><path d="M55 74q0 10 5 10t5-10z" fill="#ff7a8a" stroke="${INK}" stroke-width="2"/>`,
+    front: drop(36,36,1.1) + drop(84,40,1.2) + drop(28,70,.9)
+  }),
+  cold: kid({
+    back:`<g stroke="#7cc4ff" stroke-width="2.5" stroke-linecap="round"><path d="M12 22v14M5 29h14M7 24l10 10M17 24l-10 10"/><path d="M106 60v12M100 66h12M102 62l8 8M110 62l-8 8"/><path d="M104 14v10M99 19h10"/></g>`,
+    skin:'#e4ecf7', cheekC:'#ff8fb0',
+    hat:`<path d="M28 50q0-30 32-30t32 30z" fill="#e8483d" ${S}/><rect x="26" y="44" width="68" height="10" rx="5" fill="#fff" ${S}/><circle cx="60" cy="18" r="7" fill="#fff" ${S}/>`,
+    mouth:`<path d="M48 74q3-4 6 0t6 0t6 0t6 0" fill="none" stroke="#5a8ff0" stroke-width="3" stroke-linecap="round"/>`,
+    front:`<path d="M34 84q26 12 52 0v10q-26 12-52 0z" fill="#e8483d" ${S}/><path d="M70 92l4 22h12l-6-24z" fill="#e8483d" ${S}/>
+      <path d="M42 87v9M52 90v9M62 90v9M72 89v9M77 98h7M76 104h8" stroke="#fff" stroke-width="3"/>`
+  }),
+  hungry: kid({
+    eyes:EYES.side, brows:BROWS.up,
+    mouth:`<ellipse cx="60" cy="74" rx="8" ry="6" fill="#c0392b" ${S}/>`,
+    front: drop(70,78,.9,'#bfe7ff') +
+      `<ellipse cx="60" cy="108" rx="34" ry="9" fill="#fff" ${S}/><ellipse cx="60" cy="107" rx="22" ry="5" fill="none" stroke="#d9cfbf" stroke-width="2.5"/>
+      <path d="M104 86v34M100 86v8q0 5 4 5t4-5v-8" fill="none" stroke="#8b919e" stroke-width="3" stroke-linecap="round"/>
+      <path d="M90 22a9 9 0 1 1 16 0a9 9 0 1 1-16 0" fill="none"/>
+      <path d="M14 30q-6 0-6-6t8-8q4-6 11-2q7-2 9 5q5 3 1 9q-2 3-6 2z" fill="#fff" stroke="${INK}" stroke-width="2"/>
+      <circle cx="24" cy="23" r="5" fill="#fff" stroke="${INK}" stroke-width="1.5"/><path d="M21 23h6" stroke="#ff9f43" stroke-width="2"/>
+      <circle cx="26" cy="40" r="2.5" fill="#fff" stroke="${INK}" stroke-width="1.5"/>`
+  }),
+  thirsty: kid({
+    brows:BROWS.worried, eyes:EYES.side,
+    mouth:`<path d="M50 72q10 5 20 0" fill="none" ${S}/><path d="M55 74q0 11 5 11t5-11z" fill="#ff7a8a" stroke="${INK}" stroke-width="2"/>`,
+    front:`<path d="M90 76h24l-3 40h-18z" fill="#eaf7ff" fill-opacity=".8" ${S}/><path d="M93.5 110h17" stroke="#7cc4ff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M96 82v22" stroke="#fff" stroke-width="3" stroke-linecap="round"/>` + drop(102,94,.7)
+  }),
+  tired: kid({
+    eyes:EYES.closed, cheeks:false,
+    mouth:`<ellipse cx="60" cy="75" rx="7" ry="9" fill="#8e2a22" ${S}/>`,
+    back:`<g font-family="Fredoka,sans-serif" font-weight="700" fill="#7a6fd0" stroke="${INK}" stroke-width="1"><text x="90" y="40" font-size="18">Z</text><text x="100" y="24" font-size="14">z</text><text x="108" y="12" font-size="11">z</text></g>`,
+    front:`<path d="M80 96q4-6 10 0" fill="none"/><path d="M68 80q8-6 14-2q6 4 2 10" fill="${SKIN}" ${S}/>`
+  }),
+  angry: kid({
+    skin:'#ff9b80', cheekC:'#e8483d', brows:BROWS.angry,
+    mouth:`<rect x="48" y="70" width="24" height="10" rx="3" fill="#fff" ${S}/><path d="M48 75h24M56 70v10M64 70v10" stroke="${INK}" stroke-width="1.6"/>`,
+    back:`<g fill="#e5e1da" stroke="${INK}" stroke-width="2"><path d="M18 30q-8-2-6-10t10-5q4-8 12-3q6 4 2 10q-4 8-10 5q-4 5-8 3z"/><path d="M102 30q8-2 6-10t-10-5q-4-8-12-3q-6 4-2 10q4 8 10 5q4 5 8 3z"/></g>
+      <path d="M28 36l6 6M92 36l-6 6" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`,
+    front:`<path d="M80 36l4-4m0 4l-4-4M84 40l6-6" stroke="#e8483d" stroke-width="3" stroke-linecap="round"/>`
+  }),
+  scared: kid({
+    eyes:EYES.wide, brows:BROWS.up, cheeks:false, skin:'#ffe3c8',
+    mouth:`<ellipse cx="60" cy="76" rx="5" ry="6" fill="#8e2a22" ${S}/>`,
+    back:`<g stroke="${INK}" stroke-width="2.5" stroke-linecap="round" fill="none"><path d="M18 44q-4 6 0 12M12 40q-6 10 0 20"/><path d="M100 50q4 6 0 12"/></g>
+      <path d="M92 40q0-24 13-24t13 24v8l-4-3-4 3-5-3-4 3-5-3z" fill="#fff" ${S}/>
+      <circle cx="101" cy="28" r="2.5" fill="${INK}"/><circle cx="110" cy="28" r="2.5" fill="${INK}"/><ellipse cx="105.5" cy="36" rx="3" ry="2.5" fill="${INK}"/>`,
+    front: drop(84,44,.8)
+  }),
+  brave: kid({
+    shirt:'#e8483d',
+    back:`<path d="M30 96L6 120h108L90 96z" fill="#a92b27" ${S}/>`,
+    mid:`<path d="M60 98l4 8 9 1-6.5 6 1.5 9-8-4.5-8 4.5 1.5-9-6.5-6 9-1z" fill="#ffd23f" stroke="${INK}" stroke-width="2"/>`,
+    eyes:`<path d="M34 50q26-8 52 0l-2 12q-24-6-48 0z" fill="#2f5fc0" ${S}/><path d="M28 54l-8-4M28 58l-9 2" stroke="#2f5fc0" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="49" cy="56" rx="5" ry="4" fill="#fff"/><ellipse cx="71" cy="56" rx="5" ry="4" fill="#fff"/><circle cx="49" cy="56" r="2.6" fill="${INK}"/><circle cx="71" cy="56" r="2.6" fill="${INK}"/>`,
+    mouth:`<path d="M49 71q11 9 22 0" fill="none" ${S}/>`,
+    front:`<g fill="#ffd3a8" ${S}><circle cx="16" cy="96" r="9"/><circle cx="104" cy="96" r="9"/></g>
+      <g fill="#ffb81c" stroke="${INK}" stroke-width="1.8"><path d="M104 18l2 5 5 .5-4 3.5 1 5-4-2.5-4 2.5 1-5-4-3.5 5-.5z"/><path d="M14 22l2 5 5 .5-4 3.5 1 5-4-2.5-4 2.5 1-5-4-3.5 5-.5z"/></g>`
+  }),
+  nervous: kid({
+    brows:BROWS.worried, eyes:EYES.side,
+    mouth:`<path d="M50 76q3-3 6 0t6 0t6 0" fill="none" ${S}/>`,
+    front: drop(86,38,1.1) +
+      `<path d="M52 92q-2-12 4-14q2-3 5 0q3-2 5 1q2 4-2 13z" fill="${SKIN}" ${S}/><path d="M56 80v-4" stroke="${INK}" stroke-width="2"/>
+      <g transform="rotate(-8 18 102)"><rect x="2" y="80" width="34" height="40" rx="2" fill="#fff" ${S}/>
+      <text x="7" y="94" font-family="Fredoka,sans-serif" font-weight="700" font-size="10" fill="#e8483d">TEST</text>
+      <path d="M7 102h18M7 110h14" stroke="#c9c0b2" stroke-width="2.5" stroke-linecap="round"/>
+      <text x="25" y="114" font-family="Fredoka,sans-serif" font-weight="700" font-size="12" fill="${INK}">?</text></g>
+      <g font-family="Fredoka,sans-serif" font-weight="700" fill="#e09600" font-size="14"><text x="98" y="30">?</text><text x="106" y="44">?</text></g>`
+  })
+};
+const svgOf = k => `<svg viewBox="0 0 120 120" aria-hidden="true">${ART[k]}</svg>`;
+const cap = w => w[0].toUpperCase()+w.slice(1);
+
+/* ===================== состояние ===================== */
+const $ = s => document.querySelector(s);
+const stage = $('#stage'), grid = $('#grid'), card = $('#card');
+const MODES = ['oral','choose','write'];
+const MODE_TXT = {oral:'🗣️ Отвечаем устно', choose:'👆 Выбираем', write:'✍️ Пишем'};
+let mode = 'oral', sound = true, rounds = [], idx = 0, results = [], cur = null, tries = 0, hinted = false;
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+
+function build(){
+  const n = Math.max(3, Math.min(CONFIG.cards, CONFIG.words.length));
+  const missQueue = shuffle(CONFIG.words);
+  rounds = Array.from({length:CONFIG.roundsCount}, (_,i)=>{
+    const miss = missQueue[i % missQueue.length];
+    const others = shuffle(CONFIG.words.filter(w=>w!==miss)).slice(0, n-1);
+    return {miss, items: shuffle([miss, ...others])};
+  });
+  idx = 0; results = []; stage.classList.toggle('nolabels', $('#labelBtn').getAttribute('aria-pressed')!=='true');
+  start();
+}
+
+/* ===================== звук ===================== */
+let voice = null;
+function loadVoice(){
+  const vs = speechSynthesis.getVoices();
+  voice = vs.find(v=>/en[-_]GB/i.test(v.lang) && /female|libby|sonia|serena|kate|google uk english female/i.test(v.name))
+       || vs.find(v=>/en[-_]GB/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null;
+}
+if('speechSynthesis' in window){ loadVoice(); speechSynthesis.onvoiceschanged = loadVoice; }
+function say(t){
+  if(!sound || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t); u.lang = 'en-GB'; u.rate = .9; if(voice) u.voice = voice;
+  speechSynthesis.speak(u);
+}
+
+function drawStars(){
+  const s = $('#stars'); s.innerHTML = '';
+  rounds.forEach((r,i)=>{
+    const e = document.createElement('span'); e.textContent = '⭐';
+    if(results[i]===2) e.className='on'; else if(results[i]===1) e.className='half'; else if(i===idx) e.className='cur';
+    s.appendChild(e);
+  });
+}
+
+/* ===================== сцена ===================== */
+function layout(n){
+  const narrow = window.innerWidth < 860;
+  let c = n<=4 ? n : n<=6 ? 3 : n<=8 ? 4 : 6;
+  if(narrow && n>6 && n<=8) c = 4;
+  const r = Math.ceil(n/c);
+  const W = grid.parentElement.clientWidth*0.94, H = grid.parentElement.clientHeight - 68;
+  const gap = narrow ? 8 : 14;
+  // карточка 4:5, вписываем в сцену
+  let cw = Math.min((W - gap*(c-1))/c, (H - gap*(r-1))/r * 0.8);
+  cw = Math.max(60, Math.floor(cw));
+  grid.style.gridTemplateColumns = `repeat(${c}, ${cw}px)`;
+  grid.style.gridTemplateRows = `repeat(${r}, ${Math.floor(cw*1.25)}px)`;
+}
+function slotEl(k){
+  const d = document.createElement('div'); d.className = 'slot in'; d.dataset.k = k;
+  d.innerHTML = `<div class="pic">${svgOf(k)}</div><span class="lab">${k}</span><span class="qm">?</span>`;
+  return d;
+}
+function drawItems(items){
+  grid.innerHTML = ''; layout(items.length);
+  items.forEach((k,i)=>{ const s = slotEl(k); s.querySelector('.pic').style.animationDelay = (i*0.07)+'s'; grid.appendChild(s); });
+}
+
+/* ===================== раунд ===================== */
+function head(){ return `<div class="tag">🙈 Что пропало? · ${idx+1} / ${rounds.length}</div>`; }
+function start(){
+  cur = rounds[idx]; tries = 0; hinted = false; drawStars();
+  stage.classList.remove('closed');
+  drawItems(cur.items);
+  card.innerHTML = head() + `
+    <p class="q">Look and remember! 👀<span class="ru">Посмотри и запомни. Можно назвать всё вслух</span></p>
+    <div class="row"><button class="btn big" id="close">🙈 Закрываем глаза</button></div>`;
+  say('Look and remember!');
+  $('#close').onclick = hide;
+}
+function hide(){
+  $('#close').disabled = true;
+  stage.classList.add('closed'); say('Close your eyes!');
+  setTimeout(()=>{
+    const items = CONFIG.shuffleAfter ? shuffle(cur.items) : cur.items;
+    drawItems(items);
+    grid.querySelectorAll('.slot').forEach(s=>{ s.classList.remove('in'); if(s.dataset.k===cur.miss) s.classList.add('empty'); });
+    setTimeout(()=>{ stage.classList.remove('closed'); ask(); }, 500);
+  }, 1400);
+}
+function ask(){
+  card.innerHTML = head() + `
+    <p class="q">What's missing?<span class="ru">Чего не хватает?</span></p>
+    <div id="zone">${answerZone()}</div>
+    <div class="row"><button class="btn ghost" id="hintB">💡 Подсказка</button><button class="btn ghost" id="peek">👀 Ещё раз</button></div>
+    <div id="hintBox"></div><p class="fb" id="fb"></p>`;
+  say("What's missing?");
+  $('#hintB').onclick = showHint;
+  $('#peek').onclick = peek;
+  wireAnswer();
+}
+function peek(){
+  hinted = true;
+  const e = grid.querySelector('.slot.empty'); if(!e) return;
+  e.classList.remove('empty'); e.classList.add('in');
+  setTimeout(()=>{ e.classList.remove('in'); e.classList.add('empty'); }, 1200);
+}
+function showHint(){
+  hinted = true;
+  const w = cur.miss;
+  const mask = w[0].toUpperCase() + ' ' + w.slice(1).replace(/./g,'_ ').trim();
+  $('#hintBox').innerHTML = `<div class="hint"><div class="sil">${svgOf(w)}</div><div>Смотри на тень!<b>${mask}</b></div></div>`;
+  const e = grid.querySelector('.slot.empty'); if(e) e.classList.add('sil');
+}
+
+/* ===================== ответы ===================== */
+function norm(s){ return s.toLowerCase().replace(/[’']/g,'').replace(/^i\s*a?m\s+/,'').replace(/[^a-z]/g,''); }
+function answerZone(){
+  if(mode==='oral') return `<div class="row"><button class="btn ok big" id="yes">✓ Верно</button><button class="btn ghost big" id="no">🤔 Не то</button></div>`;
+  if(mode==='choose') return `<div class="words">${CONFIG.words.map(w=>`<button data-w="${w}">${w}</button>`).join('')}</div>`;
+  return `<div class="row"><input class="ans" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="пиши здесь"><button class="btn" id="check">Проверить</button></div>`;
+}
+function soft(msg){
+  tries++;
+  $('#fb').className = 'fb try';
+  $('#fb').textContent = msg || (tries>=2 ? 'Почти! Смотри на тень 👇' : 'Попробуй ещё раз! 😊');
+  showHint();
+}
+function wireAnswer(){
+  if(mode==='oral'){ $('#yes').onclick = right; $('#no').onclick = ()=>soft(); }
+  else if(mode==='choose'){
+    card.querySelectorAll('.words button').forEach(b=>{
+      b.onclick = ()=>{
+        const w = b.dataset.w;
+        if(w===cur.miss) return right();
+        b.classList.remove('soft'); void b.offsetWidth; b.classList.add('soft');
+        const onStage = grid.querySelector(`.slot[data-k="${w}"]:not(.empty)`);
+        if(onStage){ onStage.classList.remove('here'); void onStage.offsetWidth; onStage.classList.add('here');
+          soft(`«${w}» — вот же он, на сцене! 😊`); }
+        else soft();
+      };
+    });
+  } else {
+    const inp = $('#ans'); inp.focus();
+    const go = ()=>{
+      if(!inp.value.trim()) return;
+      if(norm(inp.value)===norm(cur.miss)) right();
+      else { inp.classList.add('soft'); soft(); }
+    };
+    $('#check').onclick = go; inp.onkeydown = e=>{ if(e.key==='Enter') go(); };
+  }
+}
+function right(){
+  $('#zone').remove(); card.querySelectorAll('.row').forEach(r=>r.remove()); $('#hintBox').innerHTML = '';
+  const e = grid.querySelector('.slot.empty'); e.classList.remove('empty','sil'); e.classList.add('back');
+  const w = cur.miss;
+  say(`${cap(w)}! I'm ${w}.`);
+  results[idx] = (tries===0 && !hinted) ? 2 : 1; drawStars();
+  $('#fb').className='fb good'; $('#fb').innerHTML = `🎉 ${cap(w)}!<br>I'm ${w}.`;
+  const nx = document.createElement('div'); nx.className='row';
+  nx.innerHTML = `<button class="btn ghost" id="again">🔊 Ещё раз</button><button class="btn big" id="next">${idx<rounds.length-1?'Дальше ➜':'Финиш 🏁'}</button>`;
+  card.appendChild(nx); $('#next').focus();
+  $('#again').onclick = ()=>say(`${cap(w)}! I'm ${w}.`);
+  $('#next').onclick = ()=>{ idx++; idx<rounds.length ? start() : finish(); };
+  if(results[idx]===2) confetti(25);
+}
+function finish(){
+  drawStars(); stage.classList.remove('closed','nolabels');
+  drawItems(CONFIG.words);
+  const full = results.filter(x=>x===2).length, half = results.filter(x=>x===1).length;
+  card.innerHTML = `<div class="end"><h2>Great job! 🏆</h2>
+    <p class="q" style="font-size:24px">⭐ ${full} ${half?`<br>✨ ${half} с подсказкой`:''}</p>
+    <div class="row" style="margin-top:12px"><button class="btn big" id="again2">↺ Ещё раз</button></div></div>`;
+  $('#again2').onclick = build;
+  say('Great job!'); confetti(90);
+}
+function confetti(n){
+  const box = $('#confetti'), cs = ['#ffb81c','#e8483d','#5a8ff0','#2fb36b','#ff7a45'];
+  for(let i=0;i<n;i++){
+    const c = document.createElement('i');
+    c.style.left = Math.random()*100+'vw'; c.style.background = cs[i%cs.length];
+    c.style.animationDuration = (1.6+Math.random()*1.6)+'s'; c.style.animationDelay = Math.random()*.4+'s';
+    box.appendChild(c); setTimeout(()=>c.remove(), 3800);
+  }
+}
+
+/* ===================== кнопки ===================== */
+function setCount(n){
+  CONFIG.cards = n;
+  document.querySelectorAll('#countSeg button, #countSeg2 button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.n===n));
+}
+document.querySelectorAll('#countSeg button').forEach(b=>b.onclick = ()=>{ setCount(+b.dataset.n); build(); });
+document.querySelectorAll('#countSeg2 button').forEach(b=>b.onclick = ()=>setCount(+b.dataset.n));
+setCount(CONFIG.cards);
+
+$('#answerBtn').onclick = e=>{
+  mode = MODES[(MODES.indexOf(mode)+1) % MODES.length];
+  e.currentTarget.textContent = MODE_TXT[mode];
+  const z = $('#zone'); if(z){ z.innerHTML = answerZone(); wireAnswer(); }
+};
+$('#labelBtn').onclick = e=>{ const on = e.currentTarget.getAttribute('aria-pressed')!=='true'; e.currentTarget.setAttribute('aria-pressed', on); stage.classList.toggle('nolabels', !on); };
+$('#soundBtn').onclick = e=>{ sound = !sound; e.currentTarget.setAttribute('aria-pressed', sound); e.currentTarget.textContent = sound?'🔊 Звук':'🔇 Без звука'; if(!sound) speechSynthesis.cancel(); };
+$('#restartBtn').onclick = build;
+window.addEventListener('resize', ()=>{ if(grid.children.length) layout(grid.children.length); });
+
+$('#startPics').innerHTML = ['happy','scared','tired','brave'].map(svgOf).join('');
+$('#startBtn').onclick = ()=>{
+  if('speechSynthesis' in window){ loadVoice(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }
+  $('#startScreen').hidden = true;
+  build();
+};
+</script>
+</body>
+</html>
