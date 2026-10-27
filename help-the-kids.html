@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Help the Kids!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF6EA; --bg2:#FFE9CF; --ink:#2B2A33; --muted:#6B6675; --card:#FFFFFF;
+  --accent:#FF6B4A; --accent-dk:#E2502F; --ok:#2FA36B; --line:#F1DCC2;
+  --r:22px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{
+  min-height:100dvh; background:radial-gradient(120% 90% at 50% 0%, #FFFBF4 0%, var(--bg) 55%, var(--bg2) 100%);
+  color:var(--ink); font-family:"Nunito",system-ui,sans-serif; display:flex; flex-direction:column; align-items:center;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font-family:inherit;cursor:pointer;border:none}
+button:focus-visible{outline:4px solid #2B7FFF;outline-offset:3px}
+.wrap{width:min(920px,100%);padding:16px 16px 28px;display:flex;flex-direction:column;gap:14px;flex:1}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-family:"Baloo 2",sans-serif;font-size:clamp(26px,4.6vw,40px);margin:0;line-height:1;letter-spacing:.3px}
+h1 span{color:var(--accent)}
+.hud{display:flex;gap:8px;align-items:center}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;font-size:17px;display:flex;align-items:center;gap:6px}
+.iconbtn{width:44px;height:44px;border-radius:50%;background:var(--card);border:2px solid var(--line);font-size:20px;display:grid;place-items:center}
+
+/* stage */
+.stage{position:relative;background:var(--card);border:3px solid var(--line);border-radius:30px;min-height:360px;overflow:hidden;
+  display:grid;grid-template-columns:1fr 1fr;align-items:end;padding:18px 18px 0}
+.stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46px;background:#BFE6A8;border-top:4px solid #A6D88B;z-index:0}
+.kidbox{position:relative;z-index:1;display:flex;justify-content:center;align-items:flex-end;height:320px}
+.kid{width:210px;height:300px;transform-origin:50% 100%}
+.kid.enter{animation:enter .7s cubic-bezier(.2,.9,.3,1.2) both}
+.kid.leave{animation:leave .6s ease-in both}
+.kid.shake{animation:shake .5s}
+.kid.bounce{animation:bounce .7s}
+.kid.shiver{animation:shiver .18s infinite}
+@keyframes enter{from{transform:translateX(-140%) rotate(-6deg)}to{transform:none}}
+@keyframes leave{to{transform:translateX(160%) rotate(6deg);opacity:0}}
+@keyframes shake{0%,100%{transform:none}20%{transform:rotate(-6deg)}40%{transform:rotate(6deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(3deg)}}
+@keyframes bounce{0%,100%{transform:none}40%{transform:translateY(-26px)}70%{transform:translateY(-6px)}}
+@keyframes shiver{0%{transform:translateX(-1.5px)}50%{transform:translateX(1.5px)}100%{transform:translateX(-1.5px)}}
+
+.bubblebox{position:relative;z-index:1;align-self:center;padding-bottom:60px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.bubble{position:relative;background:#fff;border:3px solid var(--ink);border-radius:26px;padding:16px 22px;font-family:"Baloo 2",sans-serif;
+  font-size:clamp(28px,5.2vw,44px);font-weight:800;line-height:1.05;box-shadow:0 6px 0 rgba(43,42,51,.12);opacity:0;transform:scale(.6);transform-origin:0% 80%;transition:transform .35s cubic-bezier(.2,.9,.3,1.3),opacity .2s}
+.bubble.show{opacity:1;transform:none}
+.bubble::before{content:"";position:absolute;left:-18px;bottom:22px;border:12px solid transparent;border-right:16px solid var(--ink)}
+.bubble::after{content:"";position:absolute;left:-11px;bottom:25px;border:9px solid transparent;border-right:12px solid #fff}
+.say{background:var(--bg2);border-radius:999px;padding:8px 16px;font-weight:800;font-size:16px;color:var(--ink);display:flex;gap:6px;align-items:center}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.bubble.ear{font-size:clamp(40px,7vw,58px);padding:10px 26px}
+.hint{display:flex;align-items:center;gap:12px;justify-content:center;background:#FFF3C4;border:3px solid #F2C94C;border-radius:var(--r);padding:10px 16px;font-weight:800;font-size:clamp(17px,3vw,22px);animation:pop .35s cubic-bezier(.2,.9,.3,1.3)}
+.hint .big-em{font-size:34px}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:none;opacity:1}}
+
+/* choices */
+.ask{text-align:center;font-family:"Baloo 2",sans-serif;font-size:clamp(20px,3.6vw,28px);font-weight:800;margin:4px 0 0}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.choice{background:var(--card);border:3px solid var(--line);border-radius:var(--r);padding:12px 8px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  box-shadow:0 6px 0 var(--line);transition:transform .15s, box-shadow .15s, border-color .15s}
+.choice:hover{transform:translateY(-3px)}
+.choice:active{transform:translateY(3px);box-shadow:0 2px 0 var(--line)}
+.choice .em{font-size:clamp(46px,9vw,66px);line-height:1.1}
+.choice .lb{font-weight:800;font-size:clamp(16px,2.8vw,20px)}
+.choice.tried{animation:shake .45s}
+.choice.right{border-color:var(--ok);box-shadow:0 6px 0 #9fdcbc}
+.choice[disabled]{pointer-events:none}
+
+.fly{position:fixed;z-index:50;font-size:64px;pointer-events:none;transition:transform .6s cubic-bezier(.5,0,.3,1),opacity .6s}
+
+/* progress */
+.track{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.dot{width:34px;height:34px;border-radius:50%;background:var(--card);border:2px solid var(--line);display:grid;place-items:center;font-size:18px}
+.dot.done{background:#FFE58A;border-color:#F2C94C}
+.dot.now{border-color:var(--accent);border-width:3px}
+
+/* screens */
+.screen{position:fixed;inset:0;background:rgba(255,246,234,.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:40;padding:24px;text-align:center}
+.screen.show{display:flex}
+.screen h2{font-family:"Baloo 2",sans-serif;font-size:clamp(34px,7vw,60px);margin:0;line-height:1}
+.screen p{font-size:20px;font-weight:700;color:var(--muted);margin:0;max-width:560px}
+.big{background:var(--accent);color:#fff;font-weight:800;font-size:24px;padding:16px 38px;border-radius:999px;box-shadow:0 6px 0 var(--accent-dk)}
+.big:active{transform:translateY(4px);box-shadow:0 2px 0 var(--accent-dk)}
+.happyrow{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:760px}
+.happyrow svg{width:82px;height:118px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:620px}
+.legend span{background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800}
+
+@media (max-width:620px){
+  .stage{grid-template-columns:1fr;padding-top:12px}
+  .bubblebox{order:-1;align-items:center;padding-bottom:0}
+  .bubble::before,.bubble::after{display:none}
+  .kidbox{height:250px}
+  .kid{width:160px;height:230px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Help the <span>kids!</span></h1>
+    <div class="hud">
+      <div class="pill" aria-label="stars">⭐ <span id="score">0</span></div>
+      <button class="iconbtn" id="mute" aria-label="sound on/off">🔊</button>
+    </div>
+  </header>
+
+  <div class="track" id="track"></div>
+
+  <section class="stage" aria-live="polite">
+    <div class="kidbox" id="kidbox"></div>
+    <div class="bubblebox">
+      <div class="bubble" id="bubble"></div>
+      <div class="btnrow">
+        <button class="say" id="again">🔊 Послушать ещё раз</button>
+        <button class="say" id="showtext">👀 Показать текст</button>
+      </div>
+    </div>
+  </section>
+
+  <p class="ask" id="ask">Help!</p>
+  <div class="hint" id="hint" hidden></div>
+  <div class="choices" id="choices"></div>
+</div>
+
+<div class="screen show" id="start">
+  <h2>Help the kids! 🧒</h2>
+  <p>Listen! Help the kids. Make them happy!</p>
+  <div class="legend"><span>🥵 hot</span><span>🥶 cold</span><span>😋 hungry</span><span>🥤 thirsty</span><span>😢 sad</span></div>
+  <button class="big" id="go">Start ▶</button>
+</div>
+
+<div class="screen" id="end">
+  <h2>They're happy now! 🎉</h2>
+  <div class="happyrow" id="happyrow"></div>
+  <p id="endtext"></p>
+  <button class="big" id="restart">Play again ↻</button>
+</div>
+
+<script>
+/* ===================== CONTENT (edit here) ===================== */
+const NEEDS = {
+  hot:     { line:"I'm hot!",     em:"🥵", items:[{e:"🍦",t:"ice cream"},{e:"🧢",t:"a cap"},{e:"⛱️",t:"an umbrella"}] },
+  cold:    { line:"I'm cold!",    em:"🥶", items:[{e:"🧥",t:"a jacket"},{e:"🧣",t:"a scarf"},{e:"🧤",t:"gloves"}] },
+  hungry:  { line:"I'm hungry!",  em:"😋", items:[{e:"🍎",t:"an apple"},{e:"🥪",t:"a sandwich"},{e:"🍕",t:"pizza"}] },
+  thirsty: { line:"I'm thirsty!", em:"🥤", items:[{e:"💧",t:"water"},{e:"🧃",t:"juice"},{e:"🥛",t:"milk"}] },
+  sad:     { line:"I'm sad!",     em:"😢", items:[{e:"🧸",t:"a teddy"},{e:"🤗",t:"a hug"},{e:"🎁",t:"a present"}] }
+};
+/* items that would also make sense for another need: never offer them as wrong answers */
+const CLASH = { hot:["thirsty"], thirsty:["hot","hungry"], hungry:["thirsty"] };
+const ROUNDS = 8;               // how many kids in one game
+const THANKS = "Thank you! I'm happy now!";
+const NOPE = "No, thank you!";
+/* =============================================================== */
+
+const LOOKS = [
+  {skin:"#F6D2B4",hair:"#5A3A22",style:"short",shirt:"#4F9DDE",pants:"#2F4B7C",girl:false},
+  {skin:"#E9B98F",hair:"#1F1A17",style:"bunches",shirt:"#F07CA8",pants:"#6B4C9A",girl:true},
+  {skin:"#C98E64",hair:"#2B1E14",style:"curly",shirt:"#F2B23A",pants:"#3E6B48",girl:false},
+  {skin:"#F7DCC5",hair:"#E2A33C",style:"pony",shirt:"#46B39A",pants:"#2F4B7C",girl:true},
+  {skin:"#8D5B3E",hair:"#1A1210",style:"short",shirt:"#E8584A",pants:"#36404F",girl:false},
+  {skin:"#F3C9A4",hair:"#B2502E",style:"bob",shirt:"#8E7CE0",pants:"#3B3F63",girl:true},
+  {skin:"#DDA67E",hair:"#3A2617",style:"spiky",shirt:"#2FA36B",pants:"#4A3A2A",girl:false},
+  {skin:"#FAE0CC",hair:"#2C2C2C",style:"bunches",shirt:"#FF8A3D",pants:"#365C8D",girl:true}
+];
+
+function hairSVG(l){
+  const c=l.hair;
+  switch(l.style){
+    case "bunches": return `<path d="M58 70 Q60 30 100 28 Q140 30 142 70 Q130 52 100 50 Q70 52 58 70Z" fill="${c}"/>
+      <circle cx="52" cy="72" r="16" fill="${c}"/><circle cx="148" cy="72" r="16" fill="${c}"/>`;
+    case "pony": return `<path d="M58 72 Q58 28 100 26 Q142 28 142 72 Q128 50 100 48 Q72 50 58 72Z" fill="${c}"/>
+      <path d="M138 50 Q170 60 160 110 Q150 90 138 76Z" fill="${c}"/>`;
+    case "bob": return `<path d="M54 98 Q50 30 100 26 Q150 30 146 98 Q140 70 134 60 Q100 46 66 60 Q60 70 54 98Z" fill="${c}"/>`;
+    case "curly": return `<g fill="${c}">${[60,74,88,102,116,130,140].map((x,i)=>`<circle cx="${x}" cy="${44-(i%2)*6}" r="14"/>`).join("")}</g>`;
+    case "spiky": return `<path d="M60 66 L64 34 L78 50 L86 26 L98 46 L110 24 L118 46 L132 30 L136 52 L142 66 Q100 46 60 66Z" fill="${c}"/>`;
+    default: return `<path d="M60 68 Q62 30 100 28 Q138 30 140 68 Q122 50 100 50 Q76 50 60 68Z" fill="${c}"/>`;
+  }
+}
+function faceSVG(mood){
+  const eyes = {
+    happy:`<path d="M80 86 Q86 79 92 86" stroke="#2B2A33" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M108 86 Q114 79 120 86" stroke="#2B2A33" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+    sad:`<circle cx="86" cy="88" r="5" fill="#2B2A33"/><circle cx="114" cy="88" r="5" fill="#2B2A33"/><path d="M76 82 L92 76 M124 82 L108 76" stroke="#2B2A33" stroke-width="3" stroke-linecap="round"/>`,
+    cold:`<path d="M80 88 L92 86 M108 86 L120 88" stroke="#2B2A33" stroke-width="4" stroke-linecap="round"/>`,
+    hot:`<path d="M80 86 L92 90 M120 86 L108 90" stroke="#2B2A33" stroke-width="4" stroke-linecap="round"/>`,
+    hungry:`<circle cx="86" cy="87" r="5" fill="#2B2A33"/><circle cx="114" cy="87" r="5" fill="#2B2A33"/>`,
+    thirsty:`<circle cx="86" cy="87" r="5" fill="#2B2A33"/><circle cx="114" cy="87" r="5" fill="#2B2A33"/>`
+  }[mood];
+  const mouth = {
+    happy:`<path d="M82 106 Q100 126 118 106 Z" fill="#B23A3A"/><path d="M90 113 Q100 120 110 113" fill="#FF8C8C"/>`,
+    sad:`<path d="M86 116 Q100 104 114 116" stroke="#2B2A33" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+    cold:`<path d="M84 110 L90 106 L96 112 L102 106 L108 112 L114 106 L118 110" stroke="#2B2A33" stroke-width="3.5" fill="none" stroke-linejoin="round"/>`,
+    hot:`<ellipse cx="100" cy="111" rx="10" ry="7" fill="#B23A3A"/>`,
+    hungry:`<path d="M86 110 Q93 104 100 110 Q107 116 114 110" stroke="#2B2A33" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+    thirsty:`<path d="M88 106 L112 106" stroke="#2B2A33" stroke-width="4" stroke-linecap="round"/><path d="M96 106 Q100 124 106 106Z" fill="#FF7A8A"/>`
+  }[mood];
+  const cheeks = mood==="cold" ? "#9CC9F2" : mood==="hot" ? "#FF6B6B" : "#FFB0A0";
+  return eyes+mouth+`<circle cx="74" cy="104" r="7" fill="${cheeks}" opacity=".7"/><circle cx="126" cy="104" r="7" fill="${cheeks}" opacity=".7"/>`;
+}
+function fxSVG(mood){
+  switch(mood){
+    case "hot": return `<g><circle cx="168" cy="26" r="16" fill="#FFC93C"/>${[0,45,90,135,180,225,270,315].map(a=>`<line x1="168" y1="26" x2="${168+26*Math.cos(a*Math.PI/180)}" y2="${26+26*Math.sin(a*Math.PI/180)}" stroke="#FFC93C" stroke-width="4" stroke-linecap="round"/>`).join("")}
+      <path d="M140 72 Q146 84 140 88 Q134 84 140 72Z" fill="#7CC6F2"/><path d="M56 80 Q61 90 56 94 Q51 90 56 80Z" fill="#7CC6F2"/></g>`;
+    case "cold": return `<g fill="#BFE3FF" stroke="#7FB8E6" stroke-width="1.5">${[[24,30],[176,40],[34,120],[170,120],[150,14]].map(([x,y])=>`<text x="${x}" y="${y}" font-size="20" text-anchor="middle">❄</text>`).join("")}</g>`;
+    case "sad": return `<path d="M84 96 Q80 108 84 112 Q88 108 84 96Z" fill="#6FB7F0"/><path d="M116 96 Q112 108 116 112 Q120 108 116 96Z" fill="#6FB7F0"/>`;
+    case "hungry": return `<g stroke="#2B2A33" stroke-width="3" fill="none" stroke-linecap="round"><path d="M86 200 q6 -6 12 0 q6 6 12 0"/><path d="M90 212 q6 -6 12 0 q6 6 12 0"/></g>`;
+    case "thirsty": return `<g stroke="#E0A84C" stroke-width="3" stroke-linecap="round"><path d="M130 116 l10 4"/><path d="M128 124 l9 8"/><path d="M70 116 l-10 4"/></g>`;
+    case "happy": return `<g font-size="18">${[[30,40],[172,52],[40,150]].map(([x,y])=>`<text x="${x}" y="${y}" text-anchor="middle">✨</text>`).join("")}</g>`;
+    default: return "";
+  }
+}
+function kidSVG(l, mood){
+  return `<svg viewBox="0 0 200 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="kid">
+    <rect x="76" y="232" width="20" height="44" rx="8" fill="${l.pants}"/><rect x="104" y="232" width="20" height="44" rx="8" fill="${l.pants}"/>
+    <ellipse cx="84" cy="278" rx="16" ry="8" fill="#3B3340"/><ellipse cx="116" cy="278" rx="16" ry="8" fill="#3B3340"/>
+    ${l.girl?`<path d="M64 228 L136 228 L146 252 L54 252Z" fill="${l.shirt}"/>`:""}
+    <rect x="62" y="150" width="76" height="90" rx="26" fill="${l.shirt}"/>
+    <rect x="44" y="158" width="22" height="62" rx="11" fill="${l.shirt}" transform="rotate(${mood==="happy"?-150:12} 55 162)"/>
+    <rect x="134" y="158" width="22" height="62" rx="11" fill="${l.shirt}" transform="rotate(${mood==="happy"?150:-12} 145 162)"/>
+    <rect x="90" y="132" width="20" height="24" rx="6" fill="${l.skin}"/>
+    <circle cx="100" cy="90" r="46" fill="${l.skin}"/>
+    <circle cx="54" cy="94" r="8" fill="${l.skin}"/><circle cx="146" cy="94" r="8" fill="${l.skin}"/>
+    ${hairSVG(l)}
+    ${faceSVG(mood)}
+    ${fxSVG(mood)}
+  </svg>`;
+}
+
+/* ---------- audio ---------- */
+let muted=false, actx;
+function tone(f,d=.18,t=0,type="triangle",v=.25){
+  if(muted) return;
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==="suspended") actx.resume();
+    const o=actx.createOscillator(),g=actx.createGain(),n=actx.currentTime+t; o.type=type;o.frequency.value=f;
+    g.gain.setValueAtTime(.0001,n);g.gain.exponentialRampToValueAtTime(v,n+.02);g.gain.exponentialRampToValueAtTime(.0001,n+d);
+    o.connect(g).connect(actx.destination);o.start(n);o.stop(n+d+.05);}catch(e){}
+}
+const yay=()=>{[523,659,784,1047].forEach((f,i)=>tone(f,.25,i*.09))};
+const boo=()=>{tone(220,.22,0,"sine",.2);tone(196,.25,.12,"sine",.2)};
+function speak(text){
+  if(muted||!("speechSynthesis" in window)) return;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); const vs=speechSynthesis.getVoices();
+    const v=vs.find(x=>/en-GB/i.test(x.lang))||vs.find(x=>/^en/i.test(x.lang)); if(v)u.voice=v; u.lang=v?v.lang:"en-GB"; u.rate=.85; u.pitch=1.25; speechSynthesis.speak(u);}catch(e){}
+}
+if("speechSynthesis" in window){ try{speechSynthesis.getVoices()}catch(e){} }
+
+/* ---------- game ---------- */
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let queue=[], idx=0, score=0, firstTry=true, kidEl, current, textShown=false, lastLine="";
+function setBubble(text,force){
+  lastLine=text; const b=$("bubble");
+  if(textShown||force){ b.textContent=text; b.classList.remove("ear"); }
+  else { b.textContent="🔊"; b.classList.add("ear"); }
+}
+
+function buildQueue(){
+  const keys=Object.keys(NEEDS); let q=shuffle(keys);
+  while(q.length<ROUNDS){ let k=keys[Math.floor(Math.random()*keys.length)]; if(k!==q[q.length-1]) q.push(k); }
+  const looks=shuffle(LOOKS);
+  return q.slice(0,ROUNDS).map((need,i)=>({need,look:looks[i%looks.length]}));
+}
+function drawTrack(){
+  $("track").innerHTML=queue.map((k,i)=>`<div class="dot ${i<idx?"done":""} ${i===idx?"now":""}">${i<idx?"😊":""}</div>`).join("");
+}
+function start(){
+  queue=buildQueue(); idx=0; score=0; $("score").textContent=0;
+  $("start").classList.remove("show"); $("end").classList.remove("show");
+  nextKid();
+}
+function nextKid(){
+  if(idx>=queue.length) return finish();
+  current=queue[idx]; firstTry=true; drawTrack();
+  const box=$("kidbox"); box.innerHTML=`<div class="kid enter">${kidSVG(current.look,current.need)}</div>`;
+  kidEl=box.firstElementChild;
+  textShown=false; $("hint").hidden=true; $("showtext").hidden=false;
+  $("bubble").classList.remove("show"); setBubble(NEEDS[current.need].line);
+  setTimeout(()=>{ $("bubble").classList.add("show"); speak(NEEDS[current.need].line); if(current.need==="cold") kidEl.classList.add("shiver"); },650);
+  // choices: 1 right + 2 wrong from other needs
+  const right=NEEDS[current.need].items[Math.floor(Math.random()*3)];
+  const banned=[current.need,...(CLASH[current.need]||[])];
+  const others=shuffle(Object.keys(NEEDS).filter(k=>!banned.includes(k))).slice(0,2)
+    .map(k=>({...NEEDS[k].items[Math.floor(Math.random()*3)],need:k}));
+  const opts=shuffle([{...right,need:current.need},...others]);
+  $("choices").innerHTML=opts.map((o,i)=>`<button class="choice" data-i="${i}" aria-label="${o.t}"><span class="em">${o.e}</span><span class="lb">${o.t}</span></button>`).join("");
+  [...$("choices").children].forEach((b,i)=>b.onclick=()=>pick(b,opts[i]));
+}
+function pick(btn,o){
+  speak(o.t);
+  if(o.need!==current.need){
+    firstTry=false;
+    btn.classList.remove("tried"); void btn.offsetWidth; btn.classList.add("tried");
+    const n=NEEDS[current.need];
+    setBubble(NOPE,true); setTimeout(()=>speak(NOPE),500);
+    setTimeout(()=>{ setBubble(n.line); speak(n.line); },1700);
+    const h=$("hint"); h.hidden=false;
+    h.innerHTML=`<span class="big-em">${n.em}</span> ${n.line} <span class="big-em">→</span> ${n.items.map(i=>`<span class="big-em">${i.e}</span>`).join(" ")}`;
+    return;
+  }
+  [...$("choices").children].forEach(c=>c.disabled=true); btn.classList.add("right"); $("hint").hidden=true;
+  // fly item to kid
+  const r=btn.getBoundingClientRect(), k=kidEl.getBoundingClientRect();
+  const f=document.createElement("div"); f.className="fly"; f.textContent=o.e; f.style.left=(r.left+r.width/2-32)+"px"; f.style.top=(r.top+10)+"px";
+  document.body.appendChild(f);
+  requestAnimationFrame(()=>{ f.style.transform=`translate(${k.left+k.width/2-(r.left+r.width/2)}px,${k.top+k.height*.45-(r.top+10)}px) scale(.6)`; f.style.opacity="0.2"; });
+  setTimeout(()=>{
+    f.remove(); kidEl.classList.remove("shiver");
+    kidEl.innerHTML=kidSVG(current.look,"happy"); kidEl.classList.add("bounce"); yay();
+    if(firstTry){ score++; $("score").textContent=score; }
+    setBubble(THANKS,true); $("showtext").hidden=true; speak(THANKS);
+    setTimeout(()=>{ kidEl.classList.add("leave"); },2300);
+    setTimeout(()=>{ idx++; nextKid(); },2900);
+  },620);
+}
+function finish(){
+  drawTrack();
+  $("happyrow").innerHTML=queue.map(q=>kidSVG(q.look,"happy")).join("");
+  $("endtext").textContent=`⭐ ${score} of ${queue.length} on the first try!`;
+  $("end").classList.add("show"); yay(); setTimeout(()=>speak("They're happy now! Great job!"),400);
+}
+
+$("go").onclick=start; $("restart").onclick=start;
+$("again").onclick=()=>current&&speak(lastLine);
+$("bubble").onclick=()=>current&&speak(lastLine);
+$("showtext").onclick=()=>{ textShown=true; setBubble(lastLine); $("showtext").hidden=true; };
+$("mute").onclick=()=>{ muted=!muted; $("mute").textContent=muted?"🔇":"🔊"; if(muted&&"speechSynthesis" in window) speechSynthesis.cancel(); };
+</script>
+</body>
+</html>
