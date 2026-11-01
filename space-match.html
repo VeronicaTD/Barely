@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Space Match</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    background: radial-gradient(ellipse at 20% 10%, #2b2a6b 0%, #171740 45%, #0d0d28 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    position: relative;
+  }
+  .stars-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .tw { position: absolute; background: #fff; border-radius: 50%; opacity: .7; animation: tw 3s infinite ease-in-out; }
+  @keyframes tw { 0%,100% { opacity: .2; } 50% { opacity: .9; } }
+
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 560px; padding: 14px 16px 30px; display: flex; flex-direction: column; align-items: center; }
+
+  h1 {
+    font-size: clamp(26px, 6vw, 38px);
+    letter-spacing: 1px;
+    margin: 10px 0 2px;
+    background: linear-gradient(90deg, #9db4ff, #c9a8ff, #8be9ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-align: center;
+  }
+  .round-label { font-size: 15px; color: #aab3e8; margin-bottom: 14px; min-height: 20px; }
+
+  .scorebar { display: flex; gap: 6px; margin-bottom: 16px; min-height: 26px; flex-wrap: wrap; justify-content: center; }
+  .scorebar span { font-size: 22px; filter: grayscale(1) opacity(.35); transition: all .3s; }
+  .scorebar span.won { filter: none; transform: scale(1.15); }
+
+  .card {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(160,170,255,.25);
+    border-radius: 22px;
+    padding: 22px 18px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  .word {
+    font-size: clamp(30px, 8vw, 44px);
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #e8ecff;
+  }
+  .hint { font-size: 14px; color: #9aa3d9; margin-bottom: 18px; }
+
+  .options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .opt {
+    background: rgba(255,255,255,.09);
+    border: 2px solid rgba(160,170,255,.3);
+    border-radius: 18px;
+    font-size: clamp(44px, 13vw, 64px);
+    padding: 18px 0;
+    cursor: pointer;
+    transition: transform .15s, border-color .15s, background .15s;
+    user-select: none;
+    line-height: 1;
+  }
+  .opt:active { transform: scale(.95); }
+  .opt.correct { border-color: #57e88c; background: rgba(87,232,140,.18); }
+  .opt.wrong { border-color: #ff6b81; background: rgba(255,107,129,.18); animation: shake .35s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  .bigbtns { display: flex; gap: 16px; justify-content: center; margin-top: 8px; }
+  .bigbtn {
+    flex: 1;
+    max-width: 200px;
+    padding: 22px 10px;
+    font-size: clamp(20px, 5vw, 26px);
+    font-weight: 700;
+    border-radius: 18px;
+    border: 2px solid rgba(160,170,255,.35);
+    background: rgba(255,255,255,.09);
+    color: #fff;
+    cursor: pointer;
+    transition: transform .15s, background .15s;
+    user-select: none;
+  }
+  .bigbtn:active { transform: scale(.95); }
+  .bigbtn.correct { border-color: #57e88c; background: rgba(87,232,140,.2); }
+  .bigbtn.wrong { border-color: #ff6b81; background: rgba(255,107,129,.2); animation: shake .35s; }
+  .bigbtn .emo { display: block; font-size: 38px; margin-bottom: 6px; }
+
+  .sort-item { font-size: clamp(28px, 7vw, 40px); font-weight: 700; margin: 6px 0 14px; color: #e8ecff; }
+  .sort-item .emo { font-size: clamp(40px, 10vw, 56px); display: block; margin-bottom: 4px; }
+
+  .feedback { min-height: 28px; font-size: 19px; font-weight: 700; margin-top: 14px; }
+  .feedback.good { color: #57e88c; }
+  .feedback.bad { color: #ff8fa0; }
+
+  .start-btn, .again-btn {
+    margin-top: 18px;
+    padding: 16px 44px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #171740;
+    background: linear-gradient(90deg, #9db4ff, #c9a8ff);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform .15s;
+    user-select: none;
+  }
+  .start-btn:active, .again-btn:active { transform: scale(.95); }
+
+  .final-emoji { font-size: 70px; margin: 8px 0; }
+  .final-text { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .final-sub { font-size: 16px; color: #aab3e8; }
+  .subtitle { color: #aab3e8; font-size: 16px; margin-top: 6px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="stars-layer" id="starsLayer"></div>
+<div class="wrap">
+  <h1>🚀 Space Match</h1>
+  <div class="round-label" id="roundLabel"></div>
+  <div class="scorebar" id="scorebar"></div>
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+// ---------- data ----------
+const WORDS = [
+  { word: 'the Earth',        emoji: '🌍' },
+  { word: 'the Moon',         emoji: '🌕' },
+  { word: 'the Sun',          emoji: '☀️' },
+  { word: 'a planet',         emoji: '🪐' },
+  { word: 'a spaceship',      emoji: '🛸' },
+  { word: 'an astronaut',     emoji: '🧑‍🚀' },
+  { word: 'a rocket',         emoji: '🚀' },
+  { word: 'a satellite',      emoji: '📡' },
+  { word: 'a space station',  emoji: '🛰️' },
+  { word: 'a star',           emoji: '⭐' },
+];
+
+const SORT = [
+  { name: 'the Earth',      emoji: '🌍', type: 'planet' },
+  { name: 'the Sun',        emoji: '☀️', type: 'star' },
+  { name: 'Mars',           emoji: '🔴', type: 'planet' },
+  { name: 'Jupiter',        emoji: '🟠', type: 'planet' },
+  { name: 'the North Star', emoji: '🌟', type: 'star' },
+  { name: 'Venus',          emoji: '🟡', type: 'planet' },
+  { name: 'Sirius',         emoji: '✨', type: 'star' },
+  { name: 'Saturn',         emoji: '🪐', type: 'planet' },
+];
+
+// ---------- helpers ----------
+const card = document.getElementById('card');
+const roundLabel = document.getElementById('roundLabel');
+const scorebar = document.getElementById('scorebar');
+
+function shuffle(a) { return a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(p => p[1]); }
+
+function speak(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB';
+    u.rate = 0.85;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+// starfield
+(function () {
+  const layer = document.getElementById('starsLayer');
+  for (let i = 0; i < 70; i++) {
+    const s = document.createElement('div');
+    s.className = 'tw';
+    const size = Math.random() * 2.5 + 1;
+    s.style.width = s.style.height = size + 'px';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDelay = (Math.random() * 3) + 's';
+    layer.appendChild(s);
+  }
+})();
+
+// ---------- game state ----------
+let round = 0;          // 1 = match, 2 = star or planet
+let queue = [];
+let total = 0, done = 0, score = 0;
+
+function renderScore() {
+  scorebar.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const sp = document.createElement('span');
+    sp.textContent = '⭐';
+    if (i < score) sp.classList.add('won');
+    scorebar.appendChild(sp);
+  }
+}
+
+// ---------- start screen ----------
+function startScreen() {
+  roundLabel.textContent = '';
+  scorebar.innerHTML = '';
+  card.innerHTML = `
+    <div class="word">Ready for a space trip?</div>
+    <div class="subtitle">Round 1: match the word and the picture.<br>Round 2: star or planet?</div>
+    <button class="start-btn" id="startBtn">Start 🚀</button>`;
+  document.getElementById('startBtn').onclick = startRound1;
+}
+
+// ---------- round 1: match ----------
+function startRound1() {
+  round = 1;
+  queue = shuffle(WORDS.slice());
+  total = queue.length; done = 0; score = 0;
+  renderScore();
+  roundLabel.textContent = 'Round 1 · Match the word and the picture';
+  nextMatch();
+}
+
+function nextMatch() {
+  if (queue.length === 0) { startRound2(); return; }
+  const item = queue[0];
+  const distract = shuffle(WORDS.filter(w => w.word !== item.word)).slice(0, 3);
+  const opts = shuffle([item].concat(distract));
+  card.innerHTML = `
+    <div class="word">${item.word}</div>
+    <div class="hint">Tap the right picture 👇</div>
+    <div class="options">${opts.map(o => `<div class="opt" data-w="${o.word}">${o.emoji}</div>`).join('')}</div>
+    <div class="feedback" id="fb"></div>`;
+  speak(item.word);
+  card.querySelectorAll('.opt').forEach(el => {
+    el.onclick = () => {
+      const fb = document.getElementById('fb');
+      if (el.dataset.w === item.word) {
+        el.classList.add('correct');
+        fb.textContent = 'Great! 🎉'; fb.className = 'feedback good';
+        score++; renderScore();
+        queue.shift(); done++;
+        lockOpts();
+        setTimeout(nextMatch, 900);
+      } else {
+        el.classList.add('wrong');
+        fb.textContent = 'Try again!'; fb.className = 'feedback bad';
+        setTimeout(() => el.classList.remove('wrong'), 400);
+      }
+    };
+  });
+}
+
+function lockOpts() { card.querySelectorAll('.opt, .bigbtn').forEach(el => el.onclick = null); }
+
+// ---------- round 2: star or planet ----------
+function startRound2() {
+  round = 2;
+  queue = shuffle(SORT.slice());
+  total += queue.length;
+  renderScore();
+  roundLabel.textContent = 'Round 2 · Star or planet?';
+  nextSort();
+}
+
+function nextSort() {
+  if (queue.length === 0) { finalScreen(); return; }
+  const item = queue[0];
+  card.innerHTML = `
+    <div class="hint">Star or planet?</div>
+    <div class="sort-item"><span class="emo">${item.emoji}</span>${item.name}</div>
+    <div class="bigbtns">
+      <div class="bigbtn" data-t="star"><span class="emo">⭐</span>a star</div>
+      <div class="bigbtn" data-t="planet"><span class="emo">🪐</span>a planet</div>
+    </div>
+    <div class="feedback" id="fb"></div>`;
+  card.querySelectorAll('.bigbtn').forEach(el => {
+    el.onclick = () => {
+      const fb = document.getElementById('fb');
+      if (el.dataset.t === item.type) {
+        el.classList.add('correct');
+        fb.textContent = 'Yes! 🎉'; fb.className = 'feedback good';
+        score++; renderScore();
+        queue.shift(); done++;
+        lockOpts();
+        setTimeout(nextSort, 900);
+      } else {
+        el.classList.add('wrong');
+        fb.textContent = 'Try again!'; fb.className = 'feedback bad';
+        setTimeout(() => el.classList.remove('wrong'), 400);
+      }
+    };
+  });
+}
+
+// ---------- final ----------
+function finalScreen() {
+  roundLabel.textContent = '';
+  const pct = score / total;
+  let emoji = '🚀', text = 'Great job!';
+  if (pct === 1) { emoji = '🏆'; text = 'Perfect! You are a star!'; }
+  else if (pct >= 0.7) { emoji = '🌟'; text = 'Well done!'; }
+  card.innerHTML = `
+    <div class="final-emoji">${emoji}</div>
+    <div class="final-text">${text}</div>
+    <div class="final-sub">You got ${score} out of ${total} stars.</div>
+    <button class="again-btn" id="againBtn">Play again 🔁</button>`;
+  document.getElementById('againBtn').onclick = startRound1;
+}
+
+startScreen();
+</script>
+</body>
+</html>
