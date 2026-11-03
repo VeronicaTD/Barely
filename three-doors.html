@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Three Doors: What Will You Choose?</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --navy:#141a33; --navy2:#1d2547; --purple:#6a5acd; --purple-soft:#8b7fd4;
+    --teal:#2ec4b6; --gold:#f2b134; --ink:#e8e6f7; --ink-dim:#a9a5cc;
+  }
+  body {
+    font-family:'Nunito','Segoe UI',sans-serif;
+    background: radial-gradient(1200px 800px at 70% -10%, #2a2f5c 0%, var(--navy) 55%, #0e1226 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding: 16px;
+  }
+  .wrap { width:100%; max-width: 1060px; }
+  .center { text-align:center; }
+  h1 {
+    font-family:'Caveat','Segoe Script',cursive;
+    font-size: 64px; color: var(--gold);
+    text-shadow: 0 0 24px rgba(242,177,52,.35);
+    line-height: 1; margin-bottom: 10px;
+  }
+  h2 {
+    font-family:'Caveat','Segoe Script',cursive;
+    font-size: 44px; color: var(--ink); margin-bottom: 4px;
+  }
+  .subtitle { font-size: 20px; color: var(--ink-dim); margin-bottom: 8px; }
+  .hint-line { font-size: 16px; color: var(--teal); font-weight: 700; margin-bottom: 26px; }
+  .btn {
+    display:inline-block;
+    font-family:inherit; font-weight:800;
+    border:none; border-radius: 16px;
+    cursor:pointer;
+    transition: transform .08s, filter .15s;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn-big {
+    background: linear-gradient(135deg, var(--purple), var(--teal));
+    color:#fff; font-size: 28px;
+    padding: 20px 54px; min-height: 76px;
+    box-shadow: 0 10px 30px rgba(106,90,205,.4);
+  }
+  .btn-big:hover { filter: brightness(1.12); }
+  .btn-mid {
+    background: linear-gradient(135deg, var(--purple), #4d44a8);
+    color:#fff; font-size: 20px;
+    padding: 14px 26px; min-height: 60px;
+  }
+  .btn-ghost {
+    background: transparent; color: var(--ink);
+    border: 2px solid var(--purple-soft);
+    font-size: 18px; padding: 12px 22px; min-height: 54px;
+  }
+  .btn-ghost:hover { background: rgba(139,127,212,.15); }
+
+  .topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .round-tag {
+    background: rgba(46,196,182,.15); color: var(--teal);
+    border: 1px solid rgba(46,196,182,.4);
+    font-weight:800; font-size: 15px;
+    padding: 6px 16px; border-radius: 999px;
+  }
+
+  .doors { display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 760px) { .doors { grid-template-columns: 1fr; } h1{font-size:48px;} h2{font-size:34px;} }
+  .door {
+    background: linear-gradient(180deg, var(--navy2), #171d3a);
+    border: 2px solid rgba(139,127,212,.35);
+    border-radius: 22px;
+    padding: 16px;
+    display:flex; flex-direction:column; gap:10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  .door svg { width:100%; height:auto; border-radius: 14px; display:block; }
+  .door-name { font-size: 24px; font-weight: 800; color: var(--gold); }
+  .feat { display:flex; align-items:flex-start; gap:10px; font-size: 18px; line-height:1.25; text-align:left; }
+  .ico { flex:0 0 26px; width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; margin-top:1px; }
+  .ico.plus { background: rgba(46,196,182,.2); color: var(--teal); border:1.5px solid var(--teal); }
+  .ico.minus { background: rgba(242,177,52,.16); color: var(--gold); border:1.5px solid var(--gold); }
+  .vocab { border-bottom: 2px dotted var(--teal); cursor: pointer; }
+  .vocab-ru { display:none; color: var(--teal); font-size: 15px; font-weight:700; }
+  .vocab.open + .vocab-ru { display:inline; }
+  .door .btn-mid { width:100%; margin-top:auto; }
+
+  .frame-strip {
+    background: rgba(242,177,52,.1);
+    border: 1.5px dashed rgba(242,177,52,.55);
+    color: var(--gold);
+    border-radius: 14px;
+    font-family:'Caveat','Segoe Script',cursive;
+    font-size: 30px; padding: 8px 18px;
+    margin: 14px auto 18px; display:inline-block;
+  }
+
+  .event-card {
+    background: linear-gradient(180deg, var(--navy2), #171d3a);
+    border: 2px solid rgba(139,127,212,.35);
+    border-radius: 24px;
+    padding: 26px 24px;
+    max-width: 720px; margin: 0 auto;
+    box-shadow: 0 10px 34px rgba(0,0,0,.4);
+  }
+  .event-card svg { width: 220px; max-width: 60%; margin: 0 auto 12px; display:block; border-radius: 16px; }
+  .event-text { font-size: 26px; font-weight: 800; margin-bottom: 18px; line-height: 1.3; }
+  .opt-btn {
+    display:block; width:100%;
+    background:#232a52; color:var(--ink);
+    border: 2.5px solid rgba(139,127,212,.45);
+    border-radius: 16px;
+    font-size: 22px; font-weight: 800;
+    min-height: 64px; padding: 12px 18px; margin: 10px 0;
+    cursor:pointer; font-family:inherit;
+    transition: transform .08s, border-color .15s, background .15s;
+  }
+  .opt-btn:hover { border-color: var(--teal); }
+  .opt-btn:active { transform: scale(.97); }
+  .opt-btn.picked { background: rgba(46,196,182,.18); border-color: var(--teal); color:#d9fffb; }
+  .q-bubble {
+    background: rgba(106,90,205,.18);
+    border-left: 5px solid var(--purple-soft);
+    border-radius: 12px;
+    font-size: 21px; font-weight: 700;
+    padding: 14px 18px; margin: 12px 0; text-align:left;
+    min-height: 20px;
+  }
+  .row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top: 14px; }
+
+  .help-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,12,28,.82);
+    display:none; align-items:center; justify-content:center;
+    padding: 18px; z-index: 50;
+  }
+  .help-overlay.show { display:flex; }
+  .help-panel {
+    background: linear-gradient(180deg, var(--navy2), #151a36);
+    border: 2px solid var(--purple-soft);
+    border-radius: 22px;
+    max-width: 520px; width:100%;
+    padding: 26px 24px; text-align:left;
+    max-height: 86vh; overflow:auto;
+  }
+  .help-panel h3 { font-family:'Caveat',cursive; font-size: 32px; color: var(--gold); margin-bottom: 4px; }
+  .help-panel ul { list-style:none; margin: 6px 0 18px; }
+  .help-panel li {
+    font-size: 21px; font-weight: 700; padding: 7px 0 7px 16px;
+    border-left: 3px solid var(--teal); margin: 8px 0;
+  }
+
+  .adv-grid { display:grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 18px 0; }
+  @media (max-width: 760px){ .adv-grid { grid-template-columns: repeat(2, 1fr); } }
+  .adv-item { background: var(--navy2); border-radius: 14px; padding: 8px; border:1.5px solid rgba(139,127,212,.3); }
+  .adv-item svg { width:100%; border-radius: 10px; display:block; }
+  .adv-name { font-size: 14px; font-weight: 800; color: var(--ink); margin-top: 6px; }
+  .final-frames { font-family:'Caveat',cursive; font-size: 30px; color: var(--teal); line-height: 1.6; margin: 10px 0 18px; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<div class="help-overlay" id="helpOv" onclick="if(event.target===this)toggleHelp(false)">
+  <div class="help-panel">
+    <h3>Help me speak 💬</h3>
+    <h3 style="font-size:24px;color:var(--teal)">My choice</h3>
+    <ul>
+      <li>I'll choose door…</li>
+      <li>I'll go to…</li>
+      <li>…because it's…</li>
+      <li>…because there is / there are…</li>
+    </ul>
+    <h3 style="font-size:24px;color:var(--teal)">My prediction</h3>
+    <ul>
+      <li>I think I'll find…</li>
+      <li>Maybe there will be…</li>
+    </ul>
+    <h3 style="font-size:24px;color:var(--teal)">My next action</h3>
+    <ul>
+      <li>I'll take…</li>
+      <li>I'll look for…</li>
+      <li>I'll ask…</li>
+      <li>I won't…</li>
+    </ul>
+    <div class="center"><button class="btn btn-mid" onclick="toggleHelp(false)">Close</button></div>
+  </div>
+</div>
+
+<script>
+const VOCAB = {
+  "drinking water":"питьевая вода",
+  "heating":"отопление",
+  "journey":"путешествие",
+  "charging":"зарядка",
+  "protect":"защищать",
+  "treasure":"сокровище",
+  "torch":"фонарик",
+  "rope bridge":"верёвочный мост"
+};
+
+const MORE_Q = [
+  "Why will you choose this door?",
+  "What will you take with you?",
+  "Will you go alone or with a friend?",
+  "What do you think you'll find there?"
+];
+
+const ROUNDS = [
+  { title:"Where will you spend the night?", doors:[
+    { key:"beach", name:"A tropical beach", pros:["Warm and beautiful.","Lots of fruit."], con:"No drinking water.",
+      event:"It's getting dark. You need drinking water. What will you do?",
+      options:["look for water","explore the island"] },
+    { key:"castle", name:"An old castle", pros:["Food and drinking water.","A warm bed."], con:"Strange noises at night.",
+      event:"You hear a noise behind a door. What will you do?",
+      options:["open the door","stay in your room"] },
+    { key:"cabin", name:"A snowy cabin", pros:["Food and drinking water.","A safe place."], con:"No heating. It's very cold.",
+      event:"You find some blankets and wood. What will you do?",
+      options:["use the blankets","make a fire in the fireplace"] }
+  ]},
+  { title:"How will you travel?", doors:[
+    { key:"car", name:"A flying car", pros:["Very fast.","You can see everything."], con:"You must drive it yourself.",
+      event:"You see dark clouds ahead. What will you do?",
+      options:["land","find another way"] },
+    { key:"train", name:"A slow train", pros:["Comfortable and safe.","Free food."], con:"The journey takes two days.",
+      event:"Your phone battery is dead. What will you do?",
+      options:["read a book","talk to someone"] },
+    { key:"boat", name:"A magic boat", pros:["No ticket needed.","It can travel anywhere."], con:"You can take only one bag.",
+      event:"Your bag is too heavy. What will you leave behind?",
+      options:["a camera 📷","a book 📖","an extra pair of shoes 👟"] }
+  ]},
+  { title:"Who will help you?", doors:[
+    { key:"robot", name:"A clever robot", pros:["Knows lots of things.","Can carry heavy bags."], con:"Needs charging every hour.",
+      event:"The robot needs power. What will you do?",
+      options:["look for a charger","ask someone for help"] },
+    { key:"dragon", name:"A friendly dragon", pros:["Can fly.","Can protect you."], con:"Eats most of your food.",
+      event:"The dragon is hungry again. What will you do?",
+      options:["share your food","look for more food"] },
+    { key:"cat", name:"A talking cat", pros:["Can see in the dark.","Can find secret doors."], con:"Doesn't always listen to you.",
+      event:"The cat goes through a small hole. What will you do?",
+      options:["wait","look for another entrance"] }
+  ]},
+  { title:"Which room will you choose?", doors:[
+    { key:"gold", name:"A room full of gold", pros:["You can take some gold.","There is a map."], con:"The gold is very heavy.",
+      event:"You can carry only three things. What will you take?",
+      multi:3, options:["gold 🪙","a map 🗺️","water 💧","a torch 🔦","food 🍎"] },
+    { key:"food", name:"A room full of food", pros:["Plenty of food and water.","A comfortable sofa."], con:"You must stay for three hours.",
+      event:"You have three hours. What will you do?",
+      options:["eat","rest","make a plan"] },
+    { key:"mirror", name:"A room with a magic mirror", pros:["The mirror can answer one question.","You can leave immediately."], con:"There is no food or treasure.",
+      event:"You can ask one question. What will you ask?",
+      options:["Where is the exit?","Where are my friends?","Is this place safe?"] }
+  ]},
+  { title:"Which way will you go?", doors:[
+    { key:"tunnel", name:"A dark tunnel", pros:["The shortest way.","No stairs."], con:"You can't see without a torch.",
+      event:"Your torch stops working. What will you do?",
+      options:["use your phone light","go back"] },
+    { key:"forest", name:"A forest path", pros:["Light and fresh air.","You can find berries."], con:"It's a long walk.",
+      event:"You find two paths. What will you do?",
+      options:["check your map","look for signs"] },
+    { key:"bridge", name:"A rope bridge", pros:["You can see the exit.","It takes only five minutes."], con:"The bridge moves in the wind.",
+      event:"The wind gets stronger. What will you do?",
+      options:["wait","go back"] }
+  ]}
+];
+
+/* ---------- SVG scenes ---------- */
+function scene(key){
+  const S = {
+    beach: `<defs><linearGradient id="gbeach" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2ec4b6"/><stop offset="1" stop-color="#f2b134"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gbeach)"/><circle cx="80" cy="14" r="8" fill="#ffe08a"/>
+      <rect y="44" width="100" height="14" fill="#1a8fa3" opacity=".85"/><rect y="56" width="100" height="14" fill="#f4d58d"/>
+      <path d="M24 58 Q26 40 28 34" stroke="#7a4a21" stroke-width="3" fill="none"/>
+      <path d="M28 34 Q36 28 42 32 M28 34 Q20 28 14 32 M28 34 Q28 24 34 22" stroke="#1f7a4d" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+    castle: `<defs><linearGradient id="gcastle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2547"/><stop offset="1" stop-color="#3a2a63"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gcastle)"/><circle cx="82" cy="13" r="7" fill="#e8e6f7" opacity=".9"/>
+      <rect x="30" y="26" width="40" height="44" fill="#4a3f78"/><rect x="18" y="20" width="12" height="50" fill="#554a8c"/><rect x="70" y="20" width="12" height="50" fill="#554a8c"/>
+      <rect x="18" y="16" width="4" height="5" fill="#554a8c"/><rect x="26" y="16" width="4" height="5" fill="#554a8c"/><rect x="70" y="16" width="4" height="5" fill="#554a8c"/><rect x="78" y="16" width="4" height="5" fill="#554a8c"/>
+      <rect x="45" y="52" width="10" height="18" rx="5" fill="#141a33"/>
+      <rect x="36" y="32" width="5" height="7" fill="#f2b134"/><rect x="59" y="32" width="5" height="7" fill="#f2b134"/><rect x="21" y="28" width="4" height="6" fill="#f2b134" opacity=".8"/>`,
+    cabin: `<defs><linearGradient id="gcabin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#241f4e"/><stop offset="1" stop-color="#4a3f78"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gcabin)"/>
+      <circle cx="15" cy="12" r="1.4" fill="#fff"/><circle cx="35" cy="7" r="1" fill="#fff"/><circle cx="60" cy="11" r="1.3" fill="#fff"/><circle cx="85" cy="8" r="1" fill="#fff"/>
+      <polygon points="12,58 20,38 28,58" fill="#1f3a4d"/><polygon points="76,58 84,42 92,58" fill="#1f3a4d"/>
+      <rect x="36" y="40" width="30" height="20" fill="#6b4a2f"/><polygon points="33,40 51,26 69,40" fill="#54371f"/>
+      <rect x="47" y="48" width="8" height="12" fill="#3a2413"/><rect x="58" y="44" width="6" height="6" fill="#f2b134"/>
+      <rect y="58" width="100" height="12" fill="#e8ecf7"/><ellipse cx="20" cy="60" rx="14" ry="4" fill="#f4f6ff"/>`,
+    car: `<defs><linearGradient id="gcar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3a6e"/><stop offset="1" stop-color="#2ec4b6"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gcar)"/>
+      <ellipse cx="22" cy="16" rx="10" ry="4" fill="#ffffff" opacity=".5"/><ellipse cx="74" cy="10" rx="8" ry="3.5" fill="#ffffff" opacity=".45"/>
+      <rect x="8" y="34" width="14" height="2.5" rx="1" fill="#8b7fd4"/><rect x="4" y="40" width="12" height="2.5" rx="1" fill="#8b7fd4"/>
+      <rect x="30" y="30" width="42" height="15" rx="7.5" fill="#6a5acd"/><rect x="38" y="26" width="24" height="9" rx="4.5" fill="#9fd8e8"/>
+      <ellipse cx="51" cy="50" rx="16" ry="3.5" fill="#2ec4b6" opacity=".7"/><circle cx="38" cy="45" r="2.5" fill="#f2b134"/><circle cx="64" cy="45" r="2.5" fill="#f2b134"/>`,
+    train: `<defs><linearGradient id="gtrain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a63"/><stop offset="1" stop-color="#241f4e"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gtrain)"/>
+      <circle cx="72" cy="20" r="4" fill="#e8e6f7" opacity=".45"/><circle cx="66" cy="13" r="3" fill="#e8e6f7" opacity=".35"/><circle cx="79" cy="12" r="2.4" fill="#e8e6f7" opacity=".3"/>
+      <rect x="12" y="32" width="66" height="20" rx="6" fill="#2ec4b6"/><rect x="12" y="32" width="14" height="20" rx="6" fill="#f2b134"/>
+      <rect x="32" y="37" width="9" height="8" rx="2" fill="#141a33"/><rect x="45" y="37" width="9" height="8" rx="2" fill="#141a33"/><rect x="58" y="37" width="9" height="8" rx="2" fill="#141a33"/>
+      <circle cx="24" cy="54" r="4" fill="#0e1226"/><circle cx="44" cy="54" r="4" fill="#0e1226"/><circle cx="64" cy="54" r="4" fill="#0e1226"/>
+      <rect x="4" y="58" width="92" height="2" fill="#8b7fd4"/>`,
+    boat: `<defs><linearGradient id="gboat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141a33"/><stop offset="1" stop-color="#1f3a5c"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gboat)"/>
+      <circle cx="80" cy="12" r="6" fill="#f4e6b8"/><circle cx="18" cy="10" r="1.2" fill="#fff"/><circle cx="38" cy="6" r="1" fill="#fff"/><circle cx="55" cy="12" r="1.2" fill="#fff"/>
+      <rect y="52" width="100" height="18" fill="#12395c"/><ellipse cx="80" cy="54" rx="10" ry="2" fill="#f4e6b8" opacity=".35"/>
+      <path d="M28 50 L74 50 L66 60 L36 60 Z" fill="#6b4a2f"/>
+      <rect x="49" y="20" width="2.5" height="30" fill="#54371f"/><polygon points="52,22 52,44 70,44" fill="#e8e6f7"/><polygon points="48,26 48,44 34,44" fill="#b9b3e8"/>`,
+    robot: `<defs><linearGradient id="grobot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f3a5c"/><stop offset="1" stop-color="#141a33"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#grobot)"/>
+      <rect x="36" y="14" width="28" height="20" rx="6" fill="#8b93b8"/><circle cx="45" cy="24" r="3.4" fill="#2ec4b6"/><circle cx="55" cy="24" r="3.4" fill="#2ec4b6"/>
+      <rect x="48.5" y="6" width="3" height="8" fill="#8b93b8"/><circle cx="50" cy="5" r="2.6" fill="#f2b134"/>
+      <rect x="32" y="36" width="36" height="24" rx="8" fill="#6a72a0"/><rect x="42" y="42" width="16" height="5" rx="2.5" fill="#f2b134"/>
+      <rect x="22" y="38" width="8" height="18" rx="4" fill="#8b93b8"/><rect x="70" y="38" width="8" height="18" rx="4" fill="#8b93b8"/>
+      <rect x="38" y="60" width="8" height="8" fill="#8b93b8"/><rect x="54" y="60" width="8" height="8" fill="#8b93b8"/>`,
+    dragon: `<defs><linearGradient id="gdragon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#241f4e"/><stop offset="1" stop-color="#3a1f4e"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gdragon)"/>
+      <polygon points="46,34 30,14 40,30 34,26 44,38" fill="#5c2e8c"/>
+      <polygon points="54,34 70,14 60,30 66,26 56,38" fill="#5c2e8c"/>
+      <ellipse cx="50" cy="46" rx="14" ry="10" fill="#7a3fa8"/>
+      <path d="M60 42 Q72 36 74 26 Q76 20 70 22 Q72 16 66 20 Q62 24 62 30" fill="#7a3fa8"/>
+      <circle cx="70" cy="21" r="4.5" fill="#7a3fa8"/><circle cx="71.5" cy="20" r="1.4" fill="#f2b134"/>
+      <path d="M38 50 Q26 54 22 62" stroke="#7a3fa8" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="16" cy="12" r="1.2" fill="#fff"/><circle cx="86" cy="40" r="1" fill="#fff"/>`,
+    cat: `<defs><linearGradient id="gcat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141a33"/><stop offset="1" stop-color="#2a2350"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gcat)"/>
+      <ellipse cx="50" cy="50" rx="16" ry="12" fill="#1b1f3d"/>
+      <circle cx="50" cy="30" r="11" fill="#1b1f3d"/>
+      <polygon points="42,23 40,12 48,19" fill="#1b1f3d"/><polygon points="58,23 60,12 52,19" fill="#1b1f3d"/>
+      <ellipse cx="45.5" cy="30" rx="2.2" ry="3" fill="#2ec4b6"/><ellipse cx="54.5" cy="30" rx="2.2" ry="3" fill="#2ec4b6"/>
+      <path d="M64 52 Q80 50 78 34 Q78 28 74 30" stroke="#1b1f3d" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="14" cy="14" r="1.2" fill="#fff"/><circle cx="88" cy="10" r="1" fill="#fff"/><circle cx="76" cy="20" r="1" fill="#fff"/>`,
+    gold: `<rect width="100" height="70" fill="#2a2350"/>
+      <rect x="30" y="34" width="40" height="22" rx="4" fill="#6b4a2f"/><path d="M30 38 Q50 22 70 38" fill="#54371f"/>
+      <rect x="46" y="38" width="8" height="8" rx="2" fill="#f2b134"/>
+      <ellipse cx="20" cy="60" rx="12" ry="5" fill="#f2b134"/><ellipse cx="80" cy="62" rx="12" ry="5" fill="#f2b134"/><ellipse cx="50" cy="64" rx="16" ry="5" fill="#ffd166"/>
+      <circle cx="16" cy="18" r="1.4" fill="#ffd166"/><circle cx="84" cy="14" r="1.4" fill="#ffd166"/>
+      <path d="M24 24 l1.6 3.4 3.4 1.6 -3.4 1.6 -1.6 3.4 -1.6 -3.4 -3.4 -1.6 3.4 -1.6 Z" fill="#ffe08a"/>
+      <path d="M78 30 l1.2 2.6 2.6 1.2 -2.6 1.2 -1.2 2.6 -1.2 -2.6 -2.6 -1.2 2.6 -1.2 Z" fill="#ffe08a"/>`,
+    food: `<defs><linearGradient id="gfood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a63"/><stop offset="1" stop-color="#241f4e"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gfood)"/>
+      <rect x="10" y="46" width="80" height="6" rx="3" fill="#6b4a2f"/><rect x="16" y="52" width="6" height="14" fill="#54371f"/><rect x="78" y="52" width="6" height="14" fill="#54371f"/>
+      <ellipse cx="30" cy="42" rx="10" ry="6" fill="#e8b04b"/><path d="M22 40 Q30 32 38 40" fill="#f4d58d"/>
+      <circle cx="52" cy="40" r="6" fill="#d94f4f"/><path d="M52 34 Q54 31 57 31" stroke="#1f7a4d" stroke-width="2.4" fill="none"/>
+      <polygon points="66,44 78,44 78,34" fill="#ffd166"/><circle cx="72" cy="40" r="1.4" fill="#e8b04b"/><circle cx="75" cy="42" r="1" fill="#e8b04b"/>`,
+    mirror: `<defs><linearGradient id="gmirror" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2547"/><stop offset="1" stop-color="#3a2a63"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gmirror)"/>
+      <ellipse cx="50" cy="34" rx="20" ry="26" fill="#f2b134"/>
+      <ellipse cx="50" cy="34" rx="15" ry="21" fill="#9fd8e8"/>
+      <path d="M42 22 L56 42 M48 18 L58 32" stroke="#e8fbff" stroke-width="2.4" opacity=".8" stroke-linecap="round"/>
+      <rect x="44" y="60" width="12" height="6" rx="2" fill="#f2b134"/>
+      <path d="M24 14 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 Z" fill="#2ec4b6"/>
+      <path d="M78 44 l1.2 2.6 2.6 1.2 -2.6 1.2 -1.2 2.6 -1.2 -2.6 -2.6 -1.2 2.6 -1.2 Z" fill="#2ec4b6"/>`,
+    tunnel: `<rect width="100" height="70" fill="#0e1226"/>
+      <path d="M10 70 L10 34 Q50 -6 90 34 L90 70" fill="#1d2547"/>
+      <path d="M22 70 L22 40 Q50 8 78 40 L78 70" fill="#141a33"/>
+      <path d="M34 70 L34 46 Q50 24 66 46 L66 70" fill="#0e1226"/>
+      <ellipse cx="50" cy="58" rx="7" ry="5" fill="#f2b134" opacity=".9"/><ellipse cx="50" cy="58" rx="12" ry="8" fill="#f2b134" opacity=".25"/>`,
+    forest: `<defs><linearGradient id="gforest" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b6e63"/><stop offset="1" stop-color="#14424d"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gforest)"/><circle cx="78" cy="13" r="8" fill="#ffe08a" opacity=".9"/>
+      <polygon points="16,58 24,30 32,58" fill="#1f4d3a"/><rect x="22.5" y="56" width="3" height="8" fill="#54371f"/>
+      <polygon points="38,58 47,24 56,58" fill="#256048"/><rect x="45.5" y="56" width="3" height="8" fill="#54371f"/>
+      <polygon points="62,58 70,34 78,58" fill="#1f4d3a"/><rect x="68.5" y="56" width="3" height="8" fill="#54371f"/>
+      <rect y="62" width="100" height="8" fill="#173a2e"/>`,
+    bridge: `<defs><linearGradient id="gbridge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3a6e"/><stop offset="1" stop-color="#241f4e"/></linearGradient></defs>
+      <rect width="100" height="70" fill="url(#gbridge)"/>
+      <polygon points="0,70 0,34 22,44 22,70" fill="#171d3a"/><polygon points="100,70 100,34 78,44 78,70" fill="#171d3a"/>
+      <path d="M20 40 Q50 54 80 40" stroke="#8b6b4a" stroke-width="2.4" fill="none"/>
+      <path d="M20 48 Q50 62 80 48" stroke="#8b6b4a" stroke-width="2" fill="none"/>
+      <rect x="28" y="46" width="5" height="4" fill="#6b4a2f" transform="rotate(4 30 48)"/><rect x="38" y="49" width="5" height="4" fill="#6b4a2f"/><rect x="48" y="50" width="5" height="4" fill="#6b4a2f"/><rect x="58" y="49" width="5" height="4" fill="#6b4a2f"/><rect x="67" y="46" width="5" height="4" fill="#6b4a2f" transform="rotate(-4 70 48)"/>
+      <path d="M30 18 Q38 14 44 18 M56 14 Q64 10 70 14" stroke="#8b7fd4" stroke-width="2" fill="none" stroke-linecap="round"/>`
+  };
+  return `<svg viewBox="0 0 100 70" role="img" aria-label="${key}">${S[key]||''}</svg>`;
+}
+
+/* ---------- vocab helper ---------- */
+function withVocab(text){
+  let out = text;
+  for(const w in VOCAB){
+    const re = new RegExp(w.replace(' ','\\s'), 'i');
+    out = out.replace(re, m => `<span class="vocab" onclick="toggleVocab(this)">${m}</span><span class="vocab-ru"> (${VOCAB[w]})</span>`);
+  }
+  return out;
+}
+function toggleVocab(el){ el.classList.toggle('open'); }
+function toggleHelp(on){ document.getElementById('helpOv').classList.toggle('show', on); }
+
+/* ---------- state ---------- */
+let round = 0;
+let choices = [null,null,null,null,null];
+let qIdx = 0;
+let picked = new Set();
+
+const app = document.getElementById('app');
+
+/* ---------- screens ---------- */
+function startScreen(){
+  app.innerHTML = `
+    <div class="center">
+      <h1>THREE DOORS</h1>
+      <p class="subtitle">Every door has a problem. Which one will you choose?</p>
+      <p class="hint-line">Look. Choose. Explain. Each round is a new adventure.</p>
+      <button class="btn btn-big" onclick="showDoors(0)">START</button>
+    </div>`;
+}
+
+function helpBtn(){ return `<button class="btn btn-ghost" onclick="toggleHelp(true)">💬 Help me speak</button>`; }
+
+function showDoors(r){
+  round = r; qIdx = 0; picked = new Set();
+  const R = ROUNDS[r];
+  const frameStrip = r === 0 ? `<div class="center"><div class="frame-strip">I'll choose door … because …</div></div>` : '';
+  app.innerHTML = `
+    <div class="topbar">
+      <span class="round-tag">Round ${r+1} of 5</span>
+      ${helpBtn()}
+    </div>
+    <div class="center"><h2>${R.title}</h2></div>
+    ${frameStrip}
+    <div class="doors">
+      ${R.doors.map((d,di)=>`
+        <div class="door">
+          ${scene(d.key)}
+          <div class="door-name">Door ${di+1}: ${withVocab(d.name)}</div>
+          <div class="feat"><span class="ico plus">✓</span><span>${withVocab(d.pros[0])}</span></div>
+          <div class="feat"><span class="ico plus">✓</span><span>${withVocab(d.pros[1])}</span></div>
+          <div class="feat"><span class="ico minus">!</span><span>${withVocab(d.con)}</span></div>
+          <button class="btn btn-mid" onclick="chooseDoor(${di})">Choose this door</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+function chooseDoor(di){
+  choices[round] = ROUNDS[round].doors[di];
+  showEvent(di);
+}
+
+function showEvent(di){
+  const d = ROUNDS[round].doors[di];
+  const isLast = round === ROUNDS.length - 1;
+  app.innerHTML = `
+    <div class="topbar">
+      <span class="round-tag">Round ${round+1} of 5 — ${d.name}</span>
+      ${helpBtn()}
+    </div>
+    <div class="event-card center">
+      ${scene(d.key)}
+      <div class="event-text">${withVocab(d.event)}</div>
+      ${d.multi ? `<div class="hint-line">Choose ${d.multi} things!</div>` : ''}
+      <div id="opts">
+        ${d.options.map((o,oi)=>`<button class="opt-btn" id="o${oi}" onclick="pickOpt(${oi},${d.multi||1})">${o}</button>`).join('')}
+      </div>
+      <div class="q-bubble" id="qb" style="display:none"></div>
+      <div class="row">
+        <button class="btn btn-ghost" onclick="moreQuestion()">❓ One more question</button>
+        <button class="btn btn-ghost" onclick="showDoors(round)">← Back to doors</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-big" id="nextBtn" onclick="nextRound()" ${d.options.length>1?'':'style="display:none"'}>${isLast ? 'Finish the adventure ✨' : 'Next round →'}</button>
+      </div>
+    </div>`;
+}
+
+function pickOpt(oi, max){
+  const id = 'o'+oi;
+  const el = document.getElementById(id);
+  if(max > 1){
+    if(picked.has(oi)){ picked.delete(oi); el.classList.remove('picked'); }
+    else if(picked.size < max){ picked.add(oi); el.classList.add('picked'); }
+  } else {
+    picked = new Set([oi]);
+    document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('picked'));
+    el.classList.add('picked');
+  }
+}
+
+function moreQuestion(){
+  const qb = document.getElementById('qb');
+  qb.style.display = 'block';
+  qb.textContent = MORE_Q[qIdx % MORE_Q.length];
+  qIdx++;
+}
+
+function nextRound(){
+  if(round < ROUNDS.length - 1) showDoors(round + 1);
+  else finalScreen();
+}
+
+function roundPicker(){
+  app.innerHTML = `
+    <div class="topbar"><span class="round-tag">Choose a round</span>${helpBtn()}</div>
+    <div class="center"><h2>Choose a round</h2></div>
+    ${ROUNDS.map((R,ri)=>`<button class="opt-btn" onclick="showDoors(${ri})">Round ${ri+1}: ${R.title}</button>`).join('')}
+    <div class="row"><button class="btn btn-ghost" onclick="finalScreen()">← Back</button></div>`;
+}
+
+function finalScreen(){
+  app.innerHTML = `
+    <div class="center">
+      <h1 style="font-size:52px">Your adventure</h1>
+      <p class="subtitle">Tell your adventure. Use your choices.</p>
+    </div>
+    <div class="adv-grid">
+      ${choices.map((c,ci)=> c ? `
+        <div class="adv-item">${scene(c.key)}<div class="adv-name center">${ci+1}. ${c.name}</div></div>` : `
+        <div class="adv-item"><div class="adv-name center" style="padding:26px 4px">${ci+1}. ?</div></div>`).join('')}
+    </div>
+    <div class="center final-frames">
+      First, I'll…<br>Then, I'll…<br>After that, I'll…<br>Finally, I'll…
+    </div>
+    <div class="row">
+      <button class="btn btn-big" onclick="restart()">PLAY AGAIN</button>
+      <button class="btn btn-mid" onclick="roundPicker()">CHOOSE A ROUND</button>
+    </div>
+    <div class="row" style="margin-top:12px">${helpBtn()}</div>`;
+}
+
+function restart(){ choices=[null,null,null,null,null]; round=0; startScreen(); }
+
+startScreen();
+</script>
+</body>
+</html>
