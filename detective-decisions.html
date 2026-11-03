@@ -30,7 +30,7 @@
     line-height: 1.1;
     margin-bottom: 8px;
   }
-  .sub { color: #6b7a99; font-size: 18px; margin-bottom: 24px; }
+  .sub { color: #6b7a99; font-size: 19px; margin-bottom: 24px; }
   .case-tag {
     display: inline-block;
     background: #efeaff; color: #6a5acd;
@@ -42,17 +42,18 @@
     background: #f0f7ff;
     border-left: 6px solid #7c9ff0;
     border-radius: 16px;
-    padding: 22px 20px;
-    font-size: 26px; font-weight: 800; color: #33415c;
-    margin-bottom: 24px;
+    padding: 24px 20px;
+    font-size: 30px; font-weight: 800; color: #33415c;
+    margin-bottom: 10px;
   }
+  .prompt { color: #8b7fd4; font-size: 18px; font-weight: 700; margin-bottom: 20px; }
   .btn {
     display: block; width: 100%;
-    min-height: 68px;
+    min-height: 70px;
     margin: 12px 0;
     padding: 14px 20px;
     font-family: inherit;
-    font-size: 22px; font-weight: 700;
+    font-size: 24px; font-weight: 700;
     color: #43356e;
     background: #ffffff;
     border: 3px solid #cfc4f5;
@@ -62,26 +63,32 @@
   }
   .btn:active { transform: scale(.97); }
   .btn:hover { background: #f6f2ff; border-color: #8f79e8; }
-  .btn.big-start {
+  .btn.picked { background: #e4dcff; border-color: #6a5acd; }
+  .btn.big {
     background: linear-gradient(135deg, #7c6fd0, #5b9cf5);
     color: #fff; border: none;
     font-size: 26px; min-height: 80px;
     box-shadow: 0 8px 20px rgba(106, 90, 205, .35);
   }
-  .btn.correct { background: #d9f8e3; border-color: #3bbf6e; color: #166534; }
-  .btn.wrong { background: #ffe1e1; border-color: #ef6060; color: #991b1b; }
-  .btn:disabled { cursor: default; opacity: .95; }
   .dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
   .dot { width: 14px; height: 14px; border-radius: 50%; background: #dcd6f7; }
   .dot.done { background: #6a5acd; }
   .dot.now { background: #5b9cf5; transform: scale(1.25); }
-  .feedback { min-height: 34px; font-size: 20px; font-weight: 800; margin: 6px 0 10px; }
-  .feedback.ok { color: #15914f; }
-  .feedback.no { color: #d43d3d; }
+  .sentence-frame {
+    font-size: 40px; font-weight: 800; color: #33415c;
+    margin: 18px 0 6px;
+    font-family: 'Caveat', 'Segoe Script', cursive;
+  }
+  .answer {
+    font-size: 32px; font-weight: 800; color: #15914f;
+    margin: 12px 0 6px; min-height: 44px;
+  }
+  .reaction { font-size: 22px; font-weight: 800; color: #d46a9e; min-height: 30px; margin-bottom: 6px; }
   .score-big { font-size: 64px; font-weight: 800; color: #6a5acd; margin: 8px 0; }
   .rank { font-size: 26px; font-weight: 800; color: #33415c; margin-bottom: 20px; }
   .emoji-row { font-size: 52px; margin-bottom: 6px; }
-  .hidden { display: none; }
+  .star-pop { display:inline-block; animation: pop .5s ease; }
+  @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.3); } 100% { transform: scale(1); } }
 </style>
 </head>
 <body>
@@ -89,29 +96,67 @@
 
 <script>
 const cases = [
-  { s: "📞 The phone's ringing.", a: "I'll answer it.", w: ["I answered it yesterday.", "I'll answering it."] },
-  { s: "🛍️ These bags are heavy.", a: "I'll help you carry them.", w: ["I help you every day.", "I'll carried them."] },
-  { s: "🍽️ It's your turn to do the washing-up.", a: "I'll do it in a minute.", w: ["I do it last week.", "I'll does it."] },
-  { s: "✉️ I haven't got your e-mail address.", a: "I'll send it to you.", w: ["I send it yesterday.", "I'll sending it."] },
-  { s: "🎂 It's Sally's birthday next week.", a: "I'll buy her a present.", w: ["I buy her a present last year.", "I'll buys a present."] },
-  { s: "🥶 I'm cold.", a: "I'll close the window.", w: ["I closed it an hour ago.", "I'll closing the window."] },
-  { s: "😋 I'm hungry!", a: "I'll make a sandwich.", w: ["I make one every day.", "I'll made a sandwich."] },
-  { s: "🌑 It's dark in here.", a: "I'll turn on the light.", w: ["I turn it on yesterday.", "I'll turning on the light."] },
-  { s: "🥛 We haven't got any milk.", a: "I'll go to the shop.", w: ["I went there this morning.", "I'll going to the shop."] },
-  { s: "🚗 I can't take you in the car.", a: "I'll get the bus.", w: ["I get the bus yesterday.", "I'll getting the bus."] }
+  { s: "😋 I'm hungry.", opts: [
+    { t: "make a sandwich" },
+    { t: "order a pizza" },
+    { t: "eat the tablecloth", funny: "The tablecloth?? Bon appétit! 😹" }
+  ]},
+  { s: "🥶 I'm cold.", opts: [
+    { t: "close the window" },
+    { t: "put on a hoodie" },
+    { t: "hug the fridge", funny: "The fridge is even colder, detective! 🥶" }
+  ]},
+  { s: "📞 The phone's ringing.", opts: [
+    { t: "answer it" },
+    { t: "let my cat answer it", funny: "Meow, who's calling? 🐱" },
+    { t: "hide under the bed", funny: "Classic detective move! 🛏️" }
+  ]},
+  { s: "🛍️ These bags are heavy.", opts: [
+    { t: "help you carry them" },
+    { t: "call a taxi for the bags", funny: "VIP bags! 🚕" },
+    { t: "watch and eat popcorn", funny: "Very helpful, detective! 🍿" }
+  ]},
+  { s: "🎂 It's my friend's birthday next week.", opts: [
+    { t: "buy a present" },
+    { t: "bake a cake" },
+    { t: "give her my old sock", funny: "A very... personal gift! 🧦" }
+  ]},
+  { s: "🥛 We haven't got any milk.", opts: [
+    { t: "go to the shop" },
+    { t: "drink orange juice instead" },
+    { t: "ask a cow personally", funny: "Moo means yes! 🐄" }
+  ]},
+  { s: "🌑 It's dark in here.", opts: [
+    { t: "turn on the light" },
+    { t: "light ten candles" },
+    { t: "wear sunglasses", funny: "In the dark? Stylish! 😎" }
+  ]},
+  { s: "🌧️ It's raining.", opts: [
+    { t: "take an umbrella" },
+    { t: "stay at home" },
+    { t: "dance in the rain", funny: "Singin' in the rain! 💃" }
+  ]},
+  { s: "🧦 My room is a mess.", opts: [
+    { t: "clean it" },
+    { t: "hire ten robots", funny: "Robots, activate! 🤖" },
+    { t: "close the door and forget it", funny: "Problem solved! 🚪" }
+  ]},
+  { s: "📚 There's a test tomorrow.", opts: [
+    { t: "study tonight" },
+    { t: "sleep and dream about it", funny: "Dream-studying! 💤" },
+    { t: "bring my lucky sandwich", funny: "Sandwich power! 🥪" }
+  ]}
 ];
 
-let i = 0, score = 0, locked = false;
+let i = 0, stars = 0;
 const app = document.getElementById('app');
-
-function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]); }
 
 function startScreen(){
   app.innerHTML = `
     <div class="emoji-row">🕵️🔍</div>
     <h1>Detective of the Year</h1>
-    <p class="sub">Solve 10 cases. Choose what the detective says: <b>I'll ...</b></p>
-    <button class="btn big-start" onclick="showCase()">Start the investigation</button>
+    <p class="sub">10 tricky situations.<br>Choose your action, then say it: <b>I'll ...</b></p>
+    <button class="btn big" onclick="showCase()">Start the investigation</button>
   `;
 }
 
@@ -124,58 +169,59 @@ function dots(){
 }
 
 function showCase(){
-  locked = false;
   const c = cases[i];
-  const opts = shuffle([{t:c.a, ok:true}, {t:c.w[0], ok:false}, {t:c.w[1], ok:false}]);
+  const order = c.opts.map((o,idx)=>idx).sort(()=>Math.random()-.5);
   app.innerHTML = `
     ${dots()}
     <div class="case-tag">Case #${i+1} of ${cases.length}</div>
     <div class="situation">${c.s}</div>
-    <div class="feedback" id="fb"></div>
-    ${opts.map((o,idx)=>`<button class="btn" id="b${idx}" onclick="pick(${idx},${o.ok})">${o.t}</button>`).join('')}
+    <div class="prompt">What will you do? Choose!</div>
+    ${order.map(idx=>`<button class="btn" onclick="pick(${idx})">${c.opts[idx].t}</button>`).join('')}
   `;
 }
 
-function pick(idx, ok){
-  if(locked) return;
-  locked = true;
-  const fb = document.getElementById('fb');
-  const btn = document.getElementById('b'+idx);
-  const buttons = app.querySelectorAll('.btn');
-  if(ok){
-    score++;
-    btn.classList.add('correct');
-    fb.className = 'feedback ok';
-    fb.textContent = ['Case solved! 🎉','Great deduction! ⭐','Elementary! 🔍','Brilliant! 💜'][Math.floor(Math.random()*4)];
-  } else {
-    btn.classList.add('wrong');
-    fb.className = 'feedback no';
-    fb.textContent = 'Not quite! The answer: ' + cases[i].a;
-    buttons.forEach(b => { if(b.textContent === cases[i].a) b.classList.add('correct'); });
-  }
-  buttons.forEach(b => b.disabled = true);
-  setTimeout(()=>{
-    i++;
-    if(i < cases.length) showCase(); else finalScreen();
-  }, ok ? 1200 : 2600);
+function pick(idx){
+  const c = cases[i];
+  const o = c.opts[idx];
+  const reaction = o.funny ? `<div class="reaction">${o.funny}</div>` : `<div class="reaction">Good choice, detective! 🔍</div>`;
+  app.innerHTML = `
+    ${dots()}
+    <div class="case-tag">Case #${i+1} of ${cases.length}</div>
+    <div class="situation">${c.s}</div>
+    ${reaction}
+    <div class="sentence-frame">I'll ______</div>
+    <div class="prompt">Say your sentence out loud!</div>
+    <div class="answer" id="ans"></div>
+    <button class="btn" onclick="reveal('${o.t.replace(/'/g,"\\'")}')">🔎 Show the sentence</button>
+    <button class="btn big" onclick="nextCase()">⭐ I said it!</button>
+  `;
+}
+
+function reveal(action){
+  document.getElementById('ans').innerHTML = `<span class="star-pop">I'll ${action}.</span>`;
+}
+
+function nextCase(){
+  stars++;
+  i++;
+  if(i < cases.length) showCase(); else finalScreen();
 }
 
 function finalScreen(){
   let rank, emo;
-  if(score >= 9){ rank = 'Detective of the Year! 🏆'; emo = '🏆🕵️🔍'; }
-  else if(score >= 7){ rank = 'Super Detective!'; emo = '🕵️⭐'; }
-  else if(score >= 5){ rank = 'Good Detective!'; emo = '🔍😊'; }
-  else { rank = 'Junior Detective — try again!'; emo = '🔎💪'; }
+  if(stars >= 10){ rank = 'Detective of the Year! 🏆'; emo = '🏆🕵️🔍'; }
+  else if(stars >= 7){ rank = 'Super Detective!'; emo = '🕵️⭐'; }
+  else { rank = 'Junior Detective!'; emo = '🔍😊'; }
   app.innerHTML = `
     <div class="emoji-row">${emo}</div>
     <h1>Case closed!</h1>
-    <div class="score-big">${score} / ${cases.length}</div>
+    <div class="score-big">⭐ ${stars} / ${cases.length}</div>
     <div class="rank">${rank}</div>
-    <button class="btn big-start" onclick="restart()">Play again</button>
+    <button class="btn big" onclick="restart()">Play again</button>
   `;
 }
 
-function restart(){ i = 0; score = 0; startScreen(); }
+function restart(){ i = 0; stars = 0; startScreen(); }
 
 startScreen();
 </script>
