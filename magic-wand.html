@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Magic Wand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12082b; --panel:#1e1240; --panel2:#2a1a52; --line:#3d2b6e;
+  --ink:#f5f0ff; --muted:#b3a4dd; --accent:#c77dff; --gold:#ffd166;
+  --r:20px; --rs:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif}
+body{min-height:100dvh;overflow-x:hidden}
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+   radial-gradient(1px 1px at 15% 22%,#fff8 50%,transparent 51%),
+   radial-gradient(1.5px 1.5px at 78% 14%,#fff9 50%,transparent 51%),
+   radial-gradient(1px 1px at 42% 68%,#fff7 50%,transparent 51%),
+   radial-gradient(1.5px 1.5px at 90% 55%,#fff8 50%,transparent 51%),
+   radial-gradient(1px 1px at 60% 90%,#fff6 50%,transparent 51%),
+   radial-gradient(1px 1px at 8% 80%,#fff7 50%,transparent 51%),
+   radial-gradient(700px 420px at 85% -10%,#c77dff22,transparent 60%)}
+.app{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:20px 16px 60px;min-height:100dvh}
+h1{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(26px,5.5vw,46px);line-height:1.1;text-align:center}
+h1 span{color:var(--accent)}
+.sub{text-align:center;color:var(--muted);font-size:clamp(16px,2.6vw,20px);font-weight:700;margin:12px auto 26px;max-width:560px;line-height:1.45}
+.sub b{color:var(--gold)}
+
+.wand-zone{text-align:center;margin-bottom:26px}
+.wand{font-size:72px;display:inline-block;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 24px #c77dff88)}
+@keyframes float{0%,100%{transform:rotate(-12deg) translateY(0)}50%{transform:rotate(-4deg) translateY(-10px)}}
+
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:120px;padding:14px 8px;border-radius:var(--r);background:var(--panel);border:2px solid var(--line);color:var(--ink);font-weight:800;font-size:15px;text-align:center;cursor:pointer;transition:transform .15s,border-color .15s}
+.card .e{font-size:38px}
+.card:hover{border-color:var(--accent);transform:translateY(-3px)}
+.card.done{opacity:.35;border-style:dashed}
+.card:focus-visible,.btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+/* spell overlay */
+.overlay{position:fixed;inset:0;z-index:5;background:#0b0519ee;display:grid;place-items:center;padding:20px;animation:in .3s}
+@keyframes in{from{opacity:0}to{opacity:1}}
+.spell{max-width:600px;width:100%;background:var(--panel);border:2px solid var(--accent);border-radius:24px;padding:30px 26px;text-align:center;box-shadow:0 0 60px #c77dff44}
+.spell .big{font-size:56px;margin-bottom:10px}
+.spell .wish{font-family:Unbounded,system-ui,sans-serif;font-weight:700;font-size:clamp(18px,3.4vw,26px);line-height:1.35;margin-bottom:6px}
+.spell .hint{color:var(--muted);font-weight:700;font-size:16px;margin-bottom:22px}
+.spell .say{min-height:70px;display:grid;place-items:center;margin-bottom:20px}
+.spell .answer{font-weight:800;font-size:clamp(19px,3.6vw,27px);color:var(--gold);line-height:1.4;animation:in .4s}
+.spell .ask{color:var(--muted);font-weight:800;font-size:17px}
+.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{font:inherit;font-weight:800;font-size:18px;border-radius:999px;padding:14px 30px;cursor:pointer;border:2px solid var(--line);background:var(--panel2);color:var(--ink)}
+.btn.main{background:var(--accent);border-color:var(--accent);color:#1c0b33}
+
+.progress{text-align:center;margin-top:24px;color:var(--muted);font-weight:800;font-size:15px;letter-spacing:.06em}
+.progress b{color:var(--gold)}
+.fin{text-align:center;padding-top:30px}
+.fin p{color:var(--muted);font-weight:700;font-size:19px;margin-top:14px}
+
+@media (max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}.card{min-height:110px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sky"></div>
+<div class="app">
+  <h1>The <span>Magic Wand</span></h1>
+  <p class="sub">You have a magic wand. 🪄<br>Pick a card, say your spell with <b>will</b> or <b>won't</b> — and it will happen!</p>
+  <div class="wand-zone"><span class="wand">🪄</span></div>
+  <div class="grid" id="grid"></div>
+  <div class="progress" id="prog"></div>
+</div>
+<div class="overlay" id="ov" style="display:none"><div class="spell" id="spell"></div></div>
+
+<script>
+/* card: [emoji, wish shown on card, model spell] */
+const CARDS = [
+  ["📵","no homework, ever","There won't be any homework!"],
+  ["🏫","school? never heard of it","School won't exist!"],
+  ["🤖","a robot for boring tasks","A robot will do my homework!"],
+  ["🍕","pizza every single day","I'll eat pizza every day!"],
+  ["😴","sleep until lunch","I'll sleep until 12 every day!"],
+  ["🚫📝","no tests, no exams","There won't be any exams!"],
+  ["🏖️","holidays all year","The holidays will never end!"],
+  ["🚌","no more school bus","I won't go to school by bus — I'll teleport!"],
+  ["🎮","lessons = games","All lessons will be games!"],
+  ["👕","wear what you want","Nobody will wear a school uniform!"],
+  ["🍫","chocolate is healthy now","Chocolate will be good for you!"],
+  ["🧹","my room cleans itself","My room will clean itself!"]
+];
+
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let done = new Set();
+
+function render(){
+  if(done.size===CARDS.length){
+    $("grid").innerHTML="";
+    $("prog").innerHTML="";
+    document.querySelector(".wand-zone").insertAdjacentHTML("beforeend",
+      `<div class="fin"><div style="font-size:64px">🌟</div><p>All spells cast! The future is yours.</p></div>`);
+    return;
+  }
+  $("grid").innerHTML = CARDS.map((c,k)=>`
+    <button class="card ${done.has(k)?"done":""}" data-k="${k}" ${done.has(k)?"disabled":""}>
+      <span class="e">${c[0]}</span>${esc(c[1])}
+    </button>`).join("");
+  $("prog").innerHTML = `Spells cast: <b>${done.size}</b> / ${CARDS.length}`;
+  document.querySelectorAll(".card").forEach(b=>b.onclick=()=>openSpell(+b.dataset.k));
+}
+
+function openSpell(k){
+  const c = CARDS[k];
+  $("spell").innerHTML = `
+    <div class="big">${c[0]}</div>
+    <div class="wish">${esc(c[1])}</div>
+    <div class="hint">Say the spell: will / won't …</div>
+    <div class="say" id="say"><span class="ask">🎤 Say it first — then tap ✨</span></div>
+    <div class="btns">
+      <button class="btn main" id="reveal">✨ Show the spell</button>
+      <button class="btn" id="close">Back</button>
+    </div>`;
+  $("ov").style.display="grid";
+  $("reveal").onclick=()=>{
+    $("say").innerHTML=`<span class="answer">${esc(c[2])}</span>`;
+    $("reveal").textContent="🪄 Cast the spell!";
+    $("reveal").onclick=()=>{done.add(k);$("ov").style.display="none";render();};
+  };
+  $("close").onclick=()=>{$("ov").style.display="none";};
+}
+
+render();
+</script>
+</body>
+</html>
