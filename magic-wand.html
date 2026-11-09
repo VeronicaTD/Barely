@@ -39,6 +39,10 @@
   .frame b{color:var(--violet)}
   .frame .dots{letter-spacing:2px;color:#9a8fc4}
   .ideas-btn{margin-top:14px;background:none;border:2px dashed #b9aee6;color:var(--violet);border-radius:999px;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
+  .hints{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+  .hints .ideas-btn{margin-top:14px}
+  .frame.help{display:none;margin-top:12px;background:#fff4d6}
+  .frame.help.show{display:block}
   .chips{display:none;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:10px}
   .chips.show{display:flex}
   .chip{background:#fff4d6;border-radius:999px;padding:6px 14px;font-weight:700}
@@ -58,7 +62,7 @@
 </head>
 <body>
   <h1><svg class="wand" viewBox="0 0 64 64" aria-hidden="true"><line x1="10" y1="56" x2="38" y2="28" stroke="#3a2a6e" stroke-width="7" stroke-linecap="round"/><line x1="10" y1="56" x2="17" y2="49" stroke="#fff" stroke-width="7" stroke-linecap="round"/><path d="M46 6 L49.5 15 L59 16 L51.5 22 L54 31 L46 26 L38 31 L40.5 22 L33 16 L42.5 15 Z" fill="#ffd166" stroke="#f4a940" stroke-width="1.5" stroke-linejoin="round"/><circle cx="26" cy="12" r="2.5" fill="#ffd166"/><circle cx="58" cy="40" r="2" fill="#ffd166"/></svg> The Magic Wand</h1>
-  <p class="lead">You have a magic wand. Pick a card and decide what will happen. Say your spell!</p>
+  <p class="lead">You have a magic wand. Pick a card and decide what happens. Say your spell!</p>
   <div class="counter" id="counter"></div>
   <div class="grid" id="grid"></div>
   <div class="finish" id="finish">
@@ -72,8 +76,12 @@
       <div class="e" id="pEmoji"></div>
       <div class="topic" id="pTopic"></div>
       <div class="frame" id="pFrame"></div>
-      <button class="ideas-btn" id="ideasBtn">Need an idea?</button>
+      <div class="hints">
+        <button class="ideas-btn" id="ideasBtn">Need an idea?</button>
+        <button class="ideas-btn" id="helpBtn">Help with the spell</button>
+      </div>
       <div class="chips" id="chips"></div>
+      <div class="frame help" id="pHelp"></div>
       <div class="btns">
         <button class="btn back" id="backBtn">Back</button>
         <button class="btn cast" id="castBtn">Cast the spell ✨</button>
@@ -119,13 +127,9 @@
     $("finish").classList.toggle("show", finished);
   }
 
-  // Support fades as more spells are cast
-  function frameHTML(subject){
-    const n = done.size;
+  function helpHTML(subject){
     const s = esc(subject);
-    if (n < 4) return `<b>${s}</b> will <span class="dots">…</span><br><b>${s}</b> won't <span class="dots">…</span><br>I'll <span class="dots">…</span> / I won't <span class="dots">…</span>`;
-    if (n < 8) return `will <span class="dots">…</span> / won't <span class="dots">…</span>`;
-    return `✨ Your spell! ✨`;
+    return `<b>${s}</b> will <span class="dots">…</span> / <b>${s}</b> won't <span class="dots">…</span><br>I'll <span class="dots">…</span> / I won't <span class="dots">…</span>`;
   }
 
   function openCard(i){
@@ -133,7 +137,10 @@
     const c = CARDS[i];
     $("pEmoji").textContent = c[0];
     $("pTopic").textContent = c[1];
-    $("pFrame").innerHTML = frameHTML(c[2]);
+    $("pFrame").innerHTML = "✨ Your spell! ✨";
+    $("pHelp").innerHTML = helpHTML(c[2]);
+    $("pHelp").classList.remove("show");
+    $("helpBtn").textContent = "Help with the spell";
     $("chips").innerHTML = c[3].map(v => `<span class="chip">${esc(v)}</span>`).join("");
     $("chips").classList.remove("show");
     $("ideasBtn").textContent = "Need an idea?";
@@ -161,6 +168,10 @@
   $("ideasBtn").onclick = () => {
     const open = $("chips").classList.toggle("show");
     $("ideasBtn").textContent = open ? "Hide ideas" : "Need an idea?";
+  };
+  $("helpBtn").onclick = () => {
+    const open = $("pHelp").classList.toggle("show");
+    $("helpBtn").textContent = open ? "Hide help" : "Help with the spell";
   };
   $("backBtn").onclick = closeCard;
   $("castBtn").onclick = () => {
