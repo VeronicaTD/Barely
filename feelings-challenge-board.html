@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Challenge Board — Feelings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff5cf;--ink:#3b2a66;--purple:#8e5cf7;--amber:#ffb703;--green:#3cc47c;--gold:#ffc83d;--lav:#efe6ff;--red:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Baloo 2',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;padding:14px 12px 6px}
+h1{margin:0;font-size:clamp(22px,4vw,36px);font-weight:800;text-align:center;width:100%}
+h1 span{color:var(--purple)}
+.player{display:flex;align-items:center;gap:8px;background:#fff;border:3px solid transparent;border-radius:18px;padding:4px 14px;font-weight:800;font-size:clamp(16px,2.6vw,22px);box-shadow:0 3px 0 #0001;transition:.2s}
+.player.active{border-color:var(--purple);transform:scale(1.06);background:var(--lav)}
+.player .nm{cursor:pointer}
+.player .sc{background:var(--gold);border-radius:12px;padding:0 10px;min-width:50px;text-align:center}
+.btn{font-family:inherit;font-weight:700;border:none;border-radius:14px;padding:6px 14px;font-size:16px;cursor:pointer;background:#fff;color:var(--ink);box-shadow:0 3px 0 #0002}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.p{background:var(--purple);color:#fff}
+.btn.g{background:var(--green);color:#fff}
+.btn.a{background:var(--amber);color:var(--ink)}
+.btn.r{background:var(--red);color:#fff}
+.turn{width:100%;text-align:center;font-weight:700;font-size:18px;margin-top:2px}
+#board{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;max-width:1100px;margin:8px auto 24px;padding:0 10px}
+.cat{background:var(--ink);color:#fff;border-radius:14px;padding:8px 4px;text-align:center;font-weight:800;font-size:clamp(11px,1.7vw,17px);line-height:1.15;display:flex;align-items:center;justify-content:center;min-height:62px}
+.tile{background:var(--purple);color:var(--gold);border:none;border-radius:14px;font-family:inherit;font-weight:800;font-size:clamp(17px,3.2vw,32px);aspect-ratio:1.5;cursor:pointer;box-shadow:0 4px 0 #5a35b8;transition:.15s}
+.tile:hover{transform:translateY(-2px)}
+.tile.done{background:#e3dcf3;color:#b5a8d6;box-shadow:none;cursor:default;font-size:clamp(14px,2.4vw,22px)}
+#ov{position:fixed;inset:0;background:#3b2a66cc;display:none;align-items:center;justify-content:center;padding:10px;z-index:10}
+#ov.show{display:flex}
+.card{background:#fff;border-radius:24px;width:100%;max-width:600px;max-height:96vh;overflow:auto;padding:16px 18px 18px;position:relative;box-shadow:0 10px 0 #0002}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800}
+.tag{background:var(--lav);border-radius:12px;padding:2px 12px;font-size:15px}
+.dbl{background:var(--gold);border-radius:12px;padding:2px 10px;font-size:15px;animation:pop .5s}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.x{background:none;border:none;font-size:24px;cursor:pointer;color:var(--ink)}
+.pic{font-size:clamp(46px,11vw,70px);text-align:center;line-height:1.2;margin:6px 0}
+.listen{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:4px 0}
+.script{text-align:center;font-size:19px;background:var(--lav);border-radius:14px;padding:6px 10px;margin:6px 0;font-style:italic}
+.prompt{text-align:center;font-size:clamp(19px,3.6vw,25px);font-weight:700;margin:8px 0 10px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{font-family:inherit;font-size:clamp(16px,3vw,20px);font-weight:700;border:3px solid var(--lav);background:#fff;color:var(--ink);border-radius:16px;padding:10px 8px;cursor:pointer;min-height:54px}
+.opt.big{font-size:40px;padding:4px}
+.opt.ok{background:var(--green);border-color:var(--green);color:#fff}
+.opt.bad{opacity:.35;text-decoration:line-through}
+.line{min-height:58px;border:3px dashed var(--purple);border-radius:16px;padding:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin-bottom:10px;background:#faf7ff}
+.line.col,.pool.col{flex-direction:column;align-items:stretch}
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px}
+.chip{font-family:inherit;font-size:clamp(17px,3.2vw,22px);font-weight:700;background:var(--gold);color:var(--ink);border:none;border-radius:12px;padding:6px 14px;cursor:pointer;box-shadow:0 3px 0 #c9951a}
+.line .chip{background:var(--lav);box-shadow:0 3px 0 #c8b6f0}
+.col .chip{text-align:left;font-size:clamp(15px,2.8vw,19px)}
+.sent{display:flex;flex-wrap:wrap;gap:26px 8px;padding-top:18px;justify-content:center;margin:8px 0 12px}
+.w{font-family:inherit;font-size:clamp(20px,3.8vw,26px);font-weight:700;background:var(--lav);border:none;border-radius:12px;padding:4px 12px;cursor:pointer;color:var(--ink);position:relative}
+.w.found{background:#ffe1e1;text-decoration:line-through;text-decoration-color:var(--red)}
+.w .fx{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:17px;color:var(--green);text-decoration:none;white-space:nowrap;font-weight:800}
+.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.typebox{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.typebox input{font-family:inherit;font-size:26px;font-weight:700;width:min(260px,70vw);text-align:center;border:3px solid var(--purple);border-radius:14px;padding:4px 10px;color:var(--ink)}
+.center{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:6px}
+.hint{background:#fff3d6;border-radius:14px;padding:6px 12px;margin-top:10px;font-size:17px;text-align:center;display:none}
+.answer{background:#e4f8ec;border-radius:14px;padding:8px 12px;margin-top:10px;font-size:clamp(19px,3.4vw,23px);font-weight:800;text-align:center;display:none;color:#1d7a47}
+.answer.zero{background:#ffecec;color:#b33}
+.judge{display:none;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.next{display:none;margin-top:12px;text-align:center}
+#end{position:fixed;inset:0;background:#3b2a66dd;display:none;align-items:center;justify-content:center;z-index:20;flex-direction:column;color:#fff;text-align:center;padding:20px}
+#end h2{font-size:clamp(30px,7vw,56px);margin:0}
+#end p{font-size:24px;margin:6px 0 16px}
+.conf{position:fixed;top:-30px;font-size:26px;z-index:30;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media(max-width:560px){#board{gap:5px;padding:0 5px}.cat{min-height:54px;padding:4px 2px}.tile{border-radius:10px}.opts{grid-template-columns:1fr}.opts:has(.big){grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Big Challenge Board — <span>Feelings</span></h1>
+  <div class="player" id="p0"><span class="nm" title="Rename">🦊 Fox</span><span class="sc">0</span></div>
+  <div class="player" id="p1"><span class="nm" title="Rename">🐼 Panda</span><span class="sc">0</span></div>
+  <button class="btn" id="snd">🔊 On</button>
+  <button class="btn" id="newg">↺ New game</button>
+  <div class="turn" id="turn"></div>
+</header>
+<div id="board"></div>
+
+<div id="ov"><div class="card" id="card"></div></div>
+<div id="end"><h2 id="endT">🏆</h2><p id="endS"></p><button class="btn a" id="again" style="font-size:22px">Play again</button></div>
+
+<script>
+/* ---------- QUESTIONS ---------- */
+const CATS=[
+{name:'🎧 Listen!',q:[
+ {t:'choice',listen:"He's scared.",prompt:'How does he feel?',big:true,opts:['😨','😠','😴','🥵'],ans:0,full:"He's scared. 😨",hint:'scared 😨 · angry 😠 · tired 😴 · hot 🥵'},
+ {t:'choice',listen:"We're hungry. We aren't thirsty.",prompt:'What do they need?',opts:['🍕 food','💧 water','🛏️ a bed','🧣 a scarf'],ans:0,full:"They're hungry → food 🍕",hint:'hungry = I want food. thirsty = I want water.'},
+ {t:'choice',listen:"I'm not hot. I'm not hungry. I want some water!",prompt:'Choose the feeling.',opts:['thirsty','hungry','hot','tired'],ans:0,full:"I'm thirsty! 💧",hint:'Water! 💧 What feeling is it?'},
+ {t:'choice',listen:"If you're scared and you know it...",prompt:'What do you do?',opts:['Hug yourself!','Stamp your feet!','Go to sleep!','Clap your hands!'],ans:0,full:"If you're scared — hug yourself! 🤗",hint:'Remember the song: tired → go to sleep, angry → stamp your feet.'},
+ {t:'choice',listen:"Tom, are you sad? No, I'm not. I'm angry!",prompt:'How does Tom feel?',big:true,opts:['😢','😠','😨','😀'],ans:1,full:"No, I'm not sad. I'm angry! 😠",hint:'Listen to the end: “No, I’m not…”'}
+]},
+{name:'📖 The twins story',q:[
+ {t:'choice',pic:'👶👶',prompt:'Who are the twins?',opts:['a brother and a sister','two sisters','two brothers','a mum and a dad'],ans:0,full:"They're twins — brother and sister.",hint:'One boy and one girl.'},
+ {t:'choice',pic:'👶👶😭',prompt:'Why are the babies crying?',opts:["They're hungry.","They're hot.","They're cold.","They're tired."],ans:0,full:"Look, they're hungry!",hint:'Are they hot? No. Are they cold? No…'},
+ {t:'type',pic:'👶👶🍽️',prompt:'What do the babies eat? Write.',ans:['apples','apple'],full:'apples 🍎',hint:'🍎 a _ _ _ _ s'},
+ {t:'order',col:true,prompt:'Put the story in order.',tiles:["The babies are crying.","They aren't hot. They aren't cold.","They're hungry. They eat apples.","They're happy now!"],full:'crying → not hot, not cold → hungry, apples → happy!',hint:'Start: the babies are crying. End: they’re happy.'},
+ {t:'say',pic:'👶👶😊 👧👦😊',prompt:'How are the babies at the end? And the children? Say two sentences.',full:"They're happy now. We're happy too!"}
+]},
+{name:'🧩 Make a question',q:[
+ {t:'order',pic:'👦🥶👧',prompt:'Make a question.',tiles:['are','they','cold'],full:'Are they cold?',hint:'A question starts with are / is / am.'},
+ {t:'order',pic:'👧🍕',prompt:'Make a question. One word is extra!',tiles:['is','she','hungry'],extra:['are'],full:'Is she hungry?',hint:'she → is'},
+ {t:'order',pic:'🥱',prompt:'"I\'m tired." Make a question. Two words are extra!',tiles:['am','I','tired'],extra:['are',"I'm"],full:'Am I tired?',hint:'I → am. Question: Am I …?'},
+ {t:'say',pic:'👦🥵👧',prompt:'Look at them. Ask a question.',full:'Are they hot?'},
+ {t:'order',pic:'👦😢👧',prompt:'Make a question. One word is extra!',tiles:['are','Tim and Kate','sad'],extra:['is'],full:'Are Tim and Kate sad?',hint:'Tim and Kate = they → are'}
+]},
+{name:'✅ Answer it!',q:[
+ {t:'choice',pic:'👦😀',prompt:'Is he happy?',opts:['Yes, he is.',"Yes, he's.",'Yes, it is.',"No, he isn't."],ans:0,full:'Yes, he is.',hint:'Short answer: Yes, he is. (not “he’s”!)'},
+ {t:'choice',pic:'🫵🥶',prompt:'Are you cold?',opts:['Yes, I am.','Yes, you are.',"Yes, I'm.",'Yes, we are.'],ans:0,full:'Yes, I am.',hint:'Are you…? → Yes, I am.'},
+ {t:'choice',pic:'👧👦💭🍕',prompt:'Are they thirsty?',opts:["No, they aren't. They're hungry.","Yes, they are. They're hungry.","No, they isn't. They're hungry.","No, we aren't. We're thirsty."],ans:0,full:"No, they aren't. They're hungry.",hint:'They want pizza, not water.'},
+ {t:'choice',pic:'🧒😀 🧑😀',prompt:'Are you and your friend happy?',opts:['Yes, we are.','Yes, they are.','Yes, you are.','Yes, I am.'],ans:0,full:'Yes, we are.',hint:'you and your friend = we'},
+ {t:'say',pic:'👧😠',prompt:'Is Kate sad? Answer in two sentences.',full:"No, she isn't. She's angry."}
+]},
+{name:'🔍 Find the mistake',q:[
+ {t:'fix',prompt:'Tap the wrong word.',sent:'They is happy.',wrong:{1:'are'},full:'They are happy.',hint:'they → are'},
+ {t:'fix',prompt:'Tap the wrong word.',sent:'I are tired.',wrong:{1:'am'},full:"I am tired. = I'm tired.",hint:'I → am'},
+ {t:'fix',prompt:'Tap the wrong word.',sent:'Is they hungry?',wrong:{0:'Are'},full:'Are they hungry?',hint:'they → are'},
+ {t:'fix',prompt:'Tap the wrong word.',sent:"Are you scared? Yes, I'm.",wrong:{4:'I am.'},full:'Are you scared? Yes, I am.',hint:'Short answers have no ’m / ’re / ’s.'},
+ {t:'fix',prompt:'There are TWO mistakes! Tap them.',sent:'We is cold and they is hungry.',wrong:{1:'are',5:'are'},full:'We are cold and they are hungry.',hint:'we → are, they → are'}
+]},
+{name:'🔤 Sounds & spelling',q:[
+ {t:'type',pic:'🐟',say:'fish',prompt:'Listen and write.',ans:['fish'],full:'fish',hint:'sh: f _ s h'},
+ {t:'choice',listen:'shoes, fish, she, chair',prompt:'Odd one out! Which word has a different sound?',opts:['shoes','fish','she','chair'],ans:3,full:'chair — ch! (shoes, fish, she — sh)',hint:'Three words have sh. One word has ch.'},
+ {t:'type',pic:'🪑',say:'chair',prompt:'Listen and write.',ans:['chair'],full:'chair',hint:'ch: c h _ _ r'},
+ {t:'type',pic:'🥱',say:"He's tired.",prompt:"He's ________. Write the word.",ans:['tired'],full:"He's tired.",hint:'t _ _ _ d'},
+ {t:'type',pic:'🥤💭',say:"I'm thirsty.",prompt:"I'm ________. Write the word.",ans:['thirsty'],full:"I'm thirsty.",hint:'th: t h _ _ _ t y'}
+]}
+];
+
+/* ---------- SPEECH ---------- */
+/* Gemini voice through the shared Supabase proxy; browser male en-GB voice as fallback */
+const AI_PROXY="https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";
+const TTS_MODEL="gemini-2.5-flash-preview-tts",TTS_VOICE="Puck";
+let soundOn=true,voice=null,aiVoice=true,aiFails=0,AC=null,curSrc=null,spTok=0;const ttsCache=new Map();
+function pickVoice(){const v=speechSynthesis.getVoices(),gb=v.filter(x=>/en-GB/i.test(x.lang)),M=/\bmale|daniel|george|ryan|arthur|oliver|thomas|google uk english male/i;
+ voice=gb.find(x=>M.test(x.name)&&!/female/i.test(x.name))||gb[0]||v.find(x=>/^en/i.test(x.lang))||null}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function ensureAC(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}}
+function clean(t){return t.replace(/[^\w\s',.!?\-]/g,' ').replace(/\s+/g,' ').trim()}
+function stopSpeech(){spTok++;try{curSrc&&curSrc.stop()}catch(e){}curSrc=null;if(window.speechSynthesis)speechSynthesis.cancel()}
+function ttsFetch(t){if(ttsCache.has(t))return ttsCache.get(t);
+ const p=(async()=>{if(!AC)throw new Error('no audio');const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),12000);
+  try{const r=await fetch(AI_PROXY+'?forceFunctionRegion=us-east-1&model='+TTS_MODEL,{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,
+    body:JSON.stringify({model:TTS_MODEL,contents:[{parts:[{text:'Read aloud slowly and clearly, in a warm, friendly British English accent, for a young child learning English: '+t}]}],
+     generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:TTS_VOICE}}}}})});
+   const j=await r.json(),part=j&&j.candidates&&j.candidates[0].content.parts.find(x=>x.inlineData);
+   if(!r.ok||!part)throw new Error('no audio');
+   const rate=+((/rate=(\d+)/.exec(part.inlineData.mimeType)||[0,24000])[1]),bin=atob(part.inlineData.data),n=bin.length>>1,buf=AC.createBuffer(1,n,rate),ch=buf.getChannelData(0);
+   for(let i=0;i<n;i++){let v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v&0x8000)v-=0x10000;ch[i]=v/32768}
+   return buf}finally{clearTimeout(to)}})();
+ ttsCache.set(t,p);p.then(()=>{aiFails=0},()=>{ttsCache.delete(t);if(++aiFails>=2)aiVoice=false});return p}
+function browserSpeak(t){if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.lang='en-GB';u.rate=.85;speechSynthesis.speak(u)}
+function speak(t){if(!soundOn||!t)return;t=clean(t);if(!t)return;stopSpeech();const tok=spTok;
+ if(aiVoice&&AC){ttsFetch(t).then(buf=>{if(tok!==spTok)return;const s=AC.createBufferSource();s.buffer=buf;s.connect(AC.destination);curSrc=s;s.start()},()=>{if(tok===spTok)browserSpeak(t)})}
+ else browserSpeak(t)}
+function prefetch(t){if(soundOn&&aiVoice&&AC&&t)ttsFetch(clean(t)).catch(()=>{})}
+
+/* ---------- STATE ---------- */
+const P=[{name:'🦊 Fox',score:0},{name:'🐼 Panda',score:0}];
+let cur=0,used=new Set(),doubles=new Set(),st=null;
+const $=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function norm(s){return s.toLowerCase().replace(/[’`]/g,"'").replace(/[^a-z' ]/g,'').replace(/\s+/g,' ').trim()}
+
+function drawHeader(){for(let i=0;i<2;i++){const el=$('p'+i);el.querySelector('.nm').textContent=P[i].name;el.querySelector('.sc').textContent=P[i].score;el.classList.toggle('active',i===cur)}$('turn').textContent=P[cur].name+', choose a question!'}
+function drawBoard(){const b=$('board');b.innerHTML='';CATS.forEach(c=>{const d=document.createElement('div');d.className='cat';d.textContent=c.name;b.appendChild(d)});
+ for(let r=0;r<5;r++)CATS.forEach((c,ci)=>{const k=ci+'-'+r,t=document.createElement('button');t.className='tile'+(used.has(k)?' done':'');t.textContent=used.has(k)?'✓':(r+1)*100;if(!used.has(k))t.onclick=()=>openQ(ci,r);b.appendChild(t)})}
+function newGame(){P[0].score=P[1].score=0;cur=0;used=new Set();doubles=new Set();while(doubles.size<2)doubles.add((Math.random()*6|0)+'-'+((Math.random()*3|0)+2));drawHeader();drawBoard();$('end').style.display='none'}
+
+/* ---------- MODAL ---------- */
+function openQ(ci,r){ensureAC();const q=CATS[ci].q[r],k=ci+'-'+r,dbl=doubles.has(k);
+ st={q,k,pts:(r+1)*100*(dbl?2:1),fails:0,textUsed:false,done:false,chosen:[],found:new Set()};
+ const c=$('card');
+ let h=`<div class="top"><span class="tag">${CATS[ci].name} · ${(r+1)*100}</span>${dbl?'<span class="dbl">⭐ ×2 Double!</span>':''}<button class="x" id="cls">✕</button></div>`;
+ if(q.pic)h+=`<div class="pic">${q.pic}</div>`;
+ if(q.listen)h+=`<div class="pic">🎧</div><div class="listen"><button class="btn p" id="again1">🔊 Listen again</button><button class="btn" id="showt">📝 Show text (½ points)</button></div><div class="script" id="script" style="display:none">${q.listen}</div>`;
+ if(q.say)h+=`<div class="listen"><button class="btn p" id="again1">🔊 Listen again</button></div>`;
+ h+=`<div class="prompt">${q.prompt}</div><div id="area"></div><div class="hint" id="hint"></div><div class="answer" id="ans"></div><div class="judge" id="judge"></div><div class="next" id="next"><button class="btn a" id="nextb" style="font-size:20px">Next ▶</button></div>`;
+ c.innerHTML=h;$('ov').classList.add('show');
+ $('cls').onclick=closeQ;
+ if($('again1'))$('again1').onclick=()=>speak(q.listen||q.say);
+ if($('showt'))$('showt').onclick=()=>{$('script').style.display='block';$('showt').remove();if(!st.done)st.textUsed=true};
+ $('nextb').onclick=closeQ;
+ build();
+ setTimeout(()=>speak(q.listen?q.listen:q.say?q.say:q.prompt.replace(/_+/g,'blank')),250);
+ setTimeout(()=>{prefetch(q.full);prefetch('Try again!')},900);
+}
+function closeQ(){stopSpeech();$('ov').classList.remove('show');if(st&&st.done){used.add(st.k);cur=1-cur;drawHeader();drawBoard();if(used.size===30)setTimeout(endGame,400)}st=null}
+
+function showHint(){if(st.q.hint){$('hint').textContent='💡 '+st.q.hint;$('hint').style.display='block'}}
+function fail(){st.fails++;if(st.fails>=2){finish(0);return false}showHint();speak("Try again!");return true}
+function finish(factor){st.done=true;let pts=Math.round(st.pts*factor*(st.textUsed?.5:1));const a=$('ans');
+ a.innerHTML=(factor>0?'✅ ':'👉 ')+st.q.full+(factor>0?`<br>+${pts}`:'<br>0 points');a.classList.toggle('zero',factor===0);a.style.display='block';$('hint').style.display='none';
+ P[cur].score+=pts;drawHeader();$('next').style.display='block';
+ if(factor>0)confetti(18);speak(st.q.full);
+ document.querySelectorAll('#area button, #area input').forEach(b=>b.disabled=true)}
+const award=()=>finish(st.fails===0?1:.5);
+
+function build(){const q=st.q,A=$('area');
+ if(q.t==='choice'){A.innerHTML='<div class="opts"></div>';const box=A.firstChild;
+  shuffle(q.opts.map((o,i)=>({o,i}))).forEach(({o,i})=>{const b=document.createElement('button');b.className='opt'+(q.big?' big':'');b.textContent=o;
+   b.onclick=()=>{if(st.done||b.classList.contains('bad'))return;if(i===q.ans){b.classList.add('ok');award()}else{b.classList.add('bad');fail()}};box.appendChild(b)})}
+ if(q.t==='order'){const items=q.tiles.map((w,i)=>({w,i})).concat((q.extra||[]).map(w=>({w,i:-1})));
+  st.pool=shuffle(items);st.chosen=[];
+  A.innerHTML=`<div class="line${q.col?' col':''}" id="line"></div><div class="pool${q.col?' col':''}" id="pool"></div><div class="center"><button class="btn" id="clr">↺ Clear</button><button class="btn g" id="chk">✔ Check</button></div>`;
+  const draw=()=>{const L=$('line'),Pl=$('pool');L.innerHTML='';Pl.innerHTML='';
+   st.chosen.forEach((it,n)=>{const b=document.createElement('button');b.className='chip';b.textContent=it.w;b.onclick=()=>{if(st.done)return;st.chosen.splice(n,1);st.pool.push(it);draw()};L.appendChild(b)});
+   if(!st.chosen.length)L.innerHTML='<span style="opacity:.45">tap the words…</span>';
+   st.pool.forEach((it,n)=>{const b=document.createElement('button');b.className='chip';b.textContent=it.w;b.onclick=()=>{if(st.done)return;st.pool.splice(n,1);st.chosen.push(it);speak(it.w);draw()};Pl.appendChild(b)})};
+  draw();
+  $('clr').onclick=()=>{if(st.done)return;st.pool=st.pool.concat(st.chosen);st.chosen=[];draw()};
+  $('chk').onclick=()=>{if(st.done)return;const ok=st.chosen.length===q.tiles.length&&st.chosen.every((it,n)=>it.i===n);
+   if(ok)award();else{$('line').classList.add('shake');setTimeout(()=>$('line')&&$('line').classList.remove('shake'),400);fail()}}}
+ if(q.t==='type'){A.innerHTML=`<div class="typebox"><input id="inp" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn g" id="chk">✔ Check</button></div>`;
+  const go=()=>{if(st.done)return;const v=norm($('inp').value);if(!v)return;if(q.ans.some(a=>norm(a)===v))award();else{$('inp').classList.add('shake');setTimeout(()=>$('inp')&&$('inp').classList.remove('shake'),400);$('inp').value='';fail()}};
+  $('chk').onclick=go;$('inp').onkeydown=e=>{if(e.key==='Enter')go()};setTimeout(()=>$('inp')&&$('inp').focus(),300)}
+ if(q.t==='fix'){const words=q.sent.split(' ');A.innerHTML='<div class="sent" id="sent"></div>';
+  words.forEach((w,i)=>{const b=document.createElement('button');b.className='w';b.textContent=w;
+   b.onclick=()=>{if(st.done||st.found.has(i))return;
+    if(q.wrong[i]!==undefined){st.found.add(i);b.classList.add('found');const f=document.createElement('span');f.className='fx';f.textContent=q.wrong[i];b.appendChild(f);
+     if(st.found.size===Object.keys(q.wrong).length)award()}
+    else{b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);fail()}};$('sent').appendChild(b)})}
+ if(q.t==='say'){A.innerHTML=`<div class="center"><span style="font-size:18px">🗣️ Say it! Then check.</span></div><div class="center"><button class="btn p" id="show">👀 Show answer</button></div>`;
+  $('show').onclick=()=>{$('show').remove();const a=$('ans');a.textContent=st.q.full;a.classList.remove('zero');a.style.display='block';speak(st.q.full);
+   const j=$('judge');j.style.display='flex';j.innerHTML='<button class="btn g" data-f="1">✓ Yes!</button><button class="btn a" data-f=".5">½ Almost</button><button class="btn r" data-f="0">✗ Not yet</button>';
+   j.querySelectorAll('button').forEach(b=>b.onclick=()=>{j.style.display='none';finish(+b.dataset.f)})}}
+}
+
+/* ---------- END / FX ---------- */
+function endGame(){const [a,b]=P;$('endT').textContent=a.score===b.score?'🤝 Draw!':'🏆 '+(a.score>b.score?a.name:b.name)+' wins!';$('endS').textContent=`${a.name}: ${a.score} · ${b.name}: ${b.score}`;$('end').style.display='flex';confetti(60)}
+function confetti(n){const e=['🎉','⭐','✨','💜','🎊'];for(let i=0;i<n;i++){const s=document.createElement('div');s.className='conf';s.textContent=e[i%e.length];s.style.left=Math.random()*100+'vw';s.style.animationDuration=(1.4+Math.random()*1.4)+'s';s.style.animationDelay=Math.random()*.4+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),3500)}}
+
+/* ---------- CONTROLS ---------- */
+[0,1].forEach(i=>$('p'+i).querySelector('.nm').onclick=()=>{const n=prompt('Name:',P[i].name);if(n&&n.trim()){P[i].name=n.trim().slice(0,14);drawHeader()}});
+$('snd').onclick=()=>{soundOn=!soundOn;$('snd').textContent=soundOn?'🔊 On':'🔇 Off';if(!soundOn)stopSpeech();else ensureAC()};
+$('newg').onclick=()=>{if(confirm('Start a new game?'))newGame()};
+$('again').onclick=newGame;
+newGame();
+</script>
+</body>
+</html>
