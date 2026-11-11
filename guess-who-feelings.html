@@ -96,6 +96,17 @@ main{display:grid;grid-template-columns:1fr 392px;gap:14px;padding:0 16px 14px;m
 .mchoose button{border:4px solid #eee6f5;background:#fff;border-radius:18px;padding:8px 18px;font-size:20px;font-weight:800;color:var(--ink)}
 .mchoose button.on{border-color:var(--a);background:#fff1f3}
 .winsvg{width:150px;height:170px}
+.bottom.solo{grid-template-columns:1fr}
+.mic{background:var(--lav);font-size:24px}
+.mic.on{background:var(--a);animation:pulse 1s infinite}
+.heard{min-height:30px;text-align:center;font-size:20px;font-weight:700;color:var(--mut)}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-content:start;flex:1}
+.pad .gb{grid-column:span 2}
+.emo{border:0;border-radius:16px;background:#eef6ff;font-size:32px;line-height:1;padding:8px 0;position:relative;box-shadow:0 3px 0 #c6e2fb}
+.emo.gb{background:#ffeef2;box-shadow:0 3px 0 #f6c3cf}
+.emo[disabled]{cursor:default;opacity:.45;box-shadow:none}
+.emo .mk{position:absolute;top:-7px;right:-4px;font-size:14px;border-radius:9px;padding:0 6px;color:#fff;background:var(--ok);font-weight:800}
+.emo .mk.no{background:#b9adc7}
 .conf{position:fixed;top:-30px;font-size:28px;animation:fall linear forwards;pointer-events:none;z-index:30}
 @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
 @media(max-width:1000px){main{grid-template-columns:1fr}.app{height:auto}.kids{grid-template-columns:repeat(4,1fr);grid-template-rows:none}.kid{height:190px}.bottom{grid-template-columns:1fr;height:auto}h1{font-size:22px}header{flex-wrap:wrap;height:auto}.app{grid-template-rows:auto 1fr}}
@@ -117,7 +128,7 @@ main{display:grid;grid-template-columns:1fr 392px;gap:14px;padding:0 16px 14px;m
   <section class="left">
     <div class="pickbar" id="pickbar" hidden>👆 Tap the kid!</div>
     <div class="kids" id="kids"></div>
-    <div class="bottom">
+    <div class="bottom" id="bottom">
       <div class="talk">
         <div class="line"><span class="av me">🧒</span><span class="bub me" id="bMe"></span></div>
         <div class="line"><span class="av pc">🤖</span><span class="bub pc" id="bPc"></span></div>
@@ -132,14 +143,10 @@ main{display:grid;grid-template-columns:1fr 392px;gap:14px;padding:0 16px 14px;m
   </section>
 
   <section class="panel" id="panelG">
-    <div class="ptitle"><span>Ask me! ❓</span><span>Questions: <b id="qCount">0</b></span></div>
-    <div class="row2">
-      <button class="chip g" id="cBoy">Is it a boy?</button>
-      <button class="chip g" id="cGirl">Is it a girl?</button>
-    </div>
-    <div class="pron" id="pron">Ask about: <button id="pHe" class="on">he 👦</button><button id="pShe">she 👧</button></div>
-    <div class="known" id="known" hidden></div>
-    <div class="feel" id="feel"></div>
+    <div class="ptitle"><span>Ask the robot! 🤖</span><span>Questions: <b id="qCount">0</b></span></div>
+    <button class="big mic" id="mic">🎤 Ask</button>
+    <div class="heard" id="heard"></div>
+    <div class="pad" id="pad"></div>
     <button class="big know" id="know">I know! 💡</button>
   </section>
 
@@ -290,24 +297,53 @@ function P(k){return k.g==='boy'?'he':'she'}
 var sound=true,VOICE=null,mode='guess',round=0,totalStars=0;
 function pickVoice(){
   if(!window.speechSynthesis)return;
-  var vs=speechSynthesis.getVoices();
-  var gb=vs.filter(function(v){return /en[-_]GB/i.test(v.lang)});
-  VOICE=gb.find(function(v){return /Libby|Sonia|Serena|Kate|Female|Martha|Stephanie/i.test(v.name)})||gb[0]||null;
+  var vs=speechSynthesis.getVoices(),gb=vs.filter(function(v){return /en[-_]GB/i.test(v.lang)});
+  VOICE=gb.find(function(v){return /\bmale|daniel|george|ryan|arthur|oliver|thomas|google uk english male/i.test(v.name)&&!/female/i.test(v.name)})||gb[0]||null;
 }
 if(window.speechSynthesis){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+/* Gemini voice via the shared Supabase proxy; browser voice as fallback */
+var AI_PROXY="https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini",TTS_MODEL="gemini-2.5-flash-preview-tts",TTS_VOICE="Puck";
+var AC=null,curSrc=null,spTok=0,aiVoice=true,aiFails=0,ttsCache={};
+function ensureAC(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}}
+function ttsFetch(t){
+  if(ttsCache[t])return ttsCache[t];
+  var p=new Promise(function(ok,bad){
+    if(!AC||!aiVoice){bad();return}
+    var ctl=new AbortController(),to=setTimeout(function(){ctl.abort()},12000);
+    fetch(AI_PROXY+'?forceFunctionRegion=us-east-1&model='+TTS_MODEL,{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,
+      body:JSON.stringify({model:TTS_MODEL,contents:[{parts:[{text:'Say in a friendly, cheerful British English accent, clearly and not too fast: '+t}]}],
+        generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:TTS_VOICE}}}}})})
+    .then(function(r){return r.json().then(function(j){
+      var part=j&&j.candidates&&j.candidates[0].content.parts.filter(function(x){return x.inlineData})[0];
+      if(!r.ok||!part)throw 0;
+      var rate=+((/rate=(\d+)/.exec(part.inlineData.mimeType)||[0,24000])[1]),bin=atob(part.inlineData.data),n=bin.length>>1,buf=AC.createBuffer(1,n,rate),ch=buf.getChannelData(0);
+      for(var i=0;i<n;i++){var v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v&0x8000)v-=0x10000;ch[i]=v/32768}
+      return buf})})
+    .then(function(b){clearTimeout(to);aiFails=0;ok(b)},function(){clearTimeout(to);delete ttsCache[t];if(++aiFails>=2)aiVoice=false;bad()});
+  });
+  ttsCache[t]=p;return p;
+}
+function prefetch(t){ttsFetch(t).catch(function(){})}
+function stopSpeech(){spTok++;try{curSrc&&curSrc.stop()}catch(e){}curSrc=null;if(window.speechSynthesis)speechSynthesis.cancel()}
+function browserLine(t,cb){
+  if(!window.speechSynthesis){setTimeout(cb,300);return}
+  var u=new SpeechSynthesisUtterance(t),f=false;function c(){if(!f){f=true;cb()}}
+  u.lang='en-GB';u.rate=.9;if(VOICE)u.voice=VOICE;u.onend=c;u.onerror=c;speechSynthesis.speak(u);setTimeout(c,1500+t.length*95);
+}
+function playLine(t,tok,cb){
+  if(tok!==spTok){cb();return}
+  ttsFetch(t).then(function(buf){
+    if(tok!==spTok){cb();return}
+    var s=AC.createBufferSource(),f=false;function c(){if(!f){f=true;cb()}}
+    s.buffer=buf;s.connect(AC.destination);s.onended=c;curSrc=s;s.start();setTimeout(c,buf.duration*1000+700);
+  },function(){if(tok===spTok)browserLine(t,cb);else cb()});
+}
 function say(lines,done){
-  lines=[].concat(lines);var fired=false;
+  lines=[].concat(lines).filter(Boolean);var fired=false;
   function fin(){if(fired)return;fired=true;if(done)done()}
-  if(!sound||!window.speechSynthesis){setTimeout(fin,350);return}
-  try{
-    speechSynthesis.cancel();
-    lines.forEach(function(t,i){
-      var u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.9;if(VOICE)u.voice=VOICE;
-      if(i===lines.length-1){u.onend=fin;u.onerror=fin}
-      speechSynthesis.speak(u);
-    });
-    var len=lines.join(' ').length;setTimeout(fin,1500+len*95);
-  }catch(e){setTimeout(fin,350)}
+  if(!sound||!lines.length){setTimeout(fin,350);return}
+  stopSpeech();var tok=spTok,i=0;
+  (function next(){if(i>=lines.length||tok!==spTok){fin();return}playLine(lines[i++],tok,next)})();
 }
 function bubble(id,txt){var b=$(id);b.textContent=txt;b.classList.remove('pop');void b.offsetWidth;if(txt)b.classList.add('pop')}
 function confetti(n){var e=['⭐','🎉','✨','💛','🌟'];for(var i=0;i<n;i++){var s=document.createElement('div');s.className='conf';s.textContent=rand(e);s.style.left=Math.random()*100+'vw';s.style.animationDuration=(1.6+Math.random()*1.6)+'s';document.body.appendChild(s);setTimeout(function(x){x.remove()}.bind(null,s),3500)}}
@@ -340,72 +376,89 @@ function kidTap(i){
 
 /* ---------- MODE 1: Guess Who ---------- */
 var G={};
+var EMO={happy:'😀',sad:'😢',hot:'🥵',cold:'🥶',hungry:'🍕',thirsty:'💧',tired:'😴',angry:'😠',scared:'😨',brave:'💪',nervous:'😬'};
 function newGuess(){
   round++;paintHead();
-  G={secret:Math.floor(Math.random()*KIDS.length),known:null,pron:'he',gAns:{},asked:{},q:0,guessing:false,busy:false};
+  G={secret:Math.floor(Math.random()*KIDS.length),known:null,gAns:{},asked:{},q:0,guessing:false,busy:false};
   cards.forEach(function(c){c.classList.remove('down','hl','look')});
-  bubble('bMe','');bubble('bPc','Ask me! Who is it? 🤔');ruleOff();
+  bubble('bMe','');bubble('bPc','Guess who! Ask me! 🤔');$('heard').textContent='';ruleOff();
   setPicking(false);renderG();
 }
+function mk(a){return a?'<span class="mk'+(a==='No'?' no':'')+'">'+(a==='No'?'✗':'✓')+'</span>':''}
 function renderG(){
   $('qCount').textContent=G.q;
-  [['cBoy','boy'],['cGirl','girl']].forEach(function(p){
-    var c=$(p[0]);c.disabled=!!G.known||G.busy;
-    c.innerHTML='Is it a '+p[1]+'?'+(G.gAns[p[1]]?'<span class="tag'+(G.gAns[p[1]]==='No'?' no':'')+'">'+G.gAns[p[1]]+'</span>':'');
+  var box=$('pad');box.innerHTML='';
+  [['boy','👦'],['girl','👧']].forEach(function(p){
+    var b=document.createElement('button');b.className='emo gb';b.innerHTML=p[1]+mk(G.gAns[p[0]]);
+    b.disabled=!!G.known||G.busy;b.onclick=function(){askGender(p[0])};box.appendChild(b);
   });
-  $('pron').hidden=!!G.known;$('known').hidden=!G.known;
-  if(G.known)$('known').textContent=G.known==='boy'?'👦 It\'s a boy → he':'👧 It\'s a girl → she';
-  $('pHe').classList.toggle('on',G.pron==='he');$('pShe').classList.toggle('on',G.pron==='she');
-  var pr=G.known?(G.known==='boy'?'he':'she'):G.pron;
-  var box=$('feel');box.innerHTML='';
   FEELINGS.forEach(function(f){
-    var b=document.createElement('button');b.className='chip';
-    var a=G.asked[f];
-    b.innerHTML='Is '+pr+' '+f+'?'+(a?'<span class="tag'+(a==='No'?' no':'')+'">'+a+'</span>':'');
-    b.disabled=!!a||G.busy;
-    b.onclick=function(){askFeel(f)};
-    box.appendChild(b);
+    var b=document.createElement('button');b.className='emo';b.innerHTML=EMO[f]+mk(G.asked[f]);
+    b.disabled=!!G.asked[f]||G.busy;b.onclick=function(){askFeel(f)};box.appendChild(b);
   });
-  $('know').disabled=G.busy;
+  $('know').disabled=G.busy;$('mic').disabled=G.busy;
 }
 function lock(on){G.busy=on;renderG()}
-function askGender(g){
-  if(G.busy||G.known)return;
-  var s=KIDS[G.secret],yes=s.g===g,q='Is it a '+g+'?',a=yes?'Yes, it is.':'No, it isn\'t.';
-  G.q++;G.gAns[g]=yes?'Yes':'No';G.known=s.g;
-  bubble('bMe',q);bubble('bPc','…');lock(true);
-  say(q,function(){bubble('bPc',a);say(a,function(){lock(false)})});
+function askGender(g,heard){
+  if(G.busy)return;
+  var s=KIDS[G.secret],yes=s.g===g,a=yes?'Yes, it is.':'No, it isn\'t.';
+  if(G.known){a=(s.g==='boy'?'It\'s a boy!':'It\'s a girl!');}
+  else{G.q++;G.gAns[g]=yes?'Yes':'No';G.known=s.g;}
+  bubble('bMe',heard||(g==='boy'?'👦 ?':'👧 ?'));bubble('bPc',a);lock(true);
+  say(a,function(){lock(false)});
 }
-function askFeel(f){
-  if(G.busy||G.asked[f])return;
-  var s=KIDS[G.secret],sp=P(s),asked=G.known?sp:G.pron;
-  var q='Is '+asked+' '+f+'?',yes=s.f===f;
-  var a=(yes?'Yes, '+sp+' is.':'No, '+sp+' isn\'t.');
-  var pre='';
-  if(!G.known&&asked!==sp){pre='It\'s a '+s.g+'! ';}
-  G.q++;G.asked[f]=yes?'Yes':'No';
-  var wasUnknown=!G.known;G.known=s.g;
-  if(wasUnknown){G.gAns[s.g]=G.gAns[s.g]||''}
-  bubble('bMe',q);bubble('bPc','…');lock(true);
-  say(q,function(){
-    bubble('bPc',pre+a);
-    var lines=pre?[pre,'Is '+sp+' '+f+'?',a]:[a];
-    say(lines,function(){lock(false)});
-  });
+function askFeel(f,heard,pron){
+  if(G.busy)return;
+  var s=KIDS[G.secret],sp=P(s);
+  bubble('bMe',heard||EMO[f]+' ?');
+  if(G.asked[f]){bubble('bPc','You know! Ask another question.');lock(true);say('You know! Ask another question.',function(){lock(false)});return}
+  var yes=s.f===f,a=yes?'Yes, '+sp+' is.':'No, '+sp+' isn\'t.',pre='';
+  if(pron&&pron!==sp)pre='It\'s a '+s.g+'!';
+  G.q++;G.asked[f]=yes?'Yes':'No';G.known=s.g;G.gAns[s.g]=G.gAns[s.g]||'Yes';
+  bubble('bPc',(pre?pre+' ':'')+a);lock(true);
+  say([pre,a],function(){lock(false)});
 }
+/* microphone: the child asks aloud, the robot answers */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null,listening=false;
+function parseQ(t){
+  t=t.toLowerCase().replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim();
+  var m=t.match(/\bis it (a |an )?(boy|girl)\b/);if(m)return {type:'g',v:m[2]};
+  for(var i=0;i<KIDS.length;i++)if(new RegExp('\\b(is it|it s|it is) '+KIDS[i].n.toLowerCase()+'\\b').test(t))return {type:'k',v:i};
+  m=t.match(/\bis (he|she) (\w+)/);if(m&&FEELINGS.indexOf(m[2])>=0)return {type:'f',v:m[2],p:m[1]};
+  return null;
+}
+function handleHeard(alts){
+  var q=null,txt=alts[0]||'';
+  for(var i=0;i<alts.length&&!q;i++){q=parseQ(alts[i]);if(q)txt=alts[i]}
+  txt=cap(txt.trim())+(/\?$/.test(txt)?'':'?');$('heard').textContent='🎤 '+txt;
+  if(!q){bubble('bMe',txt);bubble('bPc','Sorry? Ask me again!');say('Sorry? Ask me again!');return}
+  if(q.type==='g')askGender(q.v,txt);
+  else if(q.type==='f')askFeel(q.v,txt,q.p);
+  else doGuess(q.v);
+}
+function micClick(){
+  if(G.busy||!SR)return;
+  if(listening){try{rec.stop()}catch(e){}return}
+  stopSpeech();rec=new SR();rec.lang='en-GB';rec.interimResults=false;rec.maxAlternatives=5;
+  rec.onresult=function(e){handleHeard([].map.call(e.results[0],function(a){return a.transcript}))};
+  rec.onerror=function(e){$('heard').textContent=e.error==='not-allowed'?'🎤 ✗ 🔒':'🎤 …'};
+  rec.onend=function(){listening=false;$('mic').classList.remove('on');$('mic').textContent='🎤 Ask'};
+  try{rec.start();listening=true;$('mic').classList.add('on');$('mic').textContent='👂 Listening…'}catch(e){}
+}
+$('mic').onclick=micClick;if(!SR)$('mic').hidden=true;
 function setPicking(on){
   G.guessing=on;$('kids').classList.toggle('pick',on);$('pickbar').hidden=!on;
   var k=$('know');k.textContent=on?'Back ↩':'I know! 💡';k.classList.toggle('cancel',on);
 }
 function doGuess(i){
   var s=KIDS[G.secret],k=KIDS[i];setPicking(false);
-  bubble('bMe','It\'s '+k.n+'!');G.q++;renderG();
+  bubble('bMe','Is it '+k.n+'?');G.q++;renderG();
   if(i===G.secret){
     var line1='Yes! It\'s '+s.n+'.',line2=cap(P(s))+'\'s '+s.f+'.';
     bubble('bPc',line1+' '+line2);lock(true);
     cards[i].classList.add('hl');confetti(18);
     var st=G.q<=4?3:G.q<=7?2:1;totalStars+=st;paintHead();
-    say(['It\'s '+s.n+'!',line1,line2],function(){
+    say([line1,line2],function(){
       $('winPic').innerHTML='<svg class="winsvg" viewBox="0 0 120 140">'+kidSVG(s).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')+'</svg>';
       $('winT').textContent=line1+' '+line2;$('winS').textContent=starStr(st);
       $('winP').textContent='Questions: '+G.q;$('winNext').textContent='Next round ▶';
@@ -415,13 +468,9 @@ function doGuess(i){
     var a='No, it isn\'t '+k.n+'. Ask more questions!';
     bubble('bPc',a);lock(true);cards[i].classList.add('look');
     setTimeout(function(){cards[i].classList.remove('look')},1600);
-    say(['It\'s '+k.n+'!','No, it isn\'t '+k.n+'.','Ask more questions!'],function(){lock(false)});
+    say(['No, it isn\'t '+k.n+'.','Ask more questions!'],function(){lock(false)});
   }
 }
-$('cBoy').onclick=function(){askGender('boy')};
-$('cGirl').onclick=function(){askGender('girl')};
-$('pHe').onclick=function(){if(!G.busy){G.pron='he';renderG()}};
-$('pShe').onclick=function(){if(!G.busy){G.pron='she';renderG()}};
 $('know').onclick=function(){if(G.busy)return;setPicking(!G.guessing);if(G.guessing)say('Who is it?')};
 
 /* ---------- MODE 2: Teacher asks ---------- */
@@ -494,20 +543,21 @@ function endTeacher(){
 function setMode(m){
   mode=m;$('tabG').classList.toggle('on',m==='guess');$('tabT').classList.toggle('on',m==='teacher');
   $('panelG').hidden=m!=='guess';$('panelT').hidden=m!=='teacher';
-  $('rIt').hidden=m!=='guess';
-  if(window.speechSynthesis)speechSynthesis.cancel();
+  $('rule').hidden=m==='guess';$('bottom').classList.toggle('solo',m==='guess');
+  stopSpeech();
   if(m==='guess'){setPicking(false);newGuess()}else{if(G.guessing)setPicking(false);newTeacher()}
 }
 $('tabG').onclick=function(){setMode('guess')};
 $('tabT').onclick=function(){setMode('teacher')};
 $('newR').onclick=function(){setMode(mode)};
-$('snd').onclick=function(){sound=!sound;this.textContent=sound?'🔊':'🔇';if(!sound&&window.speechSynthesis)speechSynthesis.cancel()};
+$('snd').onclick=function(){sound=!sound;this.textContent=sound?'🔊':'🔇';if(!sound)stopSpeech();else ensureAC()};
 $('winNext').onclick=function(){$('winOv').hidden=true;setMode(mode)};
 var startMode='guess';
 $('mG').onclick=function(){startMode='guess';this.classList.add('on');$('mT').classList.remove('on')};
 $('mT').onclick=function(){startMode='teacher';this.classList.add('on');$('mG').classList.remove('on')};
 $('start').onclick=function(){
-  $('startOv').hidden=true;pickVoice();
+  $('startOv').hidden=true;pickVoice();ensureAC();
+  ['Yes, he is.','No, he isn\'t.','Yes, she is.','No, she isn\'t.','Yes, it is.','No, it isn\'t.','It\'s a boy!','It\'s a girl!','Sorry? Ask me again!'].forEach(prefetch);
   if(startMode==='guess'){setMode('guess');say('Guess who! Ask me!')}else setMode('teacher');
 };
 buildGrid();G={busy:false};paintHead();
