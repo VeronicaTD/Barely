@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who Is Lying?</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Nunito:wght@400;600;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#2b2f3a; --folder:#d9b878; --folder-dark:#b8944f; --paper:#fbf7ee; --ink:#1f2430;
+    --navy:#26365a; --red:#b9372b; --green:#2f7d58; --hl:#ffe58a; --muted:#6b6458;
+    --shadow:0 8px 22px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Nunito',sans-serif;color:var(--ink);background:var(--bg);min-height:100vh}
+  header{display:flex;align-items:center;gap:14px;padding:14px 16px;color:#f3ead7;flex-wrap:wrap}
+  header h1{margin:0;font-family:'Special Elite',monospace;font-size:clamp(22px,4vw,32px);letter-spacing:1px}
+  .caseno{font-family:'Special Elite',monospace;background:var(--red);color:#fff;padding:3px 10px;border-radius:4px;transform:rotate(-3deg)}
+  .steps{display:flex;gap:6px;margin-left:auto}
+  .steps span{width:26px;height:6px;border-radius:3px;background:rgba(243,234,215,.25)}
+  .steps span.on{background:var(--folder)}
+  main{max-width:980px;margin:0 auto;padding:0 16px 100px}
+  .folder{background:var(--folder);border-radius:4px 14px 14px 14px;padding:22px clamp(14px,3vw,30px);box-shadow:var(--shadow);position:relative;margin-top:22px}
+  .folder::before{content:attr(data-tab);position:absolute;top:-24px;left:0;background:var(--folder);padding:4px 16px;border-radius:8px 8px 0 0;font-family:'Special Elite',monospace;font-size:14px}
+  .screen{display:none;animation:fade .35s}
+  .screen.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h2{font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,34px);margin:0 0 6px}
+  .task{font-size:18px;margin:4px 0 16px;background:rgba(255,255,255,.45);display:inline-block;padding:6px 12px;border-radius:8px}
+  .task b{color:var(--red)}
+  .sheet{background:var(--paper);border-radius:6px;padding:18px 20px;box-shadow:0 3px 10px rgba(0,0,0,.15);font-size:clamp(17px,2.4vw,20px);line-height:1.65;margin-bottom:14px}
+  .typed{font-family:'Special Elite',monospace}
+  .stamp{display:inline-block;border:3px solid var(--red);color:var(--red);font-family:'Special Elite',monospace;padding:2px 10px;transform:rotate(-4deg);font-size:18px;margin:6px 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .clue{background:var(--paper);border-radius:6px;padding:14px 16px;box-shadow:0 3px 10px rgba(0,0,0,.15);position:relative}
+  .clue h3{margin:0 0 8px;font-size:18px;display:flex;align-items:center;gap:8px}
+  .clue table{width:100%;border-collapse:collapse;font-family:'Special Elite',monospace;font-size:15px}
+  .clue td{border-bottom:1px dashed #c8bfa9;padding:4px 2px}
+  .clue .pin{position:absolute;top:-8px;right:16px;font-size:22px}
+  .receipt{font-family:'Special Elite',monospace;font-size:15px;text-align:center;line-height:1.5}
+  .ad{border:2px solid #ddd;border-radius:10px;padding:10px;background:#fff;font-size:15px}
+  .ad .gold{font-size:34px;text-align:center}
+  /* suspects */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .tab{font-family:inherit;font-weight:800;font-size:16px;padding:10px 16px;border-radius:10px;border:2px solid var(--ink);background:var(--paper);cursor:pointer}
+  .tab.active{background:var(--ink);color:var(--paper)}
+  .tab.solved::after{content:" ✔";color:var(--green)}
+  .tab.active.solved::after{color:#8fe0b5}
+  .who{display:flex;gap:14px;align-items:center;margin-bottom:8px}
+  .avatar{font-size:48px;background:var(--paper);border-radius:50%;width:76px;height:76px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.15);flex:none}
+  .who h3{margin:0;font-size:22px}
+  .who small{font-size:15px;color:var(--muted)}
+  .statement .s{cursor:pointer;border-radius:4px;padding:1px 2px;transition:.15s}
+  .statement .s:hover{background:#f1e6c6}
+  .statement .s.sel{background:var(--hl);box-shadow:0 0 0 2px #e0b93a}
+  .statement .s.right{background:#cdeedd;box-shadow:0 0 0 2px var(--green)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+  .lbl{font-weight:800;min-width:150px}
+  .opt{font-family:inherit;font-size:16px;font-weight:700;padding:7px 14px;border-radius:20px;border:2px solid var(--ink);background:var(--paper);cursor:pointer;color:var(--ink)}
+  .opt.sel{background:var(--ink);color:var(--paper)}
+  .btn{font-family:inherit;font-weight:800;font-size:17px;border:none;border-radius:10px;padding:11px 20px;cursor:pointer;background:var(--ink);color:var(--paper);box-shadow:0 4px 10px rgba(0,0,0,.2)}
+  .btn.red{background:var(--red)}
+  .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink);box-shadow:none}
+  .fb{font-weight:800;font-size:18px;min-height:26px;margin:6px 0}
+  .fb.ok{color:var(--green)} .fb.no{color:var(--red)}
+  .say{display:none;background:var(--paper);border-left:6px solid var(--red);border-radius:6px;padding:12px 16px;margin-top:10px;font-size:19px}
+  .say.show{display:block}
+  .say .frame{font-weight:800;margin:6px 0}
+  .reply{display:none;margin-top:10px;background:#fff;border-radius:14px;padding:12px 16px;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative}
+  .reply.show{display:block}
+  .reply::before{content:"";position:absolute;left:24px;top:-10px;border:10px solid transparent;border-top:0;border-bottom-color:#fff}
+  .nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}
+  .frameBig{background:var(--paper);border:3px dashed var(--ink);border-radius:10px;padding:16px;font-size:clamp(18px,2.6vw,22px);line-height:2}
+  .predict{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .pcard{background:var(--paper);border-radius:10px;padding:14px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.15)}
+  .pcard .e{font-size:44px}
+  .pcard h3{margin:4px 0 8px}
+  .pcard .ideas{display:none;font-size:15px;color:var(--muted);margin-top:6px}
+  .pcard.open .ideas{display:block}
+  .closed{text-align:center}
+  .closed .bigstamp{display:inline-block;font-family:'Special Elite',monospace;font-size:clamp(36px,8vw,64px);color:var(--red);border:6px solid var(--red);padding:6px 24px;transform:rotate(-6deg);margin:20px 0}
+  .help-btn{position:fixed;right:16px;bottom:16px;background:var(--folder);color:var(--ink);border:none;border-radius:30px;padding:12px 18px;font-weight:800;font-size:17px;box-shadow:var(--shadow);cursor:pointer;font-family:inherit;z-index:20}
+  .help{position:fixed;right:16px;bottom:74px;width:min(340px,calc(100% - 32px));max-height:65vh;overflow:auto;background:var(--paper);border:3px solid var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:12px 16px;display:none;z-index:20}
+  .help.show{display:block}
+  .help h4{margin:10px 0 4px}
+  .help ul{margin:0;padding-left:18px}
+  .peek{font-family:inherit;font-size:14px;font-weight:700;background:none;border:none;color:var(--navy);text-decoration:underline;cursor:pointer;padding:0}
+  @media (max-width:560px){.steps{margin-left:0}.lbl{min-width:0;width:100%}}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="caseno">CASE 2B</span>
+  <h1>Who Is Lying?</h1>
+  <div class="steps" id="steps"></div>
+</header>
+
+<main>
+
+<!-- 0. THE CASE -->
+<section class="screen active" data-step="0">
+  <div class="folder" data-tab="THE CASE">
+    <h2>The award robbery</h2>
+    <p class="task">Read. <b>When</b> did the robbery happen?</p>
+    <div class="sheet typed">
+      Last night, Sweet Sue got the <b>award</b> for the Detective of the Year.<br>
+      She left the award on the table in the Detective Club office.<br><br>
+      This morning at 9:30, the cleaner, Mr Mopp, called Sue:<br>
+      <i>"The award isn't here! Somebody took it!"</i><br><br>
+      It's a <b>robbery</b>! Mrs Basset saw the award at 8:30. So the robbery happened between <span id="peekTime">…</span><br>
+      <button class="peek" onclick="document.getElementById('peekTime').textContent='8:30 and 9:30.'">check</button>
+    </div>
+    <span class="stamp">3 SUSPECTS · 3 CLUES</span>
+    <p style="font-size:18px">Can you <b>solve</b> the case, detective?</p>
+    <div class="nav"><span></span><button class="btn red" onclick="go(1)">Open the clues ▶</button></div>
+  </div>
+</section>
+
+<!-- 1. CLUES -->
+<section class="screen" data-step="1">
+  <div class="folder" data-tab="CLUES">
+    <h2>The clues</h2>
+    <p class="task">Read the clues. <b>Who</b> was at the club this morning?</p>
+    <div class="grid">
+      <div class="clue">
+        <span class="pin">📌</span>
+        <h3>📹 Clue A · Club door camera</h3>
+        <table>
+          <tr><td>8:20</td><td>Mr Mopp</td><td>IN</td></tr>
+          <tr><td>8:30</td><td>Mrs Basset</td><td>IN</td></tr>
+          <tr><td>8:35</td><td>Mrs Basset</td><td>OUT</td></tr>
+          <tr><td>8:40</td><td>Mr Mopp</td><td>OUT</td></tr>
+          <tr><td>9:30</td><td>Mr Mopp</td><td>IN</td></tr>
+        </table>
+      </div>
+      <div class="clue">
+        <span class="pin">📌</span>
+        <h3>🧾 Clue B · A receipt</h3>
+        <div class="receipt">
+          CAFÉ BELLA<br>(opposite the Detective Club)<br>— — — — — — —<br>
+          1 coffee ........ £2.50<br>1 cake .......... £3.00<br>— — — — — — —<br>
+          Time: 8:45<br>Paid by card: <b>A. SMART</b>
+        </div>
+      </div>
+      <div class="clue">
+        <span class="pin">📌</span>
+        <h3>📱 Clue C · An online ad</h3>
+        <div class="ad">
+          <div class="gold">🏆</div>
+          <b>FOR SALE!</b> Gold award. Very beautiful. Only £500!<br>
+          <small>Posted today, 10:05 · by <b id="adUser" style="background:#222;color:#222;border-radius:3px;padding:0 4px">hidden_user</b></small><br>
+          <small id="adNote" style="color:var(--muted)">🔒 The police are checking who posted this ad…</small>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn ghost" onclick="go(0)">◀ Back</button>
+      <button class="btn red" onclick="go(2)">Read the statements ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- 2. STATEMENTS -->
+<section class="screen" data-step="2">
+  <div class="folder" data-tab="STATEMENTS">
+    <h2>Find the lies</h2>
+    <p class="task">Read each statement. <b>Click the sentence</b> that is a lie. Then choose the clue.</p>
+    <div class="tabs" id="tabs"></div>
+    <div id="suspectBox"></div>
+    <div class="nav">
+      <button class="btn ghost" onclick="go(1)">◀ Clues</button>
+      <button class="btn red" onclick="go(3)">I know who did it! ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- 3. ACCUSE -->
+<section class="screen" data-step="3">
+  <div class="folder" data-tab="SOLVE IT">
+    <h2>Who took the award?</h2>
+    <p class="task">Choose. Then <b>prove it</b> to the President of the Detective Club.</p>
+    <div class="row" id="accOpts"></div>
+    <div class="fb" id="accFb"></div>
+    <div class="say" id="accSay">
+      <div>Say it! Use the clues:</div>
+      <div class="frame">I think … took the award.</div>
+      <div class="frame">He / She said …, but clue … says …</div>
+      <div class="frame">And look at clue …!</div>
+      <button class="btn" style="margin-top:8px" onclick="document.getElementById('presReply').classList.add('show')">🎩 The President answers</button>
+      <div class="reply" id="presReply">🎩 <b>President:</b> "Hmm… I'm not sure. Smart Alec was near the club too! Why not Alec?"<br><i style="color:var(--muted);font-size:16px">→ Explain! What do the clues say about Alec?</i></div>
+    </div>
+    <div class="nav">
+      <button class="btn ghost" onclick="go(2)">◀ Statements</button>
+      <button class="btn red" id="accNext" style="display:none" onclick="go(4)">Case solved ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- 4. PREDICT -->
+<section class="screen" data-step="4">
+  <div class="folder" data-tab="WHAT NEXT?">
+    <h2>What will happen next?</h2>
+    <p class="task">Say <b>2 ideas</b> for each person: <b>I think … will …</b> / <b>Maybe … will …</b></p>
+    <div class="predict">
+      <div class="pcard"><div class="e">🧹</div><h3>Mr Mopp</h3><button class="peek" onclick="this.parentNode.classList.add('open')">need ideas?</button><div class="ideas">police · job · sorry · money</div></div>
+      <div class="pcard"><div class="e">🕴️</div><h3>Smart Alec</h3><button class="peek" onclick="this.parentNode.classList.add('open')">need ideas?</button><div class="ideas">jealous · sorry · next year · award</div></div>
+      <div class="pcard"><div class="e">🕵️‍♀️</div><h3>Sweet Sue</h3><button class="peek" onclick="this.parentNode.classList.add('open')">need ideas?</button><div class="ideas">award · party · new case · famous</div></div>
+      <div class="pcard"><div class="e">🏆</div><h3>The award</h3><button class="peek" onclick="this.parentNode.classList.add('open')">need ideas?</button><div class="ideas">office · safe · home · newspaper</div></div>
+    </div>
+    <div class="nav">
+      <button class="btn ghost" onclick="go(3)">◀ Back</button>
+      <button class="btn red" onclick="go(5)">Close the case ▶</button>
+    </div>
+  </div>
+</section>
+
+<!-- 5. CLOSED -->
+<section class="screen" data-step="5">
+  <div class="folder closed" data-tab="CASE CLOSED">
+    <div class="bigstamp">CASE CLOSED</div>
+    <p style="font-size:20px">Great work, detective! You <b>solved</b> the <b>award robbery</b>.</p>
+    <div class="sheet" style="text-align:left">
+      <b>📰 Homework: Bristol News</b><br>
+      Write 4–5 sentences about the robbery.<br>
+      <span style="color:var(--muted)">What happened? Who took the award? How did the detective solve the case? What will happen next?</span>
+    </div>
+    <div class="nav"><button class="btn ghost" onclick="location.reload()">↺ Start again</button></div>
+  </div>
+</section>
+
+</main>
+
+<button class="help-btn" onclick="document.getElementById('help').classList.toggle('show')">Help me speak 💬</button>
+<div class="help" id="help">
+  <h4>Clues</h4>
+  <ul><li>Clue A says …</li><li>The camera / The receipt / The ad says …</li></ul>
+  <h4>Lies</h4>
+  <ul><li>You said …, but …</li><li>That's not true! Look at …</li><li>Her story is true because …</li></ul>
+  <h4>Solve it</h4>
+  <ul><li>I think … took the award.</li><li>Alec didn't take it because …</li></ul>
+  <h4>What next?</h4>
+  <ul><li>I think … will …</li><li>Maybe … will …</li><li>I don't think … will …</li></ul>
+</div>
+
+<script>
+const TOTAL=6, stepsEl=document.getElementById('steps');
+for(let i=0;i<TOTAL;i++)stepsEl.appendChild(document.createElement('span'));
+function go(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',+s.dataset.step===n));
+  [...stepsEl.children].forEach((s,i)=>s.classList.toggle('on',i<=n));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+go(0);
+
+const CLUES={A:'Clue A · camera',B:'Clue B · receipt',C:'Clue C · ad'};
+const suspects=[
+  {id:'alec',emo:'🕴️',name:'Smart Alec',role:'A detective. He wanted the award.',
+   s:['I was at home all morning.','I had breakfast and I watched TV.','I didn\'t go out.','I\'m not jealous!','Sue solved the Bristol Bank robbery case. She\'s a good detective.'],
+   lies:{0:['B'],2:['B']}, noLie:false, need:1,
+   frame:'You said you were at home, but clue B says you were at Café Bella at 8:45!',
+   reply:'"OK, OK… I was at the café. I was jealous. I wanted to see the club… But I didn\'t go in! Look at the camera!"'},
+  {id:'basset',emo:'👵',name:'Mrs Basset',role:'Pinkie Pooch\'s owner.',
+   s:['I went to the club at half past eight.','I had a cake for Sue, because she found Pinkie Pooch.','The award was on the table. It was beautiful!','I left the cake and I went home at 8:35.'],
+   lies:{}, noLie:true, trueClue:['A'], need:1,
+   frame:'Your story is true! Clue A says you came in at 8:30 and went out at 8:35.',
+   reply:'"Of course it\'s true! I love Sue!"'},
+  {id:'mopp',emo:'🧹',name:'Mr Mopp',role:'The cleaner at the Detective Club.',
+   s:['I came to work at half past nine.','I opened the office door and — oh no! — the award wasn\'t there.','I called Sweet Sue.','I don\'t know anything about the award!'],
+   lies:{0:['A'],3:['C']}, noLie:false, need:2,
+   frames:{0:'You said you came at 9:30, but clue A says you came in at 8:20!',3:'You said you don\'t know anything, but look at clue C! The ad is from mopp_clean_77!'},
+   replies:{0:'"Me? No! The camera is wrong! I don\'t know anything about the award!"',3:'"Oh no… OK, OK. I took it. It\'s gold, and I needed money. I\'m sorry!"'}}
+];
+let adRevealed=false;
+function revealAd(){
+  adRevealed=true;
+  const u=document.getElementById('adUser');
+  u.textContent='mopp_clean_77';u.style.background='#ffe58a';u.style.color='#1f2430';
+  document.getElementById('adNote').textContent='🔓 New! The police found who posted the ad.';
+}
+const state={}; suspects.forEach(s=>state[s.id]={sent:null,clue:null,solved:false,found:[]});
+let current=suspects[0].id;
+const tabs=document.getElementById('tabs'), box=document.getElementById('suspectBox');
+
+function drawTabs(){
+  tabs.innerHTML='';
+  suspects.forEach(s=>{
+    const b=document.createElement('button');b.className='tab'+(s.id===current?' active':'')+(state[s.id].solved?' solved':'');
+    b.textContent=s.emo+' '+s.name;b.onclick=()=>{current=s.id;draw()};tabs.appendChild(b);
+  });
+}
+function draw(){
+  drawTabs();
+  const s=suspects.find(x=>x.id===current), st=state[s.id];
+  box.innerHTML=`
+    <div class="who"><div class="avatar">${s.emo}</div><div><h3>${s.name}</h3><small>${s.role}</small></div></div>
+    <div class="sheet statement">${s.s.map((t,i)=>`<span class="s" data-i="${i}">${t}</span>`).join(' ')}</div>
+    <div class="row"><span class="lbl">The lie is…</span><span>the sentence you click</span>
+      <button class="opt" id="noLie">No lies — it's true!</button></div>
+    <div class="row"><span class="lbl">Which clue proves it?</span>
+      ${Object.keys(CLUES).map(k=>`<button class="opt clueOpt" data-k="${k}">${CLUES[k]}</button>`).join('')}</div>
+    <button class="btn" id="check">Check</button>
+    <div class="fb" id="fb"></div>
+    <div class="say" id="say">
+      <div>Now say it to ${s.name}! Use: <b>You said …, but clue … says …</b></div>
+      <div style="margin-top:8px"><button class="peek" id="showModel">show an example</button>
+        <div id="model" style="display:none;font-style:italic;margin-top:4px"></div></div>
+      <button class="btn" style="margin-top:10px" id="replyBtn">${s.emo} ${s.name} answers</button>
+      <div class="reply" id="reply"></div>
+      <div class="fb" id="more" style="margin-top:10px"></div>
+    </div>`;
+  const sents=box.querySelectorAll('.s');
+  sents.forEach(el=>el.onclick=()=>{
+    sents.forEach(x=>x.classList.remove('sel'));document.getElementById('noLie').classList.remove('sel');
+    el.classList.add('sel');st.sent=+el.dataset.i;
+  });
+  document.getElementById('noLie').onclick=e=>{sents.forEach(x=>x.classList.remove('sel'));e.target.classList.add('sel');st.sent='none'};
+  box.querySelectorAll('.clueOpt').forEach(b=>b.onclick=()=>{box.querySelectorAll('.clueOpt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');st.clue=b.dataset.k});
+  document.getElementById('check').onclick=()=>check(s,st);
+  document.getElementById('showModel').onclick=()=>document.getElementById('model').style.display='block';
+  document.getElementById('replyBtn').onclick=()=>document.getElementById('reply').classList.add('show');
+  if(st.last!==undefined)showSolved(s,st);
+}
+function check(s,st){
+  const fb=document.getElementById('fb');
+  if(st.sent===null||!st.clue){fb.className='fb no';fb.textContent='Choose a sentence (or "No lies") and a clue.';return}
+  if(st.clue==='C' && !adRevealed){fb.className='fb no';fb.textContent='Who posted the ad? We don\'t know yet… Try another clue.';return}
+  if(!s.noLie && st.found.includes(st.sent)){fb.className='fb no';fb.textContent='You found this lie already. Find another one!';return}
+  let ok=false;
+  if(s.noLie) ok = st.sent==='none' && s.trueClue.includes(st.clue);
+  else ok = st.sent!=='none' && s.lies[st.sent] && s.lies[st.sent].includes(st.clue);
+  if(ok){
+    if(!s.noLie) st.found.push(st.sent);
+    st.last=st.sent;
+    if(st.found.length>=s.need || s.noLie) st.solved=true;
+    if(s.id==='mopp' && st.sent===0 && !adRevealed) revealAd();
+    showSolved(s,st);drawTabs();
+  }else{
+    fb.className='fb no';
+    if(s.noLie && st.sent!=='none') fb.textContent='Hmm… check the camera. Is this really a lie?';
+    else if(!s.noLie && st.sent==='none') fb.textContent='Are you sure? Look at the clues again.';
+    else if(!s.noLie && !s.lies[st.sent]) fb.textContent='No proof for this sentence. Try another one.';
+    else fb.textContent='Good sentence! But which clue proves it?';
+  }
+}
+function showSolved(s,st){
+  const fb=document.getElementById('fb');
+  if(st.last===undefined) return;
+  fb.className='fb ok';fb.textContent= s.noLie ? '✔ Right! Her story is true.' : '✔ Yes! That\'s a lie!';
+  box.querySelectorAll('.s').forEach(el=>{el.classList.remove('sel'); if(st.found.includes(+el.dataset.i))el.classList.add('right')});
+  const frame = s.frames ? s.frames[st.last] : s.frame;
+  const reply = s.replies ? s.replies[st.last] : s.reply;
+  document.getElementById('model').textContent=frame;
+  document.getElementById('model').style.display='none';
+  document.getElementById('reply').innerHTML=`<b>${s.name}:</b> ${reply}`;
+  document.getElementById('reply').classList.remove('show');
+  const more=document.getElementById('more');
+  if(!st.solved){more.className='fb ok';more.innerHTML='🔓 New information in <b>Clue C</b>! Go back to the clues… Then find <b>one more lie</b>!';}
+  else more.textContent='';
+  document.getElementById('say').classList.add('show');
+  st.sent=null; st.clue=null;
+  box.querySelectorAll('.clueOpt').forEach(x=>x.classList.remove('sel'));
+}
+draw();
+
+/* accuse */
+const accOpts=document.getElementById('accOpts');
+suspects.forEach(s=>{
+  const b=document.createElement('button');b.className='opt';b.textContent=s.emo+' '+s.name;
+  b.onclick=()=>{
+    accOpts.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');
+    const fb=document.getElementById('accFb');
+    if(s.id==='mopp'){fb.className='fb ok';fb.textContent='Good! Now prove it.';document.getElementById('accSay').classList.add('show');document.getElementById('accNext').style.display='';}
+    else{fb.className='fb no';fb.textContent=s.id==='alec'?'Alec lied… but did he go into the club? Check clue A!':'Check clue A again: when did she go out?';document.getElementById('accSay').classList.remove('show');document.getElementById('accNext').style.display='none';}
+  };
+  accOpts.appendChild(b);
+});
+</script>
+</body>
+</html>
