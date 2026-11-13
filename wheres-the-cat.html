@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Where's the Cat?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Lilita+One&family=Nunito:wght@600;800&display=swap">
+<style>
+:root{
+  --sky:#7ec4f0;--sky2:#bfe6ff;--grass:#5da431;--grassD:#3f7a1f;
+  --ink:#2b1d0e;--stone:#8d8d8d;--stoneD:#5f5f5f;--panel:#f3ead6;--panelD:#c9b48a;
+  --gold:#f2c230;--red:#d9412e;--green:#4caf3a;--diamond:#3fd3d0;
+  --display:"Silkscreen","Courier New",monospace;--chunky:"Lilita One","Arial Black",sans-serif;--body:"Nunito",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:linear-gradient(var(--sky),var(--sky2) 72%,var(--grass) 72%,var(--grassD));color:var(--ink);font-family:var(--body);min-height:100vh}
+.wrap{max-width:1240px;margin:0 auto;padding:12px 14px 20px;display:flex;flex-direction:column;gap:10px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(18px,3.2vw,30px);margin:0;color:#fff;text-shadow:3px 3px 0 #000}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.btn{font-family:var(--display);font-weight:700;font-size:clamp(11px,1.4vw,14px);cursor:pointer;border:3px solid #000;background:#a0a0a0;color:#fff;text-shadow:2px 2px 0 #3a3a3a;padding:8px 12px;box-shadow:inset -3px -3px 0 #5a5a5a,inset 3px 3px 0 #d0d0d0;line-height:1.1}
+.btn:active{transform:translateY(2px)}
+.btn.on{background:var(--green);box-shadow:inset -3px -3px 0 #2d7a20,inset 3px 3px 0 #8fdc7a}
+.btn.gold{background:var(--gold);color:var(--ink);text-shadow:none;box-shadow:inset -3px -3px 0 #b88c10,inset 3px 3px 0 #ffe28a}
+.btn.red{background:var(--red);box-shadow:inset -3px -3px 0 #8f2416,inset 3px 3px 0 #f18a7c}
+.btn.blue{background:#3a6fd8;box-shadow:inset -3px -3px 0 #22469a,inset 3px 3px 0 #8eb1f5}
+.btn[hidden]{display:none}
+.bar{display:flex;align-items:center;gap:10px;background:var(--panel);border:4px solid #000;box-shadow:inset -4px -4px 0 var(--panelD);padding:8px 10px;flex-wrap:wrap}
+.kid{width:46px;height:62px;flex:none;image-rendering:pixelated}
+.bubble{flex:1 1 260px;min-width:0;font-family:var(--chunky);font-size:clamp(18px,2.6vw,28px);line-height:1.2;color:var(--ink)}
+.bubble small{display:block;font-family:var(--body);font-weight:800;font-size:clamp(12px,1.4vw,15px);color:#6b5434;letter-spacing:.02em}
+.bubble .hid{letter-spacing:.1em;color:#a08a63}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.gems{display:flex;gap:3px;align-items:center}
+.gem{width:18px;height:18px;background:#5a5a5a;border:2px solid #000;transform:rotate(45deg) scale(.8)}
+.gem.got{background:var(--diamond);box-shadow:inset -3px -3px 0 #1d8f8c,inset 3px 3px 0 #b8fffd}
+.gem.cur{outline:3px solid #fff}
+.scene{position:relative;border:4px solid #000;background:#000;line-height:0;touch-action:none;user-select:none;-webkit-user-select:none}
+svg{width:100%;height:auto;display:block}
+.mark{cursor:pointer}
+.mark circle{fill:#fff;fill-opacity:.0;stroke:#fff;stroke-opacity:.0;stroke-width:4;stroke-dasharray:8 6;transition:.15s}
+.show-marks .mark circle{fill-opacity:.18;stroke-opacity:.75}
+.mark.near circle{fill:#f2c230;fill-opacity:.45;stroke:#000;stroke-opacity:1}
+#cat{cursor:grab}
+#cat.locked{cursor:default}
+.dragging #cat{cursor:grabbing}
+.toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);font-family:var(--chunky);font-size:clamp(18px,3vw,32px);padding:8px 18px;border:4px solid #000;color:#fff;text-shadow:2px 2px 0 #000;line-height:1.2;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+.toast.good{background:var(--green)}
+.toast.bad{background:var(--red)}
+.overlay{position:fixed;inset:0;background:rgba(20,40,70,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.overlay[hidden]{display:none}
+.card{background:var(--panel);border:5px solid #000;box-shadow:inset -5px -5px 0 var(--panelD),8px 8px 0 rgba(0,0,0,.35);padding:22px 24px;max-width:520px;width:100%;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.card h2{font-family:var(--display);font-size:clamp(20px,4vw,30px);margin:0}
+.card p{font-family:var(--chunky);font-size:clamp(17px,2.6vw,22px);margin:0}
+.card .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.answers{font-family:var(--chunky);font-size:clamp(17px,2.4vw,24px);display:flex;flex-direction:column;gap:4px}
+@media (max-width:640px){.kid{width:34px;height:46px}.gems{order:5}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Where's the Cat?</h1>
+    <div class="tabs">
+      <button class="btn" data-lv="1">1 Listen</button>
+      <button class="btn" data-lv="2">2 Read</button>
+      <button class="btn" data-lv="3">3 Your turn</button>
+      <button class="btn blue" id="snd" aria-label="Sound on/off">🔊</button>
+    </div>
+  </header>
+
+  <div class="bar">
+    <svg class="kid" id="kid" viewBox="0 0 12 16" aria-hidden="true"></svg>
+    <div class="bubble" id="bubble"><small id="hint"></small><span id="say"></span></div>
+    <div class="actions">
+      <button class="btn blue" id="again">🔊 Again</button>
+      <button class="btn" id="showText">👀 Text</button>
+      <button class="btn on" id="yes" hidden>✓ Yes!</button>
+      <button class="btn red" id="no" hidden>✗ Try again</button>
+      <button class="btn gold" id="help" hidden>💡 Answer</button>
+      <button class="btn gold" id="next" hidden>Next ▶</button>
+    </div>
+    <div class="gems" id="gems"></div>
+  </div>
+
+  <div class="scene" id="scene">
+    <svg id="svg" viewBox="0 0 1900 810" role="img" aria-label="A room with a cat">
+      <g id="room"></g>
+      <g id="layerBack"></g>
+      <g id="furniture"></g>
+      <g id="layerMid"></g>
+      <g id="monitor"></g>
+      <g id="layerFront"></g>
+      <g id="marks"></g>
+      <g id="layerDrag"></g>
+    </svg>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<div class="overlay" id="startOv">
+  <div class="card">
+    <h2>Where's the Cat?</h2>
+    <svg viewBox="0 0 18 19" width="120" height="127" id="bigCat" style="image-rendering:pixelated"></svg>
+    <p>Help the cat! Move him around the room.</p>
+    <div class="row"><button class="btn on" id="play">▶ Play</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="endOv" hidden>
+  <div class="card">
+    <h2 id="endTitle">Level complete!</h2>
+    <p id="endText"></p>
+    <div class="row">
+      <button class="btn" id="replay">↺ Play again</button>
+      <button class="btn on" id="nextLv">Next level ▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ansOv" hidden>
+  <div class="card">
+    <h2>The cat is…</h2>
+    <div class="answers" id="ansList"></div>
+    <div class="row"><button class="btn blue" id="ansSay">🔊 Listen</button><button class="btn on" id="ansClose">OK</button></div>
+  </div>
+</div>
+
+<script>
+/* ================= SPEECH: Gemini voice via shared Supabase proxy, browser en-GB male fallback ================= */
+const AI_PROXY="https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";
+const TTS_MODEL="gemini-2.5-flash-preview-tts",TTS_VOICE="Puck";
+let soundOn=true,voice=null,aiVoice=true,aiFails=0,AC=null,curSrc=null,spTok=0;const ttsCache=new Map();
+function pickVoice(){const v=speechSynthesis.getVoices(),gb=v.filter(x=>/en-GB/i.test(x.lang)),M=/\bmale|daniel|george|ryan|arthur|oliver|thomas|google uk english male/i;
+ voice=gb.find(x=>M.test(x.name)&&!/female/i.test(x.name))||gb[0]||v.find(x=>/^en/i.test(x.lang))||null}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function ensureAC(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}}
+function clean(t){return t.replace(/[^\w\s',.!?\-]/g,' ').replace(/\s+/g,' ').trim()}
+function stopSpeech(){spTok++;try{curSrc&&curSrc.stop()}catch(e){}curSrc=null;if(window.speechSynthesis)speechSynthesis.cancel()}
+function ttsFetch(t){if(ttsCache.has(t))return ttsCache.get(t);
+ const p=(async()=>{if(!AC)throw new Error('no audio');const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),12000);
+  try{const r=await fetch(AI_PROXY+'?forceFunctionRegion=us-east-1&model='+TTS_MODEL,{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,
+    body:JSON.stringify({model:TTS_MODEL,contents:[{parts:[{text:'Read aloud slowly and clearly, in a warm, friendly British English accent, for a young child learning English: '+t}]}],
+     generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:TTS_VOICE}}}}})});
+   const j=await r.json(),part=j&&j.candidates&&j.candidates[0].content.parts.find(x=>x.inlineData);
+   if(!r.ok||!part)throw new Error('no audio');
+   const rate=+((/rate=(\d+)/.exec(part.inlineData.mimeType)||[0,24000])[1]),bin=atob(part.inlineData.data),n=bin.length>>1,buf=AC.createBuffer(1,n,rate),ch=buf.getChannelData(0);
+   for(let i=0;i<n;i++){let v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v&0x8000)v-=0x10000;ch[i]=v/32768}
+   return buf}finally{clearTimeout(to)}})();
+ ttsCache.set(t,p);p.then(()=>{aiFails=0},()=>{ttsCache.delete(t);if(++aiFails>=2)aiVoice=false});return p}
+function browserSpeak(t){if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.lang='en-GB';u.rate=.85;speechSynthesis.speak(u)}
+function speak(t){if(!soundOn||!t)return;t=clean(t);if(!t)return;stopSpeech();const tok=spTok;
+ if(aiVoice&&AC){ttsFetch(t).then(buf=>{if(tok!==spTok)return;const s=AC.createBufferSource();s.buffer=buf;s.connect(AC.destination);curSrc=s;s.start()},()=>{if(tok===spTok)browserSpeak(t)})}
+ else browserSpeak(t)}
+function prefetch(t){if(soundOn&&aiVoice&&AC&&t)ttsFetch(clean(t)).catch(()=>{})}
+function blip(good){if(!soundOn||!AC)return;try{const o=AC.createOscillator(),g=AC.createGain();o.type='square';const t=AC.currentTime;
+ if(good){o.frequency.setValueAtTime(660,t);o.frequency.setValueAtTime(990,t+.08)}else{o.frequency.setValueAtTime(220,t);o.frequency.setValueAtTime(160,t+.1)}
+ g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.26)}catch(e){}}
+
+/* ================= PIXEL ART ================= */
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function pixels(rows,pal,parent){rows.forEach((r,y)=>{let x=0;while(x<r.length){const c=r[x];let w=1;while(r[x+w]===c)w++;if(pal[c])el('rect',{x,y,width:w+.02,height:1.02,fill:pal[c]},parent);x+=w}})}
+const CAT=[
+"..K.......K.......",
+".KOK.....KOK......",
+".KOOKKKKKOOK......",
+"KOODOOOOODOOK.....",
+"KOOODODODOOOK.....",
+"KOGKOOOOOGKOK.....",
+"KOGKOOOOOGKOK.....",
+"KOOOOLPLOOOOK.....",
+"KOOOLLLLLOOOK.....",
+".KOOOOOOOOOK......",
+"..KODOODOODK......",
+".KOOLLLLOOODK.....",
+".KODLLLLLODOK..KK.",
+".KOOLLLLLOOOK.KDOK",
+".KODLLLLLODOKKODK.",
+".KOOLLLLLOOOKODOK.",
+".KOOLLLLLOODOOK...",
+".KLLKLLLKLLKKK....",
+"..KK.KKK.KK......."];
+const CATPAL={K:'#2b1d0e',O:'#e88c28',D:'#6e3c14',L:'#fae2b4',G:'#50c85a',P:'#f08296'};
+const KID=[
+"..KKKKKKK...",
+".KYYYYYYYK..",
+".KYYYYYYYYYK",
+".KBBBBBBBKK.",
+".KSSSSSSSK..",
+".KSESSSESK..",
+".KSSSSSSSK..",
+".KSSSMMSSK..",
+"..KKKKKKK...",
+".KRRRRRRRK..",
+"KRRRRWRRRRK.",
+"KSRRRRRRRSK.",
+".KRRRRRRRK..",
+".KVVVVVVVK..",
+".KVVK.KVVK..",
+".KKKK.KKKK.."];
+const KIDPAL={K:'#1d1408',Y:'#f2c230',B:'#2a2a2a',S:'#e9b08a',E:'#1d1408',M:'#b8483a',R:'#d9412e',W:'#fff',V:'#3f8f3a'};
+pixels(KID,KIDPAL,$('kid'));
+pixels(CAT,CATPAL,$('bigCat'));
+
+/* ================= ROOM ================= */
+const room=$('room'),furn=$('furniture'),mon=$('monitor');
+function R(x,y,w,h,fill,p,extra){return el('rect',Object.assign({x,y,width:w,height:h,fill},extra||{}),p)}
+function block(x,y,w,h,fill,dark,light,p){R(x,y,w,h,'#1d1408',p);R(x+4,y+4,w-8,h-8,fill,p);R(x+4,y+h-14,w-8,10,dark,p);R(x+4,y+4,w-8,6,light,p)}
+// wall + floor
+R(0,0,1900,600,'#e9d9b5',room);
+for(let y=0;y<600;y+=40)for(let x=(y/40%2)*40;x<1900;x+=80)R(x,y,40,40,'#e2cfa6',room);
+R(0,590,1900,14,'#9c7440',room);
+R(0,604,1900,206,'#b98a52',room);
+for(let y=604;y<810;y+=34)R(0,y,1900,4,'#9c7440',room);
+for(let y=604,i=0;y<810;y+=34,i++)for(let x=(i%2)*90;x<1900;x+=180)R(x,y,4,34,'#9c7440',room);
+// window (normal size, high on the wall above the drawers)
+R(686,276,148,190,'#1d1408',room);R(694,284,132,174,'#7ec4f0',room);R(694,400,132,58,'#bfe6ff',room);
+R(706,310,36,14,'#fff',room);R(722,298,36,14,'#fff',room);R(770,330,40,12,'#fff',room);
+R(756,284,8,174,'#f3ead6',room);R(694,368,132,8,'#f3ead6',room);
+R(676,460,168,12,'#9c7440',room);
+// rug (start place)
+el('ellipse',{cx:905,cy:782,rx:110,ry:22,fill:'#8a4fb5'},room);el('ellipse',{cx:905,cy:782,rx:88,ry:14,fill:'#b07ad6'},room);
+// cupboard 40–200
+block(40,260,160,380,'#a8733f','#7a4f27','#c99460',furn);
+R(118,268,4,364,'#1d1408',furn);R(100,430,10,30,'#f2c230',furn);R(130,430,10,30,'#f2c230',furn);
+R(52,280,58,140,'#8f5f30',furn);R(130,280,58,140,'#8f5f30',furn);R(52,470,58,150,'#8f5f30',furn);R(130,470,58,150,'#8f5f30',furn);
+// bed 310–560
+block(310,440,36,200,'#a8733f','#7a4f27','#c99460',furn);
+block(340,530,220,110,'#3a6fd8','#22469a','#8eb1f5',furn);
+block(348,500,80,40,'#ffffff','#d8d8d8','#ffffff',furn);
+R(346,600,214,40,'#1d1408',furn);R(350,604,206,32,'#a8733f',furn);
+for(let x=380;x<550;x+=60)R(x,550,24,24,'#5d8ae6',furn);
+// drawers 670–850 (under the window)
+block(670,480,180,160,'#c98a4a','#9a6431','#e0a868',furn);
+for(const y of [492,540,588]){R(682,y,156,42,'#1d1408',furn);R(686,y+4,148,34,'#d99a58',furn);R(748,y+16,24,8,'#f2c230',furn)}
+// piano 960–1170
+block(960,390,210,250,'#2a2a2a','#151515','#4a4a4a',furn);
+R(954,500,222,18,'#1d1408',furn);R(958,502,214,14,'#f4f4f4',furn);
+for(let x=970;x<1165;x+=16)R(x,502,3,14,'#1d1408',furn);
+for(let x=978;x<1160;x+=32)R(x,502,8,9,'#1d1408',furn);
+R(990,410,150,60,'#3a3a3a',furn);R(1030,425,70,30,'#f3ead6',furn);
+R(975,620,16,20,'#151515',furn);R(1140,620,16,20,'#151515',furn);
+// lamp 1280–1340
+R(1276,626,68,14,'#1d1408',furn);R(1306,380,8,248,'#1d1408',furn);
+block(1254,330,112,62,'#f2c230','#c99a18','#ffe28a',furn);
+// table 1480–1790
+R(1480,500,310,20,'#1d1408',furn);R(1484,503,302,14,'#c99460',furn);
+R(1496,520,18,120,'#1d1408',furn);R(1756,520,18,120,'#1d1408',furn);
+R(1500,520,10,118,'#a8733f',furn);R(1760,520,10,118,'#a8733f',furn);
+// computer on the table (separate layer: the cat can hide behind it)
+R(1586,410,128,72,'#1d1408',mon);R(1594,418,112,56,'#3fd3d0',mon);R(1594,418,112,10,'#8ff0ee',mon);
+R(1640,482,20,18,'#1d1408',mon);R(1620,494,60,8,'#1d1408',mon);
+
+/* ================= PLACES ================= */
+// layer: back (behind furniture), mid (behind the computer), front
+const SPOTS=[
+ {id:'behindCup',x:205,y:612,s:.85,L:'back', mx:215,my:470,keys:['behind:cupboard']},
+ {id:'frontCup', x:120,y:706,s:1,  L:'front',mx:120,my:655,keys:['front:cupboard']},
+ {id:'gap1',     x:255,y:668,s:.9, L:'front',mx:255,my:615,keys:['between:cupboard:bed','next:cupboard','next:bed']},
+ {id:'behindBed',x:465,y:572,s:.85,L:'back', mx:465,my:500,keys:['behind:bed']},
+ {id:'frontBed', x:440,y:712,s:1,  L:'front',mx:440,my:660,keys:['front:bed']},
+ {id:'gap2',     x:612,y:668,s:.85,L:'front',mx:612,my:615,keys:['between:bed:drawers','next:bed','next:drawers']},
+ {id:'winDrw',   x:752,y:484,s:.72,L:'front',mx:760,my:430,keys:['front:window']},
+ {id:'frontDrw', x:760,y:710,s:1,  L:'front',mx:760,my:660,keys:['front:drawers']},
+ {id:'gap2b',    x:900,y:668,s:.85,L:'front',mx:905,my:615,keys:['between:drawers:piano','next:drawers','next:piano']},
+ {id:'behindPia',x:1178,y:612,s:.85,L:'back',mx:1182,my:470,keys:['behind:piano']},
+ {id:'frontPia', x:1065,y:708,s:1, L:'front',mx:1065,my:655,keys:['front:piano']},
+ {id:'gap3',     x:1225,y:668,s:.85,L:'front',mx:1225,my:615,keys:['between:piano:lamp','next:piano','next:lamp']},
+ {id:'frontLamp',x:1310,y:708,s:.95,L:'front',mx:1310,my:655,keys:['front:lamp']},
+ {id:'gap4',     x:1412,y:668,s:.9,L:'front',mx:1412,my:615,keys:['between:lamp:table','next:lamp','next:table']},
+ {id:'frontTab', x:1635,y:712,s:1, L:'front',mx:1635,my:660,keys:['front:table']},
+ {id:'behindPC', x:1712,y:484,s:.7,L:'mid',  mx:1720,my:420,keys:['behind:computer']},
+ {id:'frontPC',  x:1650,y:508,s:.62,L:'front',mx:1650,my:478,keys:['front:computer']},
+ {id:'nextPC',   x:1530,y:503,s:.65,L:'front',mx:1530,my:470,keys:['next:computer']},
+ {id:'end5',     x:1836,y:668,s:.9,L:'front',mx:1836,my:615,keys:['next:table']}
+];
+const START={x:905,y:792,s:1.05,L:'front'};
+const PH={behind:'behind',front:'in front of',next:'next to',between:'between'};
+function phrase(k){const p=k.split(':');return p[0]==='between'?`between the ${p[1]} and the ${p[2]}`:`${PH[p[0]]} the ${p[1]}`}
+
+/* tasks: 2 of each preposition per level, shuffled */
+const POOL={
+ behind:['behind:cupboard','behind:bed','behind:piano','behind:computer'],
+ front:['front:cupboard','front:bed','front:drawers','front:piano','front:table','front:computer','front:window','front:lamp'],
+ next:['next:cupboard','next:bed','next:drawers','next:piano','next:lamp','next:table','next:computer'],
+ between:['between:cupboard:bed','between:bed:drawers','between:drawers:piano','between:piano:lamp','between:lamp:table']};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function makeTasks(){let t=[];for(const k in POOL)t=t.concat(shuffle(POOL[k]).slice(0,2));
+ for(let tries=0;tries<50;tries++){const s=shuffle(t);if(s.every((x,i)=>i===0||x.split(':')[0]!==s[i-1].split(':')[0]))return s}return shuffle(t)}
+function makeSpots3(){const by={behind:[],front:[],gap:[],next:[]};
+ SPOTS.forEach(s=>{if(s.id.startsWith('behind'))by.behind.push(s);else if(s.id.startsWith('gap'))by.gap.push(s);else if(s.id==='nextPC'||s.id==='end5')by.next.push(s);else by.front.push(s)});
+ let t=[];for(const k in by)t=t.concat(shuffle(by[k]).slice(0,2));
+ for(let tries=0;tries<50;tries++){const s=shuffle(t);if(s.every((x,i)=>i===0||x.id!==s[i-1].id))return s}return shuffle(t)}
+
+/* ================= CAT SPRITE ================= */
+const cat=el('g',{id:'cat'});
+const catInner=el('g',{},cat);pixels(CAT,CATPAL,catInner);
+const PX=6,AX=6.5*PX,AH=19*PX; // anchor: body centre bottom
+let catPos=null;
+function placeCat(pos,anim){
+ const layer=pos.L==='back'?$('layerBack'):pos.L==='mid'?$('layerMid'):$('layerFront');
+ if(cat.parentNode!==layer)layer.appendChild(cat);
+ const tx=pos.x-AX*pos.s,ty=pos.y-AH*pos.s;
+ cat.style.transition=anim?'transform .35s cubic-bezier(.3,1.4,.5,1)':'none';
+ cat.style.transform=`translate(${tx}px,${ty}px)`;
+ catInner.setAttribute('transform',`scale(${pos.s*PX})`);
+ catPos=pos}
+// pixels drawn in 1-unit grid -> scale by PX inside
+placeCat(START,false);
+
+/* ================= MARKS ================= */
+const marks=$('marks');
+SPOTS.forEach(s=>{const g=el('g',{class:'mark','data-id':s.id},marks);el('circle',{cx:s.mx,cy:s.my,r:34},g);
+ g.addEventListener('click',()=>{if(canMove())tryDrop(s)})});
+function markEl(id){return marks.querySelector(`[data-id="${id}"]`)}
+
+/* ================= GAME STATE ================= */
+let level=1,tasks=[],idx=0,firstTry=true,score=0,busy=false,textShown=false,got=[];
+const svg=$('svg'),scene=$('scene');
+function canMove(){return level<3&&!busy}
+function current(){return tasks[idx]}
+function instr(k){return `Put the cat ${phrase(k)}.`}
+function answerSentences(spot){return spot.keys.map(k=>`The cat is ${phrase(k)}.`)}
+
+function drawGems(){const g=$('gems');g.innerHTML='';for(let i=0;i<8;i++){const d=document.createElement('div');d.className='gem'+(got[i]?' got':'')+(i===idx?' cur':'');g.appendChild(d)}}
+function setButtons(){
+ $('again').hidden=level===3;$('showText').hidden=level!==1;
+ $('yes').hidden=$('no').hidden=$('help').hidden=level!==3;
+ $('next').hidden=true;
+ document.querySelectorAll('[data-lv]').forEach(b=>b.classList.toggle('on',+b.dataset.lv===level));
+ scene.classList.toggle('show-marks',level<3);
+ cat.classList.toggle('locked',level===3)}
+function startLevel(lv){level=lv;idx=0;score=0;got=[];busy=false;
+ tasks=lv<3?makeTasks():makeSpots3();setButtons();showTask()}
+function showTask(){firstTry=true;textShown=false;busy=false;$('next').hidden=true;drawGems();
+ if(level<3){placeCat(START,true);const k=current();
+  $('hint').textContent=level===1?'Listen and move the cat!':'Read and move the cat!';
+  if(level===1){$('say').innerHTML='<span class="hid">🎧 ? ? ?</span>';speak(instr(k))}
+  else $('say').textContent=instr(k);
+  if(tasks[idx+1])prefetch(instr(tasks[idx+1]));}
+ else{const s=current();placeCat(s,true);$('hint').textContent="Where's the cat? Say it!";$('say').textContent='The cat is …';
+  $('yes').hidden=$('no').hidden=$('help').hidden=false;speak("Where's the cat?");answerSentences(s).forEach(prefetch)}}
+function toast(t,good){const e=$('toast');e.textContent=t;e.className='toast show '+(good?'good':'bad');clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',1300)}
+function success(sentence){busy=true;blip(true);if(firstTry){got[idx]=true;score++}drawGems();
+ $('say').textContent=sentence;$('hint').textContent='Yes! Say it:';toast(['Great!','Super!','Well done!','Brilliant!'][Math.random()*4|0],true);
+ setTimeout(()=>speak(sentence),350);
+ $('next').hidden=false;$('yes').hidden=$('no').hidden=$('help').hidden=true}
+function nextTask(){stopSpeech();if(idx<7){idx++;showTask()}else endLevel()}
+function endLevel(){drawGems();$('endTitle').textContent='Level '+level+' complete!';
+ $('endText').textContent='💎 '+score+' / 8';$('nextLv').hidden=level===3;$('endOv').hidden=false;speak(score>=6?'Fantastic! Well done!':'Good job!')}
+
+function tryDrop(spot){
+ const k=current();
+ if(!spot){placeCat(START,true);return}
+ placeCat(spot,true);
+ if(spot.keys.includes(k)){success(`The cat is ${phrase(k)}.`)}
+ else{firstTry=false;busy=true;blip(false);toast('Oops! Try again!',false);
+  setTimeout(()=>{placeCat(START,true);busy=false;if(level===1)speak(instr(k))},1100)}}
+
+/* ================= DRAG ================= */
+let drag=null;
+function svgPoint(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse())}
+function nearest(p){let best=null,bd=1e9;SPOTS.forEach(s=>{const d=Math.hypot(s.mx-p.x,s.my-p.y);if(d<bd){bd=d;best=s}});return bd<120?best:null}
+cat.addEventListener('pointerdown',e=>{if(!canMove())return;ensureAC();e.preventDefault();
+ const p=svgPoint(e),s=catPos.s;drag={dx:p.x-catPos.x,dy:p.y-(catPos.y-AH*s/2)};
+ $('layerDrag').appendChild(cat);cat.style.transition='none';scene.classList.add('dragging');try{cat.setPointerCapture(e.pointerId)}catch(_){}
+});
+cat.addEventListener('pointermove',e=>{if(!drag)return;const p=svgPoint(e),s=1;const cx=p.x-drag.dx,cy=p.y-drag.dy;
+ catPos={x:cx,y:cy+AH*s/2,s,L:'front'};cat.style.transform=`translate(${cx-AX*s}px,${cy-AH*s/2}px)`;catInner.setAttribute('transform',`scale(${s*PX})`);
+ const n=nearest({x:cx,y:cy});marks.querySelectorAll('.mark').forEach(m=>m.classList.toggle('near',!!n&&m.dataset.id===n.id))});
+function endDrag(e){if(!drag)return;const n=nearest({x:catPos.x,y:catPos.y-AH/2});drag=null;scene.classList.remove('dragging');
+ marks.querySelectorAll('.mark').forEach(m=>m.classList.remove('near'));tryDrop(n)}
+cat.addEventListener('pointerup',endDrag);cat.addEventListener('pointercancel',endDrag);
+
+/* ================= BUTTONS ================= */
+$('again').onclick=()=>{ensureAC();if(level<3)speak(instr(current()))};
+$('showText').onclick=()=>{if(level===1&&!busy){$('say').textContent=instr(current());textShown=true}};
+$('next').onclick=nextTask;
+$('yes').onclick=()=>{const s=current();success(answerSentences(s)[0])};
+$('no').onclick=()=>{firstTry=false;blip(false);toast('Try again!',false)};
+$('help').onclick=()=>{firstTry=false;const s=current(),list=answerSentences(s);
+ $('ansList').innerHTML='';list.forEach(t=>{const d=document.createElement('div');d.textContent=t;$('ansList').appendChild(d)});
+ $('ansOv').hidden=false;speak(list[0])};
+$('ansSay').onclick=()=>speak(answerSentences(current())[0]);
+$('ansClose').onclick=()=>{$('ansOv').hidden=true};
+$('snd').onclick=()=>{soundOn=!soundOn;$('snd').textContent=soundOn?'🔊':'🔇';if(!soundOn)stopSpeech()};
+document.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ensureAC();stopSpeech();$('endOv').hidden=true;startLevel(+b.dataset.lv)});
+$('play').onclick=()=>{ensureAC();$('startOv').hidden=true;startLevel(1)};
+$('replay').onclick=()=>{$('endOv').hidden=true;startLevel(level)};
+$('nextLv').onclick=()=>{$('endOv').hidden=true;startLevel(Math.min(3,level+1))};
+setButtons();drawGems();
+</script>
+</body>
+</html>
