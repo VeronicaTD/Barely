@@ -51,6 +51,12 @@ svg{width:100%;height:auto;display:block}
 .mark{cursor:pointer}
 .mark circle{fill:#fff;fill-opacity:0;stroke:#fff;stroke-opacity:0;stroke-width:5;stroke-dasharray:10 8;transition:.15s}
 .show-marks .mark circle{fill-opacity:.12;stroke-opacity:.85}
+.mark.miss circle{fill:#d9412e;fill-opacity:.55;stroke:#000;stroke-opacity:1;stroke-dasharray:none}
+.mark.miss{pointer-events:none}
+.mark.found circle{fill:#4caf3a;fill-opacity:0;stroke:#4caf3a;stroke-width:7;stroke-opacity:1;stroke-dasharray:none}
+.score4{display:flex;flex-direction:column;gap:2px;font-family:var(--display);font-size:clamp(11px,1.3vw,14px)}
+.score4[hidden],.gems[hidden]{display:none}
+.bubble i{font-style:normal;color:#1d4f9a}
 .mark.near circle{fill:#f2c230;fill-opacity:.45;stroke:#000;stroke-opacity:1}
 #cat{cursor:grab}
 #cat.locked{cursor:default}
@@ -77,6 +83,7 @@ svg{width:100%;height:auto;display:block}
       <button class="btn" data-lv="1">🎧 1 Listen</button>
       <button class="btn" data-lv="2">📖 2 Read</button>
       <button class="btn" data-lv="3">💬 3 Your turn</button>
+      <button class="btn" data-lv="4">🙈 4 Hide</button>
       <button class="btn blue" id="snd" aria-label="Sound on/off">🔊</button>
     </div>
   </header>
@@ -93,6 +100,7 @@ svg{width:100%;height:auto;display:block}
       <button class="btn gold" id="next" hidden>Next ▶</button>
     </div>
     <div class="gems" id="gems"></div>
+    <div class="score4" id="score4" hidden></div>
   </div>
 
   <div class="scene" id="scene">
@@ -247,25 +255,26 @@ placeCat(START,false);
 /* ================= MARKS ================= */
 const marks=$('marks');
 SPOTS.forEach(s=>{const g=el('g',{class:'mark','data-id':s.id},marks);el('circle',{cx:s.mx,cy:s.my,r:40},g);
- g.addEventListener('click',()=>{if(canMove())tryDrop(s)})});
+ g.addEventListener('click',()=>onMark(s))});
 
 /* ================= GAME STATE ================= */
 let level=1,tasks=[],idx=0,firstTry=true,score=0,busy=false,textShown=false,got=[];
 const svg=$('svg'),scene=$('scene');
-function canMove(){return level<3&&!busy}
+function canMove(){return (level<3||(level===4&&phase==='hide'))&&!busy}
 function current(){return tasks[idx]}
 function instr(k){return `Put the cat ${phrase(k)}.`}
 function answerSentences(spot){return spot.keys.map(k=>`The cat is ${phrase(k)}.`)}
 
 function drawGems(){const g=$('gems');g.innerHTML='';for(let i=0;i<8;i++){const d=document.createElement('div');d.className='gem'+(got[i]?' got':'')+(i===idx?' cur':'');g.appendChild(d)}}
 function setButtons(){
- $('again').hidden=level===3;$('showText').hidden=level!==1;
+ $('again').hidden=level>=3;$('showText').hidden=level!==1;
  $('yes').hidden=$('no').hidden=$('help').hidden=level!==3;
  $('next').hidden=true;
  document.querySelectorAll('[data-lv]').forEach(b=>b.classList.toggle('on',+b.dataset.lv===level));
- scene.classList.toggle('show-marks',level<3);
- cat.classList.toggle('locked',level===3)}
-function startLevel(lv){level=lv;idx=0;score=0;got=[];busy=false;
+ scene.classList.toggle('show-marks',level!==3);
+ cat.classList.toggle('locked',level===3);$('gems').hidden=level===4;$('score4').hidden=level!==4}
+function startLevel(lv){level=lv;idx=0;score=0;got=[];busy=false;cat.style.opacity=1;clearMarks();
+ if(lv===4){setButtons();startHide();return}
  tasks=lv<3?makeTasks():makeSpots3();setButtons();showTask()}
 function showTask(){firstTry=true;textShown=false;busy=false;$('next').hidden=true;drawGems();
  if(level<3){placeCat(START,true);const k=current();
@@ -282,9 +291,10 @@ function success(sentence){busy=true;blip(true);if(firstTry){got[idx]=true;score
  $('next').hidden=false;$('yes').hidden=$('no').hidden=$('help').hidden=true}
 function nextTask(){stopSpeech();if(idx<7){idx++;showTask()}else endLevel()}
 function endLevel(){drawGems();$('endTitle').textContent='Level '+level+' complete!';
- $('endText').textContent='💎 '+score+' / 8';$('nextLv').hidden=level===3;$('endOv').hidden=false;speak(score>=6?'Fantastic! Well done!':'Good job!')}
+ $('endText').textContent='💎 '+score+' / 8';$('nextLv').hidden=level===4;$('endOv').hidden=false;speak(score>=6?'Fantastic! Well done!':'Good job!')}
 
 function tryDrop(spot){
+ if(level===4){if(spot)hideAt(spot);else placeCat(START,true);return}
  const k=current();
  if(!spot){placeCat(START,true);return}
  placeCat(spot,true);
@@ -310,7 +320,7 @@ cat.addEventListener('pointerup',endDrag);cat.addEventListener('pointercancel',e
 /* ================= BUTTONS ================= */
 $('again').onclick=()=>{ensureAC();if(level<3)speak(instr(current()))};
 $('showText').onclick=()=>{if(level===1&&!busy){$('say').textContent=instr(current());textShown=true}};
-$('next').onclick=nextTask;
+$('next').onclick=()=>{if(level===4)nextRound();else nextTask()};
 $('yes').onclick=()=>{const s=current();success(answerSentences(s)[0])};
 $('no').onclick=()=>{firstTry=false;blip(false);toast('Try again!',false)};
 $('help').onclick=()=>{firstTry=false;const s=current(),list=answerSentences(s);
@@ -322,8 +332,38 @@ $('snd').onclick=()=>{soundOn=!soundOn;$('snd').textContent=soundOn?'🔊':'🔇
 document.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{ensureAC();stopSpeech();$('endOv').hidden=true;startLevel(+b.dataset.lv)});
 $('play').onclick=()=>{ensureAC();$('startOv').hidden=true;startLevel(1)};
 $('replay').onclick=()=>{$('endOv').hidden=true;startLevel(level)};
-$('nextLv').onclick=()=>{$('endOv').hidden=true;startLevel(Math.min(3,level+1))};
+$('nextLv').onclick=()=>{$('endOv').hidden=true;startLevel(Math.min(4,level+1))};
 setButtons();drawGems();
+
+/* ================= LEVEL 4: HIDE AND SEEK ================= */
+const PL=[{name:'Player 1',icon:'🧢',gems:0},{name:'Player 2',icon:'⭐',gems:0}];
+let phase='hide',hider=0,hidden=null,tries=0;
+function clearMarks(){marks.querySelectorAll('.mark').forEach(m=>m.classList.remove('miss','found'))}
+function drawScore(){$('score4').innerHTML=PL.map(p=>`<span>${p.icon} ${p.name}: <b>${p.gems}</b> 💎</span>`).join('')}
+function seeker(){return 1-hider}
+function startHide(){phase='hide';hidden=null;tries=0;busy=false;clearMarks();drawScore();
+ cat.style.transition='none';cat.style.opacity=1;placeCat(START,false);cat.classList.remove('locked');
+ $('next').hidden=true;
+ $('hint').textContent=`🙈 ${PL[seeker()].icon} ${PL[seeker()].name}, close your eyes!`;
+ $('say').textContent=`${PL[hider].icon} ${PL[hider].name}, hide the cat!`;
+ speak(`${PL[seeker()].name}, close your eyes! ${PL[hider].name}, hide the cat!`)}
+function hideAt(spot){busy=true;placeCat(spot,true);hidden=spot;blip(true);
+ setTimeout(()=>{cat.style.transition='opacity .5s';cat.style.opacity=0;},450);
+ setTimeout(()=>{phase='seek';busy=false;cat.classList.add('locked');
+  $('hint').innerHTML=`Ask: <i>Is it behind the …?</i> — <i>Yes, it is. / No, it isn't.</i> &nbsp;Clue: <i>It's next to the …</i>`;
+  $('say').textContent=`${PL[seeker()].icon} ${PL[seeker()].name}, open your eyes! Find the cat!`;
+  speak(`${PL[seeker()].name}, open your eyes! Where's the cat?`)},1000)}
+function seekAt(spot){if(busy)return;const m=marks.querySelector(`[data-id="${spot.id}"]`);
+ if(m.classList.contains('miss'))return;ensureAC();
+ if(spot.id===hidden.id){busy=true;phase='found';m.classList.add('found');
+  const win=Math.max(1,4-tries);PL[seeker()].gems+=win;drawScore();
+  cat.style.transition='opacity .25s';cat.style.opacity=1;placeCat(spot,true);blip(true);
+  const sentence=answerSentences(spot)[0];
+  $('hint').textContent=`Found it! +${win} 💎  Say it:`;$('say').textContent=sentence;
+  toast('Here he is!',true);setTimeout(()=>speak('Here he is! '+sentence),400);$('next').hidden=false}
+ else{tries++;m.classList.add('miss');blip(false);toast(['Not here!','No, he isn\'t here!','Try again!'][Math.random()*3|0],false)}}
+function nextRound(){stopSpeech();hider=seeker();startHide()}
+function onMark(s){if(level===4){if(phase==='hide'&&!busy)hideAt(s);else if(phase==='seek')seekAt(s)}else if(canMove())tryDrop(s)}
 
 </script>
 </body>
