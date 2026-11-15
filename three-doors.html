@@ -116,10 +116,25 @@
   .adv{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:16px 0}
   .adv-item{display:flex;flex-direction:column;align-items:center}
   .adv-item img{width:100%;max-width:170px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
+  .adv-item .parch::before,.adv-item .parch::after{display:none}
   .adv-item .parch{width:100%;margin-top:-14px;padding:10px 6px;text-align:center;font-weight:900;font-size:15px}
   .adv-empty{width:100%;aspect-ratio:292/336;border:2px dashed var(--lav-line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--lav)}
-  .frames{display:inline-block;padding:14px 34px;font-family:'Caveat',cursive;font-size:clamp(26px,3.6vw,32px);line-height:1.45;color:var(--brown)}
 
+
+  /* backpack */
+  .bp-pill{display:inline-flex;align-items:center;gap:6px}
+  .bp-pill b{background:var(--gold);color:#2a1a06;border-radius:999px;min-width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;padding:0 6px}
+  .bp-pill.bump{animation:bump .5s}
+  @keyframes bump{0%,100%{transform:scale(1)}40%{transform:scale(1.15)}}
+  .got{display:block;margin-top:10px;font-size:.92em;color:#3f6b2a}
+  .backpack{max-width:820px;margin:18px auto 0;padding:18px 20px 20px;display:flex;gap:18px;align-items:center}
+  .backpack .bag{font-size:clamp(70px,12vw,104px);line-height:1;flex:0 0 auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
+  .backpack h3{font-family:'Caveat',cursive;font-size:34px;margin-bottom:6px}
+  .items{display:flex;flex-wrap:wrap;gap:8px}
+  .item{background:#fff8e6;border:2px solid var(--parch-edge);border-radius:14px;padding:7px 12px;font-weight:800;font-size:17px;display:flex;align-items:center;gap:8px}
+  .item span{font-size:24px}
+  .task-line{font-family:'Caveat',cursive;font-size:clamp(28px,4vw,36px);color:var(--white);text-shadow:0 3px 12px rgba(0,0,0,.6);margin-bottom:6px}
+  @media (max-width:560px){.backpack{flex-direction:column;text-align:center}.items{justify-content:center}}
   /* help */
   .help-ov{position:fixed;inset:0;background:rgba(12,6,30,.8);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
   .help-ov.show{display:flex}
@@ -146,6 +161,8 @@
     <ul><li>I think I'll find…</li><li>Maybe there will be…</li></ul>
     <h4>My next action</h4>
     <ul><li>I'll take…</li><li>I'll look for…</li><li>I'll ask…</li><li>I won't…</li></ul>
+    <h4>My adventure</h4>
+    <ul><li>First, I'll… Then, I'll…</li><li>After that, I'll… Finally, I'll…</li><li>In my backpack there is / there are…</li><li>I'll use … to …</li></ul>
     <div class="center" style="margin-top:14px"><button class="btn btn-violet" onclick="toggleHelp(false)">Close</button></div>
   </div>
 </div>
@@ -155,109 +172,138 @@ const IMG = (r,d) => `three-doors-img/r${r+1}-d${d+1}.webp`;
 
 const VOCAB = {
   "drinking water":"питьевая вода",
+  "thirsty":"хочется пить",
+  "coconut":"кокос",
   "heating":"отопление",
+  "storm":"гроза, буря",
+  "land":"приземлиться",
   "journey":"путешествие",
   "charging":"зарядка",
+  "power bank":"внешний аккумулятор",
   "protect":"защищать",
+  "cave":"пещера",
   "treasure":"сокровище",
+  "exit":"выход",
   "torch":"фонарик",
   "rope bridge":"верёвочный мост"
 };
 
-const MORE_Q = [
-  "Why will you choose this door?",
-  "What will you take with you?",
-  "Will you go alone or with a friend?",
-  "What do you think you'll find there?"
-];
-
+/* each option: i = icon, t = text, r = what happens, g = item for the backpack */
 const ROUNDS = [
   { title:"Where will you spend the night?", doors:[
     { name:"A tropical beach", pros:["Warm and beautiful.","Lots of fruit."], con:"No drinking water.",
-      event:"It's getting dark. You need drinking water. What will you do?",
+      event:"You're thirsty, but there's no drinking water. What will you do?",
+      q:["What will you eat for dinner?","Will you sleep on the sand or in a tent?"],
       options:[
-        {i:"💧",t:"look for water",r:"You'll walk behind the palm trees and find a small river."},
-        {i:"🔭",t:"explore the island",r:"You'll find lots of coconuts — and coconut water!"}]},
+        {i:"🏞️",t:"look for a river",r:"You'll find a small river with clean water.",g:["💧","a bottle of water"]},
+        {i:"🥥",t:"open a coconut",r:"You'll drink sweet coconut water. Yum!",g:["🥥","a coconut"]},
+        {i:"🌧️",t:"wait for rain",r:"It will rain at night, and you'll have lots of water.",g:["🪣","a bucket"]}]},
     { name:"An old castle", pros:["Food and drinking water.","A warm bed."], con:"Strange noises at night.",
-      event:"You hear a noise behind a door. What will you do?",
+      event:"At midnight you hear steps outside your door. What will you do?",
+      q:["Will you sleep in the big room or in the tower?","What will you have for breakfast?"],
       options:[
-        {i:"🚪",t:"open the door",r:"You'll find a little owl. It's friendly!"},
-        {i:"🛏️",t:"stay in your room",r:"You'll sleep with the light on. Tomorrow you'll explore the castle."}]},
+        {i:"🔒",t:"lock the door",r:"You'll feel safe and sleep well.",g:["🔑","an old key"]},
+        {i:"🚪",t:"open the door",r:"It's a little ghost! It will be your friend.",g:["👻","a ghost friend"]},
+        {i:"🛏️",t:"hide under the bed",r:"In the morning you'll see a big black cat. It was the cat!",g:["🐈‍⬛","a black cat"]}]},
     { name:"A snowy cabin", pros:["Food and drinking water.","A safe place."], con:"No heating. It's very cold.",
-      event:"You find some blankets and wood. What will you do?",
+      event:"It's very cold. You find some wood, blankets and tea. What will you do first?",
+      q:["What will you do in the evening?","Will you go outside tomorrow?"],
       options:[
-        {i:"🧣",t:"use the blankets",r:"You'll stay warm under three big blankets."},
-        {i:"🔥",t:"make a fire in the fireplace",r:"The cabin will be warm and cosy in ten minutes."}]}
+        {i:"🔥",t:"make a fire",r:"The cabin will be warm and cosy in ten minutes.",g:["🔥","matches"]},
+        {i:"🛌",t:"sit under the blankets",r:"You'll stay warm and sleep well.",g:["🧣","a warm blanket"]},
+        {i:"☕",t:"make hot tea",r:"You'll drink hot tea and feel warm.",g:["☕","a cup of tea"]}]}
   ]},
   { title:"How will you travel?", doors:[
     { name:"A flying car", pros:["Very fast.","You can see everything."], con:"You must drive it yourself.",
-      event:"You see dark clouds ahead. What will you do?",
+      event:"A storm is coming. What will you do?",
+      q:["Where will you fly first?","Will you take a friend with you?"],
       options:[
-        {i:"🛬",t:"land",r:"You'll land on a hill and wait for the sun."},
-        {i:"🧭",t:"find another way",r:"You'll fly around the clouds. It will take longer, but it's safe."}]},
+        {i:"🛬",t:"land in a field",r:"After the storm, you'll see a big rainbow!",g:["🌈","a photo of a rainbow"]},
+        {i:"☁️",t:"fly above the clouds",r:"You'll fly above the storm. The view will be amazing!",g:["☁️","a cloud in a jar"]},
+        {i:"↩️",t:"go back",r:"You'll go back and try again tomorrow.",g:["🧭","a compass"]}]},
     { name:"A slow train", pros:["Comfortable and safe.","Free food."], con:"The journey takes two days.",
-      event:"Your phone battery is dead. What will you do?",
+      event:"It's the first evening on the train, and your phone is dead. What will you do?",
+      q:["What will you eat on the train?","Will you sleep on the top bed or the bottom bed?"],
       options:[
-        {i:"📖",t:"read a book",r:"You'll finish the whole book before the end of the journey!"},
-        {i:"💬",t:"talk to someone",r:"You'll meet a friendly girl, and she'll teach you a new card game."}]},
-    { name:"A magic boat", pros:["No ticket needed.","It can travel anywhere."], con:"You can take only one bag.",
+        {i:"📖",t:"read a book",r:"You'll finish the whole book before the end of the journey!",g:["📖","a good book"]},
+        {i:"🃏",t:"play cards with other people",r:"You'll make three new friends.",g:["🃏","playing cards"]},
+        {i:"🪟",t:"look out of the window",r:"You'll see mountains, lakes and a big city.",g:["🖼️","a postcard"]}]},
+    { name:"A magic boat", pros:["You don't need a ticket.","It can go anywhere."], con:"You can take only one bag.",
       event:"Your bag is too heavy. What will you leave behind?",
+      q:["Where will the boat take you?","What will you see from the boat?"],
       options:[
-        {i:"📷",t:"a camera",r:"No photos — but you'll remember everything!"},
-        {i:"📖",t:"a book",r:"You won't read. You'll watch the sea and the stars."},
-        {i:"👟",t:"an extra pair of shoes",r:"Your bag will be light. Let's hope your shoes don't get wet!"}]}
+        {i:"📷",t:"a camera",r:"No photos — but you'll remember everything!",g:["📖","a book"]},
+        {i:"📖",t:"a book",r:"You'll take lots of photos of the sea.",g:["📷","a camera"]},
+        {i:"👟",t:"an extra pair of shoes",r:"Your bag will be light. Let's hope your shoes don't get wet!",g:["🧦","wet socks"]}]}
   ]},
   { title:"Who will help you?", doors:[
     { name:"A clever robot", pros:["Knows lots of things.","Can carry heavy bags."], con:"Needs charging every hour.",
-      event:"The robot needs power. What will you do?",
+      event:"The robot needs charging, and you're in the middle of a forest. What will you do?",
+      q:["What will you ask the robot?","What will you call your robot?"],
       options:[
-        {i:"🔌",t:"look for a charger",r:"You'll find a charger in an old shop."},
-        {i:"🙋",t:"ask someone for help",r:"A kind man will help you charge the robot."}]},
+        {i:"🔋",t:"use your power bank",r:"The robot will work again in ten minutes.",g:["🔋","a power bank"]},
+        {i:"🏡",t:"look for a house",r:"A kind old woman will help you. She'll give you some cake too!",g:["🍰","a piece of cake"]},
+        {i:"💪",t:"carry the robot",r:"It's heavy, but you're strong! In the town you'll find a charger.",g:["🔌","a charger"]}]},
     { name:"A friendly dragon", pros:["Can fly.","Can protect you."], con:"Eats most of your food.",
-      event:"The dragon is hungry again. What will you do?",
+      event:"The dragon ate all your sandwiches! What will you do?",
+      q:["Will you sit on its back or walk next to it?","What will the dragon eat tomorrow?"],
       options:[
-        {i:"🥪",t:"share your food",r:"The dragon will be your best friend!"},
-        {i:"🍎",t:"look for more food",r:"You'll find apple trees. The dragon loves apples!"}]},
+        {i:"🍎",t:"look for fruit",r:"You'll find apple trees. The dragon loves apples!",g:["🍎","apples"]},
+        {i:"🎣",t:"go fishing",r:"You'll catch five fish — two for you and three for the dragon.",g:["🐟","a fish"]},
+        {i:"🏙️",t:"fly to a town",r:"The dragon will fly you to a town, and you'll buy pizza.",g:["🍕","pizza"]}]},
     { name:"A talking cat", pros:["Can see in the dark.","Can find secret doors."], con:"Doesn't always listen to you.",
-      event:"The cat goes through a small hole. What will you do?",
+      event:"The cat runs into a dark cave and doesn't come back. What will you do?",
+      q:["What will you call the cat?","What will the cat find for you?"],
       options:[
-        {i:"⏳",t:"wait",r:"The cat will come back with a golden key!"},
-        {i:"🔍",t:"look for another entrance",r:"You'll find a secret door behind a big plant."}]}
+        {i:"📣",t:"call the cat",r:"The cat will come back with a golden key!",g:["🗝️","a golden key"]},
+        {i:"🕳️",t:"go into the cave",r:"You'll find the cat — and an old map on the wall!",g:["🗺️","an old map"]},
+        {i:"🐟",t:"wait outside with some fish",r:"The cat will smell the fish and come back.",g:["🐈","a happy cat"]}]}
   ]},
   { title:"Which room will you choose?", doors:[
     { name:"A room full of gold", pros:["You can take some gold.","There is a map."], con:"The gold is very heavy.",
-      event:"You can carry only three things. What will you take?",
-      multi:3, options:[
-        {i:"🪙",t:"gold"},{i:"🗺️",t:"a map"},{i:"💧",t:"water"},{i:"🔦",t:"a torch"},{i:"🍎",t:"food"}]},
-    { name:"A room full of food", pros:["Plenty of food and water.","A comfortable sofa."], con:"You must stay for three hours.",
-      event:"You have three hours. What will you do?",
+      event:"The gold is very heavy. You can't take it all. What will you do?",
+      q:["What will you buy with the gold?","Who will you tell about the treasure?"],
       options:[
-        {i:"🍕",t:"eat",r:"You'll eat pizza, cake and fruit!"},
-        {i:"🛋️",t:"rest",r:"You'll sleep on the sofa and feel great."},
-        {i:"📝",t:"make a plan",r:"You'll make a plan and find the exit faster."}]},
-    { name:"A room with a magic mirror", pros:["The mirror can answer one question.","You can leave immediately."], con:"There is no food or treasure.",
+        {i:"🪙",t:"take only a little",r:"You'll take ten gold coins. Your bag will still be light.",g:["🪙","ten gold coins"]},
+        {i:"🗺️",t:"take the map and leave the gold",r:"The map will show you a secret way out.",g:["🗺️","a treasure map"]},
+        {i:"👜",t:"come back later with a bag",r:"You'll come back tomorrow with a very big bag!",g:["👜","a big bag"]}]},
+    { name:"A room full of food", pros:["Lots of food and water.","A comfortable sofa."], con:"You must stay for three hours.",
+      event:"You must stay here for three hours. What will you do first?",
+      q:["What will you eat first?","Will you take some food with you?"],
+      options:[
+        {i:"🍝",t:"have a big dinner",r:"You'll eat pasta, cake and fruit!",g:["🍪","cookies for later"]},
+        {i:"🛋️",t:"sleep on the sofa",r:"You'll sleep well and feel great.",g:["🛏️","a soft pillow"]},
+        {i:"📝",t:"make a plan for tomorrow",r:"You'll make a good plan and find the exit faster.",g:["📝","a plan"]}]},
+    { name:"A room with a magic mirror", pros:["The mirror can answer one question.","You can go out at once."], con:"There is no food or gold.",
       event:"You can ask one question. What will you ask?",
+      q:["What will you see in the mirror?","Will you tell your friends about the mirror?"],
       options:[
-        {i:"🚪",t:"Where is the exit?",r:"The mirror will show you a small green door."},
-        {i:"👫",t:"Where are my friends?",r:"The mirror will show your friends. They're in the garden!"},
-        {i:"🛡️",t:"Is this place safe?",r:"The mirror will say: \"Yes, but be careful!\""}]}
+        {i:"🚪",t:"Where is the exit?",r:"The mirror will show you a small green door.",g:["🚪","the way out"]},
+        {i:"👫",t:"Where are my friends?",r:"The mirror will show your friends. They're in the garden!",g:["💌","a message from friends"]},
+        {i:"🛡️",t:"Is this place safe?",r:"The mirror will say: \"Yes, but be careful!\"",g:["⭐","a lucky star"]}]}
   ]},
   { title:"Which way will you go?", doors:[
     { name:"A dark tunnel", pros:["The shortest way.","No stairs."], con:"You can't see without a torch.",
-      event:"Your torch stops working. What will you do?",
+      event:"It's very dark in the tunnel. What will you do?",
+      q:["What will you hear in the tunnel?","Will you go fast or slowly?"],
       options:[
-        {i:"📱",t:"use your phone light",r:"You'll see the exit in five minutes."},
-        {i:"↩️",t:"go back",r:"You'll go back and take the forest path."}]},
+        {i:"📱",t:"use your phone light",r:"You'll see the exit in five minutes.",g:["📱","a phone"]},
+        {i:"🧱",t:"walk slowly next to the wall",r:"You'll find a shiny stone on the wall.",g:["💎","a shiny stone"]},
+        {i:"🔦",t:"go back and find a torch",r:"With the torch, you'll see everything.",g:["🔦","a torch"]}]},
     { name:"A forest path", pros:["Light and fresh air.","You can find berries."], con:"It's a long walk.",
-      event:"You find two paths. What will you do?",
+      event:"There are two paths. What will you do?",
+      q:["What will you find in the forest?","Will you stop for a picnic?"],
       options:[
-        {i:"🗺️",t:"check your map",r:"You'll take the left path. It goes to the exit!"},
-        {i:"🪧",t:"look for signs",r:"You'll find a sign: EXIT → 2 km."}]},
+        {i:"🏞️",t:"go left to the river",r:"You'll find a little boat and go to the exit by river.",g:["🐚","a river shell"]},
+        {i:"⛰️",t:"go right to the mountains",r:"You'll see the whole forest from the top!",g:["📸","a mountain photo"]},
+        {i:"🗺️",t:"look at the map first",r:"You'll find the short way — and lots of berries on it!",g:["🍓","berries"]}]},
     { name:"A rope bridge", pros:["You can see the exit.","It takes only five minutes."], con:"The bridge moves in the wind.",
-      event:"The wind gets stronger. What will you do?",
+      event:"You're in the middle of the bridge, and the wind is very strong. What will you do?",
+      q:["Will you look down?","What will you do on the other side?"],
       options:[
-        {i:"⏳",t:"wait",r:"The wind will stop, and you'll cross the bridge."},
-        {i:"↩️",t:"go back",r:"You'll go back and find the tunnel."}]}
+        {i:"🧗",t:"hold on and keep walking",r:"You'll cross the bridge in two minutes. You're so brave!",g:["🏅","a medal"]},
+        {i:"🪑",t:"sit down and wait",r:"The wind will stop, and you'll cross the bridge safely.",g:["🪢","a piece of rope"]},
+        {i:"↩️",t:"go back",r:"You'll go back and take the tunnel.",g:["🍫","chocolate for the way"]}]}
   ]}
 ];
 
@@ -265,7 +311,7 @@ const ROUNDS = [
 function withVocab(text){
   let out = text;
   for(const w in VOCAB){
-    const re = new RegExp(w.replace(' ','\\s'), 'i');
+    const re = new RegExp('\\b'+w.replace(' ','\\s')+'\\b', 'i');
     out = out.replace(re, m => `<span class="vocab" onclick="toggleVocab(this)">${m}</span><span class="vocab-ru"> (${VOCAB[w]})</span>`);
   }
   return out;
@@ -273,13 +319,16 @@ function withVocab(text){
 function toggleVocab(el){ el.classList.toggle('open'); }
 function toggleHelp(on){ document.getElementById('helpOv').classList.toggle('show', on); }
 function helpBtn(){ return `<button class="pill" onclick="toggleHelp(true)">💬 Help me speak</button>`; }
-function listJoin(a){ return a.length<2 ? a.join('') : a.slice(0,-1).join(', ')+' and '+a[a.length-1]; }
 
 /* ---------- state ---------- */
 let round = 0, curDoor = 0, qIdx = 0;
 let choices = [null,null,null,null,null];
-let picked = new Set();
+let bag = [null,null,null,null,null];
 const app = document.getElementById('app');
+
+function bagCount(){ return bag.filter(Boolean).length; }
+function bagPill(){ return `<span class="pill bp-pill" id="bp">🎒 <b>${bagCount()}</b></span>`; }
+function topbar(left){ return `<div class="topbar"><span class="pill">${left}</span><span style="display:flex;gap:8px;flex-wrap:wrap">${bagPill()}${helpBtn()}</span></div>`; }
 
 /* ---------- screens ---------- */
 function startScreen(){
@@ -289,21 +338,19 @@ function startScreen(){
       <div class="mini-doors">
         <img src="${IMG(0,0)}" alt=""><img src="${IMG(0,1)}" alt=""><img src="${IMG(0,2)}" alt="">
       </div>
-      <div class="parch">Every door has a problem.<br>Which one will you choose?<br><span style="color:#7a4a0e">Look. Choose. Explain.</span></div>
+      <div class="parch">Every door has a problem.<br>Which one will you choose?<br><span style="color:#7a4a0e">🎒 Fill your backpack on the way!</span></div>
       <button class="btn btn-gold" onclick="showDoors(0)">START →</button>
     </div>`;
   scrollTo(0,0);
 }
 
 function showDoors(r){
-  round = r; qIdx = 0; picked = new Set();
+  round = r; qIdx = 0;
+  choices[r] = null; bag[r] = null;
   const R = ROUNDS[r];
   app.innerHTML = `
-    <div class="topbar"><span class="pill">Round ${r+1} of 5</span>${helpBtn()}</div>
-    <div class="center">
-      <h2>${R.title}</h2>
-      ${r===0 ? `<div class="scroll">I'll choose door … because …</div>` : '<div style="height:10px"></div>'}
-    </div>
+    ${topbar(`Round ${r+1} of 5`)}
+    <div class="center"><h2>${R.title}</h2><div style="height:14px"></div></div>
     <div class="doors">
       ${R.doors.map((d,di)=>`
         <div class="door">
@@ -329,14 +376,14 @@ function chooseDoor(di){
 function showEvent(){
   const d = ROUNDS[round].doors[curDoor];
   const isLast = round === ROUNDS.length - 1;
-  picked = new Set(); qIdx = 0;
+  qIdx = 0;
   app.innerHTML = `
-    <div class="topbar"><span class="pill">Round ${round+1} of 5 — ${d.name}</span>${helpBtn()}</div>
+    ${topbar(`Round ${round+1} of 5 — ${d.name}`)}
     <div class="event">
       <div class="photo"><img src="${IMG(round,curDoor)}" alt=""><div class="cap">${d.name}</div></div>
-      <div class="parch q-card">${withVocab(d.event)}${d.multi ? `<div class="multi">Choose ${d.multi} things!</div>` : ''}</div>
+      <div class="parch q-card">${withVocab(d.event)}</div>
       <div class="opts">
-        ${d.options.map((o,oi)=>`<button class="opt" id="o${oi}" onclick="pickOpt(${oi})"><span class="oi">${o.i}</span><span class="ot">${o.t}</span><span class="oi"></span></button>`).join('')}
+        ${d.options.map((o,oi)=>`<button class="opt" id="o${oi}" onclick="pickOpt(${oi},event)"><span class="oi">${o.i}</span><span class="ot">${withVocab(o.t)}</span><span class="oi"></span></button>`).join('')}
       </div>
       <div class="parch result" id="res"></div>
       <div class="bubble" id="qb"></div>
@@ -349,40 +396,30 @@ function showEvent(){
   scrollTo(0,0);
 }
 
-function pickOpt(oi){
+function pickOpt(oi,ev){
+  if(ev && ev.target.closest('.vocab')) return;
   const d = ROUNDS[round].doors[curDoor];
-  const res = document.getElementById('res');
-  if(d.multi){
-    const el = document.getElementById('o'+oi);
-    if(picked.has(oi)){ picked.delete(oi); el.classList.remove('picked'); }
-    else if(picked.size < d.multi){ picked.add(oi); el.classList.add('picked'); }
-    if(picked.size === d.multi){
-      const things = [...picked].sort().map(i=>d.options[i].t);
-      const hasLight = things.includes('a torch'), hasMap = things.includes('a map');
-      const end = hasMap && hasLight ? "With the map and the torch, you'll find the exit easily!"
-                : hasMap ? "The map will show you the way out."
-                : hasLight ? "The torch will help you in dark places."
-                : "Hmm… no map and no torch. The way out will be difficult!";
-      res.innerHTML = `<span class="you">You decided to take ${listJoin(things)}.</span>${end}`;
-      res.classList.add('show');
-    } else res.classList.remove('show');
-    return;
-  }
+  const o = d.options[oi];
   document.querySelectorAll('.opt').forEach(b=>b.classList.remove('picked'));
   document.getElementById('o'+oi).classList.add('picked');
-  const o = d.options[oi];
   const did = d.event.startsWith('You can ask') ? `You decided to ask: "${o.t}"`
             : d.event.includes('leave behind') ? `You decided to leave ${o.t}.`
             : `You decided to ${o.t}.`;
-  res.innerHTML = `<span class="you">${did}</span>${o.r}`;
+  bag[round] = o.g;
+  const res = document.getElementById('res');
+  res.innerHTML = `<span class="you">${did}</span>${withVocab(o.r)}<span class="got">🎒 + ${o.g[0]} ${o.g[1]}</span>`;
   res.classList.add('show');
+  const bp = document.getElementById('bp');
+  bp.querySelector('b').textContent = bagCount();
+  bp.classList.remove('bump'); void bp.offsetWidth; bp.classList.add('bump');
   setTimeout(()=>res.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
 }
 
 function moreQuestion(){
+  const d = ROUNDS[round].doors[curDoor];
   const qb = document.getElementById('qb');
   qb.style.display = 'block';
-  qb.textContent = MORE_Q[qIdx % MORE_Q.length];
+  qb.innerHTML = withVocab(d.q[qIdx % d.q.length]);
   qIdx++;
 }
 
@@ -393,7 +430,7 @@ function nextRound(){
 
 function roundPicker(){
   app.innerHTML = `
-    <div class="topbar"><span class="pill">Choose a round</span>${helpBtn()}</div>
+    ${topbar('Choose a round')}
     <div class="center"><h2>Choose a round</h2></div>
     <div class="event"><div class="opts">
       ${ROUNDS.map((R,ri)=>`<button class="opt" onclick="showDoors(${ri})"><span class="oi">${ri+1}</span><span class="ot">${R.title}</span><span class="oi"></span></button>`).join('')}
@@ -403,26 +440,35 @@ function roundPicker(){
 }
 
 function finalScreen(){
+  const items = bag.filter(Boolean);
   app.innerHTML = `
+    ${topbar('Your adventure')}
     <div class="center">
       <h2 style="font-size:clamp(46px,7vw,70px)">Your adventure</h2>
-      <div class="scroll">Tell your adventure. Use your choices.</div>
+      <div class="task-line">Tell your story. Use your backpack!</div>
     </div>
     <div class="adv">
       ${choices.map((c,ci)=> c ? `
         <div class="adv-item"><img src="${IMG(c.r,c.d)}" alt=""><div class="parch">${ci+1}. ${c.name}</div></div>` : `
         <div class="adv-item"><div class="adv-empty">?</div><div class="parch">${ci+1}. ?</div></div>`).join('')}
     </div>
-    <div class="center"><div class="parch frames">First, I'll…<br>Then, I'll…<br>After that, I'll…<br>Finally, I'll…</div></div>
+    <div class="parch backpack">
+      <div class="bag">🎒</div>
+      <div>
+        <h3>My backpack</h3>
+        <div class="items">
+          ${items.length ? items.map(g=>`<div class="item"><span>${g[0]}</span>${g[1]}</div>`).join('') : '<div class="item">empty… 🙈</div>'}
+        </div>
+      </div>
+    </div>
     <div class="row">
       <button class="btn btn-gold" onclick="restart()">Play again</button>
       <button class="btn btn-ghost" onclick="roundPicker()">Choose a round</button>
-      ${helpBtn()}
     </div>`;
   scrollTo(0,0);
 }
 
-function restart(){ choices=[null,null,null,null,null]; round=0; startScreen(); }
+function restart(){ choices=[null,null,null,null,null]; bag=[null,null,null,null,null]; round=0; startScreen(); }
 
 startScreen();
 </script>
