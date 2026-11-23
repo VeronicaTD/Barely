@@ -77,7 +77,6 @@ h1{margin:0;font-family:var(--display);font-weight:700;color:#fff;font-size:clam
     <div class="who" id="who">⚓</div>
     <div class="msg"><small id="hint"></small><span id="say"></span></div>
     <div class="acts">
-      <button class="btn blue" id="hear" hidden>🔊 Listen</button>
       <button class="btn go" id="check" hidden>Check ✓</button>
       <button class="btn go" id="done" hidden>Ready ✓</button>
       <button class="btn gold" id="next" hidden>Next ▶</button>
@@ -146,7 +145,7 @@ function full(r,c,yes){return `${PEOPLE[r].name} ${yes?'can':"can't"} ${ACTS[c].
 function toast(t,good){const e=$('toast');e.textContent=t;e.className='toast show '+(good?'good':'bad');clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',1300)}
 function overlay(icon,title,text,btn,fn){$('ovIcon').textContent=icon;$('ovTitle').textContent=title;$('ovText').textContent=text;$('ovBtn').textContent=btn;$('ovBtn').onclick=()=>{ensureAC();$('ov').hidden=true;fn()};$('ov').hidden=false}
 function bar(icon,hint,say){$('who').textContent=icon;$('hint').textContent=hint;$('say').textContent=say}
-function buttons(o){['hear','check','done','next'].forEach(k=>$(k).hidden=!o[k])}
+function buttons(o){['check','done','next'].forEach(k=>$(k).hidden=!o[k])}
 
 function boardEl(title,score,cls){const b=document.createElement('div');b.className='board '+(cls||'');
  b.innerHTML=`<h2><span>${title}</span><span class="score">${score||''}</span></h2>`;
@@ -176,7 +175,7 @@ $('done').onclick=()=>{if(phase!=='setup')return;
 
 /* ---- battle ---- */
 function startTurn(p){phase='aim';cur=p;pending=null;drawBattle();const tb=document.querySelector('.board.target');if(tb&&innerWidth<900)tb.scrollIntoView({behavior:'smooth',block:'nearest'});
- bar(PL[p].icon,`${PL[p].name}: tap a box on ${PL[1-p].name}'s board.`,'Ask: Can … ?');buttons({});speak(`${PL[p].name}, your turn!`)}
+ bar(PL[p].icon,`${PL[p].name}: choose a box on ${PL[1-p].name}'s board.`,'Your turn!');buttons({});speak(`${PL[p].name}, your turn!`)}
 function drawBattle(){const box=$('boards');box.innerHTML='';
  [0,1].forEach(owner=>{const shooter=1-owner,isTarget=shooter===cur&&phase!=='over';
   const {b,g}=boardEl(`${PL[owner].icon} ${PL[owner].name}'s board`,`🎯 ${found[shooter]} / ${TICKS}`,isTarget?'target':'dim');
@@ -186,13 +185,12 @@ function drawBattle(){const box=$('boards');box.innerHTML='';
    if(isTarget&&s===null&&phase==='aim')d.onclick=()=>aim(owner,r,c);g.appendChild(d)})});
   box.appendChild(b)})}
 function aim(owner,r,c){ensureAC();phase='ask';pending={owner,r,c};drawBattle();
- const question=q(r,c);bar(PL[cur].icon,`${PL[cur].name}, ask! ${PL[owner].name}, answer!`,question);
- buttons({hear:true,check:true});speak(question);prefetch(a(r,c,true));prefetch(a(r,c,false))}
-$('hear').onclick=()=>{if(pending)speak(q(pending.r,pending.c))};
+ bar(PL[cur].icon,`${PL[owner].icon} ${PL[owner].name}, answer: Yes or No?`,`🗣️ ${PL[cur].name}, ask your question!`);
+ buttons({check:true})}
 $('check').onclick=()=>{if(phase!=='ask'||!pending)return;const {owner,r,c}=pending,yes=grids[owner][r][c];
  shots[cur][r][c]=yes;phase='result';if(yes)found[cur]++;pending=null;
  drawBattle();blip(yes);toast(yes?'Hit! 🎯':'Miss! 🌊',yes);
- const ans=a(r,c,yes);bar(PL[cur].icon,yes?'Hit! Say it:':'Miss! Say it:',`${ans}  ${full(r,c,yes)}`);speak(ans);
+ bar(PL[cur].icon,yes?'Hit! 🎯':'Miss! 🌊',yes?'✓ Yes!':'✗ No!');
  if(yes&&found[cur]>=TICKS){phase='over';buttons({});setTimeout(()=>{drawBattle();speak(`${PL[cur].name} wins!`);
   overlay('🏆',`${PL[cur].icon} ${PL[cur].name} wins!`,'Great asking!','↺ Play again',()=>startSetup(0))},1400);return}
  buttons({next:true})};
