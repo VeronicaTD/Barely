@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Can Battle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Lilita+One&family=Nunito:wght@600;800&display=swap">
+<style>
+:root{
+  --ink:#1d2433;--sea:#1f6fb2;--seaD:#14507f;--seaL:#7cc4f0;--panel:#eef4fb;--panelD:#9fb6cf;
+  --hit:#e2463a;--miss:#dfe8f2;--gold:#f2c230;--green:#3fa34d;--p1:#e2463a;--p2:#f2a530;
+  --display:"Silkscreen","Courier New",monospace;--chunky:"Lilita One","Arial Black",sans-serif;--body:"Nunito",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--body);color:var(--ink);min-height:100vh;
+  background:radial-gradient(circle at 20% 10%,#3d8fd1 0,transparent 45%),repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 14px,transparent 14px 28px),var(--sea)}
+.wrap{max-width:1100px;margin:0 auto;padding:14px 14px 24px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+h1{margin:0;font-family:var(--display);font-weight:700;color:#fff;font-size:clamp(20px,3.6vw,34px);text-shadow:3px 3px 0 #0b2f4e}
+.btn{font-family:var(--display);font-weight:700;font-size:clamp(12px,1.5vw,15px);cursor:pointer;border:3px solid #0b2f4e;background:#fff;color:var(--ink);padding:9px 14px;box-shadow:0 4px 0 #0b2f4e;line-height:1.1}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0b2f4e}
+.btn.go{background:var(--green);color:#fff}
+.btn.gold{background:var(--gold)}
+.btn.blue{background:#2f86d6;color:#fff}
+.btn[hidden]{display:none}
+.bar{background:var(--panel);border:4px solid #0b2f4e;box-shadow:inset 0 -5px 0 var(--panelD);padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.who{width:52px;height:52px;flex:none;display:grid;place-items:center;font-size:30px;border:3px solid #0b2f4e;background:#fff}
+.msg{flex:1 1 260px;min-width:0}
+.msg small{display:block;font-weight:800;font-size:clamp(12px,1.4vw,15px);color:#4a5d78}
+.msg span{font-family:var(--chunky);font-size:clamp(19px,2.7vw,29px);line-height:1.2}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:14px}
+.board{background:var(--panel);border:4px solid #0b2f4e;padding:10px;position:relative}
+.board h2{margin:0 0 8px;font-family:var(--display);font-size:clamp(14px,1.8vw,18px);display:flex;align-items:center;gap:8px;justify-content:space-between}
+.board h2 b{font-family:var(--chunky);font-weight:400;font-size:1.15em}
+.board.target{outline:5px solid var(--gold);outline-offset:3px}
+.board.dim{opacity:.55}
+.grid{display:grid;gap:4px}
+.cell,.head{border:2px solid #0b2f4e;min-height:clamp(44px,7vw,64px);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
+.head{background:#d7e6f5;font-weight:800;font-size:clamp(11px,1.4vw,14px);line-height:1.15;flex-direction:column;gap:2px}
+.head .ic{font-size:clamp(18px,2.6vw,26px)}
+.head.name{font-family:var(--chunky);font-weight:400;font-size:clamp(15px,2vw,20px)}
+.corner{background:transparent;border-color:transparent}
+.cell{background:var(--seaL);cursor:pointer;font-size:clamp(22px,3.4vw,34px);transition:background .15s,transform .1s;user-select:none}
+.cell:hover{background:#a9dbfa}
+.cell.mine{background:#fff;cursor:pointer}
+.cell.mine.on{background:#c9f0cf}
+.cell.hit{background:var(--hit);cursor:default}
+.cell.miss{background:var(--miss);cursor:default;color:#6a7c94}
+.cell.ask{background:var(--gold);transform:scale(1.05)}
+.cell.lock{cursor:default}
+.score{font-family:var(--display);font-size:clamp(12px,1.4vw,14px)}
+.overlay{position:fixed;inset:0;background:rgba(8,30,52,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.overlay[hidden]{display:none}
+.card{background:var(--panel);border:5px solid #0b2f4e;box-shadow:0 8px 0 #0b2f4e;max-width:520px;width:100%;padding:24px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.card h2{margin:0;font-family:var(--display);font-size:clamp(20px,4vw,30px)}
+.card p{margin:0;font-family:var(--chunky);font-size:clamp(18px,2.8vw,24px);line-height:1.3}
+.big{font-size:56px;line-height:1}
+.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:30;font-family:var(--chunky);font-size:clamp(20px,3.4vw,34px);padding:8px 22px;border:4px solid #0b2f4e;color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.4);pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap}
+.toast.show{opacity:1}.toast.good{background:var(--hit)}.toast.bad{background:#5d7896}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>⚓ Can Battle</h1>
+    <div class="acts">
+      <button class="btn blue" id="snd" aria-label="Sound on/off">🔊</button>
+      <button class="btn" id="restart">↺ New game</button>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="who" id="who">⚓</div>
+    <div class="msg"><small id="hint"></small><span id="say"></span></div>
+    <div class="acts">
+      <button class="btn blue" id="hear" hidden>🔊 Listen</button>
+      <button class="btn go" id="check" hidden>Check ✓</button>
+      <button class="btn go" id="done" hidden>Ready ✓</button>
+      <button class="btn gold" id="next" hidden>Next ▶</button>
+    </div>
+  </div>
+
+  <div class="boards" id="boards"></div>
+</div>
+
+<div class="overlay" id="ov">
+  <div class="card">
+    <div class="big" id="ovIcon">⚓</div>
+    <h2 id="ovTitle">Can Battle</h2>
+    <p id="ovText">Hide your ticks. Find your friend's ticks!</p>
+    <button class="btn go" id="ovBtn">▶ Play</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== GAME DATA: change names / activities here ===== */
+const PEOPLE=[{name:'Alex',he:'he'},{name:'Bella',he:'she'},{name:'Cathy',he:'she'},{name:'Derek',he:'he'}];
+const ACTS=[{text:'ride a bike',ic:'🚲'},{text:'skateboard',ic:'🛹'},{text:'play tennis',ic:'🎾'},{text:'play football',ic:'⚽'}];
+const TICKS=4; // how many ✓ each player hides
+
+
+/* ================= SPEECH: Gemini voice via shared Supabase proxy, browser en-GB male fallback ================= */
+const AI_PROXY="https://fnmxgojqdenmtobzlnhi.supabase.co/functions/v1/gemini";
+const TTS_MODEL="gemini-2.5-flash-preview-tts",TTS_VOICE="Puck";
+let soundOn=true,voice=null,aiVoice=true,aiFails=0,AC=null,curSrc=null,spTok=0;const ttsCache=new Map();
+function pickVoice(){const v=speechSynthesis.getVoices(),gb=v.filter(x=>/en-GB/i.test(x.lang)),M=/\bmale|daniel|george|ryan|arthur|oliver|thomas|google uk english male/i;
+ voice=gb.find(x=>M.test(x.name)&&!/female/i.test(x.name))||gb[0]||v.find(x=>/^en/i.test(x.lang))||null}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function ensureAC(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}}
+function clean(t){return t.replace(/[^\w\s',.!?\-]/g,' ').replace(/\s+/g,' ').trim()}
+function stopSpeech(){spTok++;try{curSrc&&curSrc.stop()}catch(e){}curSrc=null;if(window.speechSynthesis)speechSynthesis.cancel()}
+function ttsFetch(t){if(ttsCache.has(t))return ttsCache.get(t);
+ const p=(async()=>{if(!AC)throw new Error('no audio');const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),12000);
+  try{const r=await fetch(AI_PROXY+'?forceFunctionRegion=us-east-1&model='+TTS_MODEL,{method:'POST',headers:{'Content-Type':'application/json'},signal:ctl.signal,
+    body:JSON.stringify({model:TTS_MODEL,contents:[{parts:[{text:'Read aloud slowly and clearly, in a warm, friendly British English accent, for a young child learning English: '+t}]}],
+     generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:TTS_VOICE}}}}})});
+   const j=await r.json(),part=j&&j.candidates&&j.candidates[0].content.parts.find(x=>x.inlineData);
+   if(!r.ok||!part)throw new Error('no audio');
+   const rate=+((/rate=(\d+)/.exec(part.inlineData.mimeType)||[0,24000])[1]),bin=atob(part.inlineData.data),n=bin.length>>1,buf=AC.createBuffer(1,n,rate),ch=buf.getChannelData(0);
+   for(let i=0;i<n;i++){let v=bin.charCodeAt(2*i)|(bin.charCodeAt(2*i+1)<<8);if(v&0x8000)v-=0x10000;ch[i]=v/32768}
+   return buf}finally{clearTimeout(to)}})();
+ ttsCache.set(t,p);p.then(()=>{aiFails=0},()=>{ttsCache.delete(t);if(++aiFails>=2)aiVoice=false});return p}
+function browserSpeak(t){if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.lang='en-GB';u.rate=.85;speechSynthesis.speak(u)}
+function speak(t){if(!soundOn||!t)return;t=clean(t);if(!t)return;stopSpeech();const tok=spTok;
+ if(aiVoice&&AC){ttsFetch(t).then(buf=>{if(tok!==spTok)return;const s=AC.createBufferSource();s.buffer=buf;s.connect(AC.destination);curSrc=s;s.start()},()=>{if(tok===spTok)browserSpeak(t)})}
+ else browserSpeak(t)}
+function prefetch(t){if(soundOn&&aiVoice&&AC&&t)ttsFetch(clean(t)).catch(()=>{})}
+function blip(good){if(!soundOn||!AC)return;try{const o=AC.createOscillator(),g=AC.createGain();o.type='square';const t=AC.currentTime;
+ if(good){o.frequency.setValueAtTime(660,t);o.frequency.setValueAtTime(990,t+.08)}else{o.frequency.setValueAtTime(220,t);o.frequency.setValueAtTime(160,t+.1)}
+ g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.26)}catch(e){}}
+
+
+/* ================= GAME ================= */
+const $=id=>document.getElementById(id);
+const PL=[{name:'Player 1',icon:'🧢'},{name:'Player 2',icon:'⭐'}];
+let phase='intro',cur=0,grids=[null,null],shots=[null,null],found=[0,0],pending=null;
+const empty=()=>PEOPLE.map(()=>ACTS.map(()=>false));
+function q(r,c){return `Can ${PEOPLE[r].name} ${ACTS[c].text}?`}
+function a(r,c,yes){const p=PEOPLE[r].he;return yes?`Yes, ${p} can!`:`No, ${p} can't.`}
+function full(r,c,yes){return `${PEOPLE[r].name} ${yes?'can':"can't"} ${ACTS[c].text}.`}
+function toast(t,good){const e=$('toast');e.textContent=t;e.className='toast show '+(good?'good':'bad');clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',1300)}
+function overlay(icon,title,text,btn,fn){$('ovIcon').textContent=icon;$('ovTitle').textContent=title;$('ovText').textContent=text;$('ovBtn').textContent=btn;$('ovBtn').onclick=()=>{ensureAC();$('ov').hidden=true;fn()};$('ov').hidden=false}
+function bar(icon,hint,say){$('who').textContent=icon;$('hint').textContent=hint;$('say').textContent=say}
+function buttons(o){['hear','check','done','next'].forEach(k=>$(k).hidden=!o[k])}
+
+function boardEl(title,score,cls){const b=document.createElement('div');b.className='board '+(cls||'');
+ b.innerHTML=`<h2><span>${title}</span><span class="score">${score||''}</span></h2>`;
+ const g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns=`minmax(64px,1.1fr) repeat(${ACTS.length},1fr)`;
+ g.appendChild(Object.assign(document.createElement('div'),{className:'head corner'}));
+ ACTS.forEach(x=>{const h=document.createElement('div');h.className='head';h.innerHTML=`<span class="ic">${x.ic}</span>${x.text}`;g.appendChild(h)});
+ b.appendChild(g);return {b,g}}
+function addRowHead(g,r){const h=document.createElement('div');h.className='head name';h.textContent=PEOPLE[r].name;g.appendChild(h)}
+
+/* ---- set up: one player hides ticks ---- */
+function startSetup(p){phase='setup';cur=p;grids[p]=empty();
+ const other=PL[1-p];
+ overlay('🙈',`${other.icon} ${other.name}, close your eyes!`,`${PL[p].icon} ${PL[p].name}: hide ${TICKS} ticks.`,'▶ Go',()=>{drawSetup();speak(`${PL[p].name}, hide ${TICKS} ticks!`)})}
+function countTicks(p){return grids[p].flat().filter(Boolean).length}
+function drawSetup(){const p=cur,box=$('boards');box.innerHTML='';
+ const {b,g}=boardEl(`${PL[p].icon} ${PL[p].name}: my ticks`,`${countTicks(p)} / ${TICKS}`,'target');
+ PEOPLE.forEach((_,r)=>{addRowHead(g,r);ACTS.forEach((_,c)=>{const d=document.createElement('div');d.className='cell mine'+(grids[p][r][c]?' on':'');d.textContent=grids[p][r][c]?'✓':'';
+  d.onclick=()=>{if(!grids[p][r][c]&&countTicks(p)>=TICKS){toast(`Only ${TICKS} ticks!`,false);return}grids[p][r][c]=!grids[p][r][c];blip(grids[p][r][c]);drawSetup()};g.appendChild(d)})});
+ box.appendChild(b);
+ const left=TICKS-countTicks(p);
+ bar(PL[p].icon,`${PL[p].name}: tap ${TICKS} boxes. Who can do it?`,left?`Hide ${left} more ✓`:'All ticks hidden!');
+ buttons({done:left===0})}
+$('done').onclick=()=>{if(phase!=='setup')return;
+ if(cur===0)startSetup(1);
+ else{shots=[empty().map(r=>r.map(()=>null)),empty().map(r=>r.map(()=>null))];found=[0,0];
+  overlay('⚓','Ready? Battle!',`Ask questions. Find ${TICKS} ticks first!`,'▶ Start',()=>{startTurn(0)})}};
+
+/* ---- battle ---- */
+function startTurn(p){phase='aim';cur=p;pending=null;drawBattle();const tb=document.querySelector('.board.target');if(tb&&innerWidth<900)tb.scrollIntoView({behavior:'smooth',block:'nearest'});
+ bar(PL[p].icon,`${PL[p].name}: tap a box on ${PL[1-p].name}'s board.`,'Ask: Can … ?');buttons({});speak(`${PL[p].name}, your turn!`)}
+function drawBattle(){const box=$('boards');box.innerHTML='';
+ [0,1].forEach(owner=>{const shooter=1-owner,isTarget=shooter===cur&&phase!=='over';
+  const {b,g}=boardEl(`${PL[owner].icon} ${PL[owner].name}'s board`,`🎯 ${found[shooter]} / ${TICKS}`,isTarget?'target':'dim');
+  PEOPLE.forEach((_,r)=>{addRowHead(g,r);ACTS.forEach((_,c)=>{const s=shots[shooter][r][c],d=document.createElement('div');
+   d.className='cell'+(s===true?' hit':s===false?' miss':'')+(pending&&pending.owner===owner&&pending.r===r&&pending.c===c?' ask':'')+(!isTarget||s!==null||phase!=='aim'?' lock':'');
+   d.textContent=s===true?'✓':s===false?'✗':(phase==='over'&&grids[owner][r][c]?'✓':'');
+   if(isTarget&&s===null&&phase==='aim')d.onclick=()=>aim(owner,r,c);g.appendChild(d)})});
+  box.appendChild(b)})}
+function aim(owner,r,c){ensureAC();phase='ask';pending={owner,r,c};drawBattle();
+ const question=q(r,c);bar(PL[cur].icon,`${PL[cur].name}, ask! ${PL[owner].name}, answer!`,question);
+ buttons({hear:true,check:true});speak(question);prefetch(a(r,c,true));prefetch(a(r,c,false))}
+$('hear').onclick=()=>{if(pending)speak(q(pending.r,pending.c))};
+$('check').onclick=()=>{if(phase!=='ask'||!pending)return;const {owner,r,c}=pending,yes=grids[owner][r][c];
+ shots[cur][r][c]=yes;phase='result';if(yes)found[cur]++;pending=null;
+ drawBattle();blip(yes);toast(yes?'Hit! 🎯':'Miss! 🌊',yes);
+ const ans=a(r,c,yes);bar(PL[cur].icon,yes?'Hit! Say it:':'Miss! Say it:',`${ans}  ${full(r,c,yes)}`);speak(ans);
+ if(yes&&found[cur]>=TICKS){phase='over';buttons({});setTimeout(()=>{drawBattle();speak(`${PL[cur].name} wins!`);
+  overlay('🏆',`${PL[cur].icon} ${PL[cur].name} wins!`,'Great asking!','↺ Play again',()=>startSetup(0))},1400);return}
+ buttons({next:true})};
+$('next').onclick=()=>{stopSpeech();startTurn(1-cur)};
+$('restart').onclick=()=>{stopSpeech();startSetup(0)};
+$('snd').onclick=()=>{soundOn=!soundOn;$('snd').textContent=soundOn?'🔊':'🔇';if(!soundOn)stopSpeech()};
+overlay('⚓','Can Battle','Hide your ticks. Find your friend\'s ticks!','▶ Play',()=>startSetup(0));
+bar('⚓','','Can Battle');buttons({});
+</script>
+</body>
+</html>
