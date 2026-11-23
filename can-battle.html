@@ -5,85 +5,142 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Can Battle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Lilita+One&family=Nunito:wght@600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800&display=swap">
 <style>
 :root{
-  --ink:#1d2433;--sea:#1f6fb2;--seaD:#14507f;--seaL:#7cc4f0;--panel:#eef4fb;--panelD:#9fb6cf;
-  --hit:#e2463a;--miss:#dfe8f2;--gold:#f2c230;--green:#3fa34d;--p1:#e2463a;--p2:#f2a530;
-  --display:"Silkscreen","Courier New",monospace;--chunky:"Lilita One","Arial Black",sans-serif;--body:"Nunito",system-ui,sans-serif;
+  --navy:#173a6b;--navy2:#1f4f8f;--line:#c4e3f6;
+  --cell:#f4fbff;--tick:#2f8fe0;--tickD:#123d6e;--hit:#ef5a4c;--miss:#dbe7f1;
+  --green:#36b94a;--greenD:#1f8a32;--teal:#7ee6cf;--gold:#f6c23e;
+  --wood:#b8743a;--rope:#d9b27a;
+  --head:"Fredoka","Nunito",system-ui,sans-serif;--body:"Nunito",system-ui,sans-serif;
   color-scheme:light;
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
-body{font-family:var(--body);color:var(--ink);min-height:100vh;
-  background:radial-gradient(circle at 20% 10%,#3d8fd1 0,transparent 45%),repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 14px,transparent 14px 28px),var(--sea)}
-.wrap{max-width:1100px;margin:0 auto;padding:14px 14px 24px;display:flex;flex-direction:column;gap:12px}
-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-h1{margin:0;font-family:var(--display);font-weight:700;color:#fff;font-size:clamp(20px,3.6vw,34px);text-shadow:3px 3px 0 #0b2f4e}
-.btn{font-family:var(--display);font-weight:700;font-size:clamp(12px,1.5vw,15px);cursor:pointer;border:3px solid #0b2f4e;background:#fff;color:var(--ink);padding:9px 14px;box-shadow:0 4px 0 #0b2f4e;line-height:1.1}
-.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0b2f4e}
-.btn.go{background:var(--green);color:#fff}
-.btn.gold{background:var(--gold)}
-.btn.blue{background:#2f86d6;color:#fff}
+body{font-family:var(--body);color:var(--navy);min-height:100vh;overflow-x:hidden;
+  background:linear-gradient(#bfe8ff 0,#8fd3f6 18%,#3bb0e6 30%,#1c8fd0 62%,#1673b6 100%) fixed}
+.scene{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.scene svg{position:absolute}
+.cloud{fill:#fff;opacity:.9}
+.wave{fill:#fff;opacity:.18}
+.wrap{position:relative;z-index:1;max-width:1260px;margin:0 auto;padding:14px 14px 28px;display:flex;flex-direction:column;gap:14px}
+.plaque{align-self:center;position:relative;padding:8px;border-radius:26px;
+  background:repeating-linear-gradient(135deg,var(--rope) 0 7px,#c79a5c 7px 12px);box-shadow:0 8px 0 rgba(13,48,92,.35)}
+.plaque h1{margin:0;padding:8px clamp(18px,4vw,46px);border-radius:20px;border:5px solid var(--wood);
+  background:linear-gradient(#245ca3,var(--navy));color:#fff;font-family:var(--head);font-weight:700;
+  font-size:clamp(26px,5vw,52px);letter-spacing:.5px;text-shadow:0 3px 0 rgba(0,0,0,.35);display:flex;align-items:center;gap:.4em;white-space:nowrap}
+.plaque h1 .anc{font-size:.8em}
+.steps{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:16px;background:rgba(255,255,255,.85);
+  border:3px solid #d6ecfa;font-family:var(--head);font-weight:600;font-size:clamp(14px,1.8vw,20px);color:var(--navy2);box-shadow:0 4px 0 rgba(13,48,92,.18)}
+.step.on{background:linear-gradient(#2fa6a0,#1d7d86);color:#fff;border-color:var(--teal);box-shadow:0 0 0 4px rgba(126,230,207,.45),0 4px 0 rgba(13,48,92,.25)}
+.arr{color:#fff;font-size:26px;font-weight:800;opacity:.8}
+.main{display:grid;grid-template-columns:1fr 1fr minmax(220px,280px);gap:16px;align-items:start}
+@media (max-width:1000px){.main{grid-template-columns:1fr 1fr}.status{grid-column:1/-1;order:-1}}
+@media (max-width:700px){.main{grid-template-columns:1fr}.arr{display:none}}
+.panel{background:rgba(255,255,255,.94);border-radius:22px;border:4px solid #e3f3fd;box-shadow:0 8px 0 rgba(13,48,92,.22);overflow:hidden}
+.ptitle{background:linear-gradient(var(--navy2),var(--navy));color:#fff;font-family:var(--head);font-weight:600;
+  font-size:clamp(17px,2vw,23px);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:16px;margin:8px}
+.ptitle .sc{font-size:.8em;background:rgba(255,255,255,.18);padding:3px 10px;border-radius:999px;white-space:nowrap}
+.board{position:relative}
+.board.target{box-shadow:0 0 0 5px var(--gold),0 8px 0 rgba(13,48,92,.22)}
+.board.wait .grid{opacity:.6}
+.gwrap{position:relative;padding:4px 14px 16px}
+.grid{display:grid;gap:5px}
+.h{font-family:var(--head);font-weight:600;color:var(--navy);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-size:clamp(11px,1.25vw,14px);padding:2px}
+.h.col{flex-direction:column;gap:2px;min-height:62px}
+.h.col .ic{font-size:clamp(20px,2.5vw,28px)}
+.h.row{justify-content:flex-start;font-size:clamp(14px,1.6vw,18px);padding-left:4px}
+.cell{aspect-ratio:1.25/1;min-height:42px;border-radius:10px;background:var(--cell);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;
+  font-size:clamp(20px,2.8vw,30px);font-weight:800;color:#fff;cursor:pointer;transition:transform .12s,background .15s,box-shadow .15s;user-select:none}
+.cell:hover{background:#e2f3fd}
+.cell.lock{cursor:default}.cell.lock:hover{background:var(--cell)}
+.cell.tick,.cell.tick:hover{background:linear-gradient(#4aa6f0,var(--tick));border:3px solid var(--tickD);box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.cell.ask,.cell.ask:hover{background:var(--gold);border-color:#b98a10;transform:scale(1.06);animation:pulse 1s infinite}
+.cell.hit,.cell.hit:hover{background:linear-gradient(#ff7a6a,var(--hit));border:3px solid #a8322a;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.cell.miss,.cell.miss:hover{background:var(--miss);color:#8aa0b6;border-color:#c9d8e6}
+.cell.reveal,.cell.reveal:hover{background:#bfe0fa;border:3px dashed var(--tick);color:var(--tick)}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(246,194,62,.45)}}
+.hidden-cover{position:absolute;inset:4px 14px 16px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  background:repeating-linear-gradient(135deg,rgba(173,216,243,.95) 0 12px,rgba(196,228,248,.95) 12px 24px)}
+.lockcard{background:rgba(255,255,255,.96);border-radius:20px;padding:16px 22px;text-align:center;box-shadow:0 6px 18px rgba(13,48,92,.2);max-width:85%}
+.lockcard .lk{font-size:40px;line-height:1}
+.lockcard b{display:block;font-family:var(--head);font-size:clamp(18px,2.2vw,24px);margin-top:4px}
+.lockcard span{font-size:clamp(13px,1.5vw,16px);font-weight:700;color:#3d5f86}
+.status .body{padding:4px 14px 16px;display:flex;flex-direction:column;gap:10px}
+.prow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;font-family:var(--head);font-weight:600;font-size:clamp(15px,1.7vw,19px)}
+.prow .sc{margin-left:auto;font-size:.85em;white-space:nowrap}
+.prow.on{background:linear-gradient(90deg,#9ff0dc,#c8f7ec);box-shadow:inset 0 0 0 2px #6fd8bf}
+.prow .ic{font-size:22px}
+.lbl{font-family:var(--head);font-weight:600;font-size:15px;border-top:2px solid #e3eef7;padding-top:10px}
+.say{font-family:var(--head);font-weight:600;font-size:clamp(19px,2.3vw,25px);line-height:1.25;color:var(--navy)}
+.tip{font-weight:700;font-size:clamp(13px,1.4vw,15px);color:#3d5f86;line-height:1.35}
+.tip:empty{display:none}
+.actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;background:rgba(255,255,255,.9);border-radius:22px;padding:12px;border:4px solid #e3f3fd;box-shadow:0 8px 0 rgba(13,48,92,.22);align-self:center}
+.actions[hidden]{display:none}
+.btn{font-family:var(--head);font-weight:600;font-size:clamp(16px,1.9vw,20px);border:none;border-radius:16px;padding:12px 22px;cursor:pointer;color:#fff;
+  background:linear-gradient(#5b8fd6,#3a6db8);box-shadow:0 5px 0 #244c86;display:inline-flex;align-items:center;gap:8px}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #244c86}
+.btn.go{background:linear-gradient(#4fd061,var(--green));box-shadow:0 5px 0 var(--greenD)}
+.btn.gold{background:linear-gradient(#ffd667,#f0a92a);color:#5a3600;box-shadow:0 5px 0 #b97a12}
+.btn.ghost{background:rgba(255,255,255,.92);color:var(--navy2);box-shadow:0 5px 0 rgba(13,48,92,.25)}
 .btn[hidden]{display:none}
-.bar{background:var(--panel);border:4px solid #0b2f4e;box-shadow:inset 0 -5px 0 var(--panelD);padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.who{width:52px;height:52px;flex:none;display:grid;place-items:center;font-size:30px;border:3px solid #0b2f4e;background:#fff}
-.msg{flex:1 1 260px;min-width:0}
-.msg small{display:block;font-weight:800;font-size:clamp(12px,1.4vw,15px);color:#4a5d78}
-.msg span{font-family:var(--chunky);font-size:clamp(19px,2.7vw,29px);line-height:1.2}
-.acts{display:flex;gap:8px;flex-wrap:wrap}
-.boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:14px}
-.board{background:var(--panel);border:4px solid #0b2f4e;padding:10px;position:relative}
-.board h2{margin:0 0 8px;font-family:var(--display);font-size:clamp(14px,1.8vw,18px);display:flex;align-items:center;gap:8px;justify-content:space-between}
-.board h2 b{font-family:var(--chunky);font-weight:400;font-size:1.15em}
-.board.target{outline:5px solid var(--gold);outline-offset:3px}
-.board.dim{opacity:.55}
-.grid{display:grid;gap:4px}
-.cell,.head{border:2px solid #0b2f4e;min-height:clamp(44px,7vw,64px);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
-.head{background:#d7e6f5;font-weight:800;font-size:clamp(11px,1.4vw,14px);line-height:1.15;flex-direction:column;gap:2px}
-.head .ic{font-size:clamp(18px,2.6vw,26px)}
-.head.name{font-family:var(--chunky);font-weight:400;font-size:clamp(15px,2vw,20px)}
-.corner{background:transparent;border-color:transparent}
-.cell{background:var(--seaL);cursor:pointer;font-size:clamp(22px,3.4vw,34px);transition:background .15s,transform .1s;user-select:none}
-.cell:hover{background:#a9dbfa}
-.cell.mine{background:#fff;cursor:pointer}
-.cell.mine.on{background:#c9f0cf}
-.cell.hit{background:var(--hit);cursor:default}
-.cell.miss{background:var(--miss);cursor:default;color:#6a7c94}
-.cell.ask{background:var(--gold);transform:scale(1.05)}
-.cell.lock{cursor:default}
-.score{font-family:var(--display);font-size:clamp(12px,1.4vw,14px)}
-.overlay{position:fixed;inset:0;background:rgba(8,30,52,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.top{display:flex;justify-content:flex-end;gap:8px;position:absolute;right:14px;top:14px;z-index:2}
+.top .btn{padding:8px 12px;font-size:15px}
+@media (max-width:900px){.top{position:static;justify-content:center}}
+.overlay{position:fixed;inset:0;background:rgba(10,40,80,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
 .overlay[hidden]{display:none}
-.card{background:var(--panel);border:5px solid #0b2f4e;box-shadow:0 8px 0 #0b2f4e;max-width:520px;width:100%;padding:24px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
-.card h2{margin:0;font-family:var(--display);font-size:clamp(20px,4vw,30px)}
-.card p{margin:0;font-family:var(--chunky);font-size:clamp(18px,2.8vw,24px);line-height:1.3}
-.big{font-size:56px;line-height:1}
-.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:30;font-family:var(--chunky);font-size:clamp(20px,3.4vw,34px);padding:8px 22px;border:4px solid #0b2f4e;color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.4);pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap}
-.toast.show{opacity:1}.toast.good{background:var(--hit)}.toast.bad{background:#5d7896}
+.card{background:#fff;border-radius:26px;border:5px solid #e3f3fd;box-shadow:0 10px 0 rgba(13,48,92,.3);max-width:500px;width:100%;padding:26px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.card .big{font-size:60px;line-height:1}
+.card h2{margin:0;font-family:var(--head);font-weight:700;font-size:clamp(24px,4vw,32px)}
+.card p{margin:0;font-weight:800;font-size:clamp(16px,2.4vw,20px);color:#3d5f86}
+.toast{position:fixed;left:50%;top:22px;transform:translateX(-50%);z-index:30;font-family:var(--head);font-weight:700;font-size:clamp(22px,3.6vw,36px);padding:10px 26px;border-radius:18px;color:#fff;box-shadow:0 6px 0 rgba(0,0,0,.2);pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap}
+.toast.show{opacity:1}.toast.good{background:var(--hit)}.toast.bad{background:#4f87c4}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>⚓ Can Battle</h1>
-    <div class="acts">
-      <button class="btn blue" id="snd" aria-label="Sound on/off">🔊</button>
-      <button class="btn" id="restart">↺ New game</button>
-    </div>
-  </header>
+<div class="scene" aria-hidden="true">
+  <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" style="inset:0;width:100%;height:100%">
+    <g class="cloud"><ellipse cx="180" cy="70" rx="90" ry="26"/><ellipse cx="240" cy="55" rx="60" ry="30"/><ellipse cx="1350" cy="60" rx="110" ry="28"/><ellipse cx="1290" cy="48" rx="60" ry="26"/><ellipse cx="760" cy="120" rx="70" ry="16"/></g>
+    <path d="M0 230 Q 200 200 400 230 T 800 230 T 1200 230 T 1600 230 V260 H0Z" fill="#6cc3a2" opacity=".55"/>
+    <g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".85"><path d="M420 120q12-12 24 0q12-12 24 0"/><path d="M480 150q9-9 18 0q9-9 18 0"/><path d="M1130 110q10-10 20 0q10-10 20 0"/></g>
+    <g transform="translate(110 150)"><path d="M0 120 h150 l-22 30 h-106z" fill="#9b5a2c"/><path d="M75 0 v118" stroke="#5b3417" stroke-width="5"/><path d="M80 10 l58 100 h-58z" fill="#fff"/><path d="M70 22 l-45 88 h45z" fill="#f2f6fa"/><path d="M75 0 l26 9 l-26 9z" fill="#e2463a"/></g>
+    <g transform="translate(1390 120)"><path d="M-60 140 q90-60 220 0z" fill="#5b8f4e"/><path d="M-40 150 q120-30 220 0 v20 h-220z" fill="#7c858f"/><path d="M48 30 h34 l8 112 h-50z" fill="#fff"/><path d="M50 60 h30 l2 22 h-34z M46 104 h38 l2 22 h-42z" fill="#e2463a"/><rect x="46" y="12" width="38" height="20" rx="3" fill="#f6c23e"/><path d="M42 12 l23-16 l23 16z" fill="#e2463a"/></g>
+    <g class="wave"><path d="M0 820 Q 100 790 200 820 T 400 820 T 600 820 T 800 820 T 1000 820 T 1200 820 T 1400 820 T 1600 820 V900 H0Z"/><path d="M0 600 Q 120 580 240 600 T 480 600 T 720 600 T 960 600 T 1200 600 T 1440 600 T 1680 600" fill="none" stroke="#fff" stroke-width="3"/></g>
+    <g transform="translate(1470 700) rotate(-18)" fill="none" stroke="#e1a63a" stroke-width="16" stroke-linecap="round"><circle cx="60" cy="10" r="16"/><path d="M60 26 v130 M20 60 h80 M-5 120 q65 75 130 0"/></g>
+    <g transform="translate(90 790)"><circle r="62" fill="#d9a441" stroke="#8a5a17" stroke-width="8"/><circle r="46" fill="#f8f1e0"/><path d="M0 -40 l9 40 l-9 40 l-9 -40z" fill="#e2463a"/><path d="M-40 0 l40 -9 l40 9 l-40 9z" fill="#173a6b" opacity=".8"/></g>
+  </svg>
+</div>
 
-  <div class="bar">
-    <div class="who" id="who">⚓</div>
-    <div class="msg"><small id="hint"></small><span id="say"></span></div>
-    <div class="acts">
-      <button class="btn go" id="check" hidden>Check ✓</button>
-      <button class="btn go" id="done" hidden>Ready ✓</button>
-      <button class="btn gold" id="next" hidden>Next ▶</button>
+<div class="wrap">
+  <div class="top"><button class="btn ghost" id="snd" aria-label="Sound on/off">🔊</button><button class="btn ghost" id="restart">↺ New game</button></div>
+  <div class="plaque"><h1><span class="anc">⚓</span>Can Battle<span class="anc">⚓</span></h1></div>
+  <div class="steps">
+    <div class="step" id="st1">🛟 1. Hide your ticks</div><span class="arr">›</span>
+    <div class="step" id="st2">👥 2. Pass</div><span class="arr">›</span>
+    <div class="step" id="st3">🎯 3. Battle</div>
+  </div>
+
+  <div class="main">
+    <div id="b0"></div>
+    <div id="b1"></div>
+    <div class="panel status">
+      <div class="ptitle">🚩 Game status</div>
+      <div class="body">
+        <div class="prow" id="pr0"></div>
+        <div class="prow" id="pr1"></div>
+        <div class="lbl">Now:</div>
+        <div class="say" id="say"></div>
+        <div class="tip" id="tip"></div>
+      </div>
     </div>
   </div>
 
-  <div class="boards" id="boards"></div>
+  <div class="actions" id="actions" hidden>
+    <button class="btn go" id="done" hidden>✓ Ready</button>
+    <button class="btn" id="check" hidden>🎯 Check</button>
+    <button class="btn gold" id="next" hidden>Next ▶</button>
+  </div>
 </div>
 
 <div class="overlay" id="ov">
@@ -98,7 +155,7 @@ h1{margin:0;font-family:var(--display);font-weight:700;color:#fff;font-size:clam
 
 <script>
 /* ===== GAME DATA: change names / activities here ===== */
-const PEOPLE=[{name:'Alex',he:'he'},{name:'Bella',he:'she'},{name:'Cathy',he:'she'},{name:'Derek',he:'he'}];
+const PEOPLE=['Alex','Bella','Cathy','Derek'];
 const ACTS=[{text:'ride a bike',ic:'🚲'},{text:'skateboard',ic:'🛹'},{text:'play tennis',ic:'🎾'},{text:'play football',ic:'⚽'}];
 const TICKS=4; // how many ✓ each player hides
 
@@ -138,67 +195,80 @@ function blip(good){if(!soundOn||!AC)return;try{const o=AC.createOscillator(),g=
 const $=id=>document.getElementById(id);
 const PL=[{name:'Player 1',icon:'🧢'},{name:'Player 2',icon:'⭐'}];
 let phase='intro',cur=0,grids=[null,null],shots=[null,null],found=[0,0],pending=null;
-const empty=()=>PEOPLE.map(()=>ACTS.map(()=>false));
-function q(r,c){return `Can ${PEOPLE[r].name} ${ACTS[c].text}?`}
-function a(r,c,yes){const p=PEOPLE[r].he;return yes?`Yes, ${p} can!`:`No, ${p} can't.`}
-function full(r,c,yes){return `${PEOPLE[r].name} ${yes?'can':"can't"} ${ACTS[c].text}.`}
+const empty=v=>PEOPLE.map(()=>ACTS.map(()=>v));
 function toast(t,good){const e=$('toast');e.textContent=t;e.className='toast show '+(good?'good':'bad');clearTimeout(e._t);e._t=setTimeout(()=>e.className='toast',1300)}
 function overlay(icon,title,text,btn,fn){$('ovIcon').textContent=icon;$('ovTitle').textContent=title;$('ovText').textContent=text;$('ovBtn').textContent=btn;$('ovBtn').onclick=()=>{ensureAC();$('ov').hidden=true;fn()};$('ov').hidden=false}
-function bar(icon,hint,say){$('who').textContent=icon;$('hint').textContent=hint;$('say').textContent=say}
-function buttons(o){['check','done','next'].forEach(k=>$(k).hidden=!o[k])}
+function buttons(o){['check','done','next'].forEach(k=>$(k).hidden=!o[k]);$('actions').hidden=!(o.check||o.done||o.next)}
+function steps(n){[1,2,3].forEach(i=>$('st'+i).classList.toggle('on',i===n))}
+function status(say,tip){$('say').textContent=say;$('tip').textContent=tip||'';
+ [0,1].forEach(i=>{const r=$('pr'+i),active=i===cur&&phase!=='over'&&phase!=='intro';r.className='prow'+(active?' on':'');
+  const sc=shots[0]?`🎯 ${found[i]} / ${TICKS}`:'';
+  r.innerHTML=`<span class="ic">${active?PL[i].icon:'⏳'}</span>${PL[i].name}<span class="sc">${sc}</span>`})}
+function countTicks(p){return grids[p]?grids[p].flat().filter(Boolean).length:0}
 
-function boardEl(title,score,cls){const b=document.createElement('div');b.className='board '+(cls||'');
- b.innerHTML=`<h2><span>${title}</span><span class="score">${score||''}</span></h2>`;
- const g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns=`minmax(64px,1.1fr) repeat(${ACTS.length},1fr)`;
- g.appendChild(Object.assign(document.createElement('div'),{className:'head corner'}));
- ACTS.forEach(x=>{const h=document.createElement('div');h.className='head';h.innerHTML=`<span class="ic">${x.ic}</span>${x.text}`;g.appendChild(h)});
- b.appendChild(g);return {b,g}}
-function addRowHead(g,r){const h=document.createElement('div');h.className='head name';h.textContent=PEOPLE[r].name;g.appendChild(h)}
+/* mode: 'edit' | 'hidden' | 'shoot' | 'view' */
+function board(owner,mode,coverText){
+ const wrap=document.createElement('div');wrap.className='panel board'+(mode==='edit'||mode==='shoot'?' target':'')+(mode==='view'?' wait':'');
+ const shooter=1-owner;
+ const sc=mode==='edit'?`✓ ${countTicks(owner)} / ${TICKS}`:(shots[shooter]?`🎯 ${found[shooter]} / ${TICKS}`:'');
+ wrap.innerHTML=`<div class="ptitle"><span>${PL[owner].icon} ${PL[owner].name}'s board</span><span class="sc">${sc}</span></div>`;
+ const gw=document.createElement('div');gw.className='gwrap';const g=document.createElement('div');g.className='grid';
+ g.style.gridTemplateColumns=`minmax(58px,.9fr) repeat(${ACTS.length},1fr)`;
+ g.appendChild(document.createElement('div'));
+ ACTS.forEach(x=>{const h=document.createElement('div');h.className='h col';h.innerHTML=`<span class="ic">${x.ic}</span>${x.text}`;g.appendChild(h)});
+ PEOPLE.forEach((n,r)=>{const h=document.createElement('div');h.className='h row';h.textContent=n;g.appendChild(h);
+  ACTS.forEach((_,c)=>{const d=document.createElement('div');let cls='cell',txt='';
+   if(mode==='edit'){if(grids[owner][r][c]){cls+=' tick';txt='✓'}d.onclick=()=>toggle(owner,r,c)}
+   else{const s=shots[shooter]?shots[shooter][r][c]:null;
+    if(s===true){cls+=' hit';txt='✓'}else if(s===false){cls+=' miss';txt='✗'}
+    else if(phase==='over'&&grids[owner]&&grids[owner][r][c]){cls+=' reveal';txt='✓'}
+    if(pending&&pending.owner===owner&&pending.r===r&&pending.c===c)cls+=' ask';
+    if(mode==='shoot'&&s===null&&phase==='aim')d.onclick=()=>aim(owner,r,c);else cls+=' lock'}
+   d.className=cls;d.textContent=txt;g.appendChild(d)})});
+ gw.appendChild(g);
+ if(mode==='hidden'){const cv=document.createElement('div');cv.className='hidden-cover';
+  cv.innerHTML=`<div class="lockcard"><div class="lk">🔒</div><b>Board hidden</b><span>${coverText||''}</span></div>`;gw.appendChild(cv)}
+ wrap.appendChild(gw);return wrap}
+function draw(modes,covers){[0,1].forEach(i=>{const box=$('b'+i);box.innerHTML='';box.appendChild(board(i,modes[i],covers&&covers[i]))})}
 
-/* ---- set up: one player hides ticks ---- */
-function startSetup(p){phase='setup';cur=p;grids[p]=empty();
- const other=PL[1-p];
- overlay('🙈',`${other.icon} ${other.name}, close your eyes!`,`${PL[p].icon} ${PL[p].name}: hide ${TICKS} ticks.`,'▶ Go',()=>{drawSetup();speak(`${PL[p].name}, hide ${TICKS} ticks!`)})}
-function countTicks(p){return grids[p].flat().filter(Boolean).length}
-function drawSetup(){const p=cur,box=$('boards');box.innerHTML='';
- const {b,g}=boardEl(`${PL[p].icon} ${PL[p].name}: my ticks`,`${countTicks(p)} / ${TICKS}`,'target');
- PEOPLE.forEach((_,r)=>{addRowHead(g,r);ACTS.forEach((_,c)=>{const d=document.createElement('div');d.className='cell mine'+(grids[p][r][c]?' on':'');d.textContent=grids[p][r][c]?'✓':'';
-  d.onclick=()=>{if(!grids[p][r][c]&&countTicks(p)>=TICKS){toast(`Only ${TICKS} ticks!`,false);return}grids[p][r][c]=!grids[p][r][c];blip(grids[p][r][c]);drawSetup()};g.appendChild(d)})});
- box.appendChild(b);
+/* ---- set up ---- */
+function startSetup(p){phase='setup';cur=p;grids[p]=empty(false);if(p===0){shots=[null,null];found=[0,0];grids[1]=null}
+ steps(2);const other=PL[1-p];drawSetup();
+ overlay('🙈',`${other.icon} ${other.name}, close your eyes!`,`${PL[p].icon} ${PL[p].name}: hide ${TICKS} ticks.`,'▶ Go',()=>{steps(1);drawSetup();speak(`${PL[p].name}, hide ${TICKS} ticks!`)})}
+function drawSetup(){const p=cur,modes=[],covers=[];
+ [0,1].forEach(i=>{if(i===p)modes[i]='edit';else{modes[i]='hidden';covers[i]=grids[i]?`${PL[i].name}'s ticks are hidden.`:`${PL[i].name} is waiting.`}});
+ draw(modes,covers);
  const left=TICKS-countTicks(p);
- bar(PL[p].icon,`${PL[p].name}: tap ${TICKS} boxes. Who can do it?`,left?`Hide ${left} more ✓`:'All ticks hidden!');
+ status(left?`${PL[p].icon} ${PL[p].name}: hide ${left} more ✓`:'All ticks are hidden!',`Tap a box: who can do it? You need ${TICKS} ticks.`);
  buttons({done:left===0})}
+function toggle(p,r,c){if(phase!=='setup'||p!==cur)return;ensureAC();
+ if(!grids[p][r][c]&&countTicks(p)>=TICKS){toast(`Only ${TICKS} ticks!`,false);return}
+ grids[p][r][c]=!grids[p][r][c];blip(grids[p][r][c]);drawSetup()}
 $('done').onclick=()=>{if(phase!=='setup')return;
  if(cur===0)startSetup(1);
- else{shots=[empty().map(r=>r.map(()=>null)),empty().map(r=>r.map(()=>null))];found=[0,0];
-  overlay('⚓','Ready? Battle!',`Ask questions. Find ${TICKS} ticks first!`,'▶ Start',()=>{startTurn(0)})}};
+ else{shots=[empty(null),empty(null)];found=[0,0];phase='ready';steps(2);
+  draw(['hidden','hidden'],[`${PL[0].name}'s ticks are hidden.`,`${PL[1].name}'s ticks are hidden.`]);buttons({});
+  overlay('⚓','Battle!',`Ask questions. Find ${TICKS} ticks first!`,'▶ Start',()=>startTurn(0))}};
 
 /* ---- battle ---- */
-function startTurn(p){phase='aim';cur=p;pending=null;drawBattle();const tb=document.querySelector('.board.target');if(tb&&innerWidth<900)tb.scrollIntoView({behavior:'smooth',block:'nearest'});
- bar(PL[p].icon,`${PL[p].name}: choose a box on ${PL[1-p].name}'s board.`,'Your turn!');buttons({});speak(`${PL[p].name}, your turn!`)}
-function drawBattle(){const box=$('boards');box.innerHTML='';
- [0,1].forEach(owner=>{const shooter=1-owner,isTarget=shooter===cur&&phase!=='over';
-  const {b,g}=boardEl(`${PL[owner].icon} ${PL[owner].name}'s board`,`🎯 ${found[shooter]} / ${TICKS}`,isTarget?'target':'dim');
-  PEOPLE.forEach((_,r)=>{addRowHead(g,r);ACTS.forEach((_,c)=>{const s=shots[shooter][r][c],d=document.createElement('div');
-   d.className='cell'+(s===true?' hit':s===false?' miss':'')+(pending&&pending.owner===owner&&pending.r===r&&pending.c===c?' ask':'')+(!isTarget||s!==null||phase!=='aim'?' lock':'');
-   d.textContent=s===true?'✓':s===false?'✗':(phase==='over'&&grids[owner][r][c]?'✓':'');
-   if(isTarget&&s===null&&phase==='aim')d.onclick=()=>aim(owner,r,c);g.appendChild(d)})});
-  box.appendChild(b)})}
+function startTurn(p){phase='aim';cur=p;pending=null;steps(3);drawBattle();
+ status(`${PL[p].icon} ${PL[p].name}: choose a box on ${PL[1-p].name}'s board.`,'');buttons({});speak(`${PL[p].name}, your turn!`);
+ const tb=document.querySelector('.board.target');if(tb&&innerWidth<1000)tb.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function drawBattle(){draw([0,1].map(o=>(1-o)===cur&&phase!=='over'?'shoot':'view'))}
 function aim(owner,r,c){ensureAC();phase='ask';pending={owner,r,c};drawBattle();
- bar(PL[cur].icon,`${PL[owner].icon} ${PL[owner].name}, answer: Yes or No?`,`🗣️ ${PL[cur].name}, ask your question!`);
- buttons({check:true})}
+ status(`🗣️ ${PL[cur].name}, ask your question!`,`${PL[owner].icon} ${PL[owner].name}, answer: Yes or No?`);buttons({check:true})}
 $('check').onclick=()=>{if(phase!=='ask'||!pending)return;const {owner,r,c}=pending,yes=grids[owner][r][c];
- shots[cur][r][c]=yes;phase='result';if(yes)found[cur]++;pending=null;
+ shots[cur][r][c]=yes;pending=null;phase='result';if(yes)found[cur]++;
  drawBattle();blip(yes);toast(yes?'Hit! 🎯':'Miss! 🌊',yes);
- bar(PL[cur].icon,yes?'Hit! 🎯':'Miss! 🌊',yes?'✓ Yes!':'✗ No!');
- if(yes&&found[cur]>=TICKS){phase='over';buttons({});setTimeout(()=>{drawBattle();speak(`${PL[cur].name} wins!`);
+ status(yes?'✓ Yes! Hit! 🎯':'✗ No! Miss! 🌊','');
+ if(yes&&found[cur]>=TICKS){phase='over';buttons({});setTimeout(()=>{drawBattle();status(`🏆 ${PL[cur].name} wins!`,'');speak(`${PL[cur].name} wins!`);
   overlay('🏆',`${PL[cur].icon} ${PL[cur].name} wins!`,'Great asking!','↺ Play again',()=>startSetup(0))},1400);return}
  buttons({next:true})};
 $('next').onclick=()=>{stopSpeech();startTurn(1-cur)};
 $('restart').onclick=()=>{stopSpeech();startSetup(0)};
 $('snd').onclick=()=>{soundOn=!soundOn;$('snd').textContent=soundOn?'🔊':'🔇';if(!soundOn)stopSpeech()};
+grids=[empty(false),null];draw(['hidden','hidden'],['','']);status('Welcome!','');buttons({});steps(0);
 overlay('⚓','Can Battle','Hide your ticks. Find your friend\'s ticks!','▶ Play',()=>startSetup(0));
-bar('⚓','','Can Battle');buttons({});
 </script>
 </body>
 </html>
