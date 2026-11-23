@@ -208,7 +208,7 @@ const SPOTS=[
  {id:'behindBed',x:525,y:892,s:.75,L:'back', keys:['behind:bed']},
  {id:'frontBed', x:505,y:1022,s:1,  L:'front',keys:['front:bed']},
  {id:'gap2',     x:688,y:968,s:.8, L:'front',keys:['between:bed:drawers','next:bed','next:drawers']},
- {id:'winDrw',   x:885,y:672,s:.85,L:'front',keys:['front:window']},
+ {id:'winDrw',   x:885,y:672,s:.85,L:'front',keys:['front:window','on:drawers']},
  {id:'frontDrw', x:885,y:1025,s:1,  L:'front',keys:['front:drawers']},
  {id:'gap2b',    x:1085,y:968,s:.85,L:'front',keys:['between:drawers:piano','next:drawers','next:piano']},
  {id:'behindPia',x:1415,y:925,s:.75,L:'back', keys:['behind:piano']},
@@ -216,26 +216,32 @@ const SPOTS=[
  {id:'gap3',     x:1448,y:968,s:.8, L:'front',keys:['between:piano:lamp','next:piano','next:lamp']},
  {id:'frontLamp',x:1545,y:1022,s:.95,L:'front',keys:['front:lamp']},
  {id:'gap4',     x:1645,y:968,s:.8, L:'front',keys:['between:lamp:table','next:lamp','next:table']},
- {id:'frontTab', x:1800,y:1032,s:1, L:'front',keys:['front:table']},
+ {id:'frontTab', x:1740,y:1032,s:1, L:'front',keys:['front:table']},
  {id:'behindPC', x:1862,y:815,s:.55,L:'mid',  keys:['behind:computer']},
- {id:'frontPC',  x:1830,y:850,s:.5, L:'front',keys:['front:computer']},
- {id:'nextPC',   x:1735,y:842,s:.55,L:'front',keys:['next:computer']}
+ {id:'frontPC',  x:1830,y:850,s:.5, L:'front',keys:['front:computer','on:table']},
+ {id:'nextPC',   x:1735,y:842,s:.55,L:'front',keys:['next:computer','on:table']},
+ {id:'onBed',    x:540,y:838,s:.7, L:'front',keys:['on:bed']},
+ {id:'onPia',    x:1270,y:712,s:.7,L:'front',keys:['on:piano']},
+ {id:'underTab', x:1835,y:948,s:.55,L:'back', keys:['under:table']}
 
 ];
 const START={x:1085,y:1062,s:1,L:'front'};
-const PH={behind:'behind',front:'in front of',next:'next to',between:'between'};
+const PH={behind:'behind',front:'in front of',next:'next to',between:'between',on:'on',under:'under',in:'in'};
 function phrase(k){const p=k.split(':');return p[0]==='between'?`between the ${p[1]} and the ${p[2]}`:`${PH[p[0]]} the ${p[1]}`}
 /* tasks: 2 of each preposition per level, shuffled */
 const POOL={
+ on:['on:bed','on:piano','on:drawers','on:table'],
+ under:['under:table'],
  behind:['behind:cupboard','behind:bed','behind:piano','behind:computer'],
  front:['front:cupboard','front:bed','front:drawers','front:piano','front:table','front:computer','front:window','front:lamp'],
  next:['next:cupboard','next:bed','next:drawers','next:piano','next:lamp','next:table','next:computer'],
  between:['between:cupboard:bed','between:bed:drawers','between:drawers:piano','between:piano:lamp','between:lamp:table']};
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
-function makeTasks(){let t=[];for(const k in POOL)t=t.concat(shuffle(POOL[k]).slice(0,2));
+const TAKE={behind:2,front:2,next:2,between:2,on:1,under:1};
+function makeTasks(){let t=[];for(const k in POOL)t=t.concat(shuffle(POOL[k]).slice(0,TAKE[k]));
  for(let tries=0;tries<50;tries++){const s=shuffle(t);if(s.every((x,i)=>i===0||x.split(':')[0]!==s[i-1].split(':')[0]))return s}return shuffle(t)}
-function makeSpots3(){const by={behind:[],front:[],gap:[],next:[]};
- SPOTS.forEach(s=>{if(s.id.startsWith('behind'))by.behind.push(s);else if(s.id.startsWith('gap'))by.gap.push(s);else if(s.id==='nextPC'||s.id==='end5')by.next.push(s);else by.front.push(s)});
+function makeSpots3(){const by={behind:[],front:[],gap:[],next:[],ou:[]};
+ SPOTS.forEach(s=>{if(/^(on|under)[A-Z]/.test(s.id))by.ou.push(s);else if(s.id.startsWith('behind'))by.behind.push(s);else if(s.id.startsWith('gap'))by.gap.push(s);else if(s.id==='nextPC'||s.id==='end5')by.next.push(s);else by.front.push(s)});
  let t=[];for(const k in by)t=t.concat(shuffle(by[k]).slice(0,2));
  for(let tries=0;tries<50;tries++){const s=shuffle(t);if(s.every((x,i)=>i===0||x.id!==s[i-1].id))return s}return shuffle(t)}
 
@@ -268,7 +274,7 @@ function current(){return tasks[idx]}
 function instr(k){return `Put the cat ${phrase(k)}.`}
 function answerSentences(spot){return spot.keys.map(k=>`The cat is ${phrase(k)}.`)}
 
-function drawGems(){const g=$('gems');g.innerHTML='';for(let i=0;i<8;i++){const d=document.createElement('div');d.className='gem'+(got[i]?' got':'')+(i===idx?' cur':'');g.appendChild(d)}}
+function drawGems(){const g=$('gems');g.innerHTML='';for(let i=0;i<(tasks.length||10);i++){const d=document.createElement('div');d.className='gem'+(got[i]?' got':'')+(i===idx?' cur':'');g.appendChild(d)}}
 function setButtons(){
  $('again').hidden=level>=3;$('showText').hidden=level!==1;
  $('yes').hidden=$('no').hidden=$('help').hidden=level!==3;
@@ -292,9 +298,9 @@ function success(sentence){busy=true;blip(true);if(firstTry){got[idx]=true;score
  $('say').textContent=sentence;$('hint').textContent='Yes! Say it:';toast(['Great!','Super!','Well done!','Brilliant!'][Math.random()*4|0],true);
  setTimeout(()=>speak(sentence),350);
  $('next').hidden=false;$('yes').hidden=$('no').hidden=$('help').hidden=true}
-function nextTask(){stopSpeech();if(idx<7){idx++;showTask()}else endLevel()}
+function nextTask(){stopSpeech();if(idx<tasks.length-1){idx++;showTask()}else endLevel()}
 function endLevel(){drawGems();$('endTitle').textContent='Level '+level+' complete!';
- $('endText').textContent='💎 '+score+' / 8';$('nextLv').hidden=level===4;$('endOv').hidden=false;speak(score>=6?'Fantastic! Well done!':'Good job!')}
+ $('endText').textContent='💎 '+score+' / '+tasks.length;$('nextLv').hidden=level===4;$('endOv').hidden=false;speak(score>=6?'Fantastic! Well done!':'Good job!')}
 
 function tryDrop(spot){
  if(level===4){if(spot)hideAt(spot);else placeCat(START,true);return}
